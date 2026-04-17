@@ -32,6 +32,6 @@
   });
 
   window.addEventListener("resize", function () {
-    if (window.innerWidth > 720) setOpen(false);
+    if (window.matchMedia("(min-width: 721px)").matches) setOpen(false);
   });
 })();
