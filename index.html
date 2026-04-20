@@ -3,12 +3,19 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#0c0f14" />
-  <meta name="description" content="Savov Pro — професионални услуги и проекти." />
-  <title>Savov Pro</title>
+  <meta name="theme-color" content="#0a0a0a" />
+  <meta
+    name="description"
+    content="САВОВ ПРО ЕООД — рекламни решения, персонализация, стикери, 3D принт, лазерно гравиране, сувенири и авто аксесоари."
+  />
+  <title>САВОВ ПРО — рекламни решения и персонализация</title>
+  <link rel="icon" href="assets/logo-mark.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700&family=Montserrat:ital,wght@0,600;0,700;1,600&display=swap"
+    rel="stylesheet"
+  />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -16,7 +23,19 @@
 
   <header class="site-header">
     <div class="container header-inner">
-      <a class="logo" href="#">Savov Pro</a>
+      <a class="logo-link" href="#" aria-label="САВОВ ПРО — начало">
+        <img
+          class="logo-svg"
+          src="assets/logo-full.svg"
+          width="976"
+          height="429"
+          alt="SAVOV PRO"
+          decoding="async"
+        />
+      </a>
+      <div class="header-contact">
+        <a class="btn btn-ghost btn-compact" href="mailto:evel.savov@gmail.com">Имейл</a>
+      </div>
       <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Меню">
         <span class="nav-toggle-bar" aria-hidden="true"></span>
         <span class="nav-toggle-bar" aria-hidden="true"></span>
@@ -24,8 +43,9 @@
       </button>
       <nav id="site-nav" class="site-nav" aria-label="Основна навигация">
         <ul>
-          <li><a href="#about">За нас</a></li>
           <li><a href="#services">Услуги</a></li>
+          <li><a href="#about">За нас</a></li>
+          <li><a href="#gallery">Галерия</a></li>
           <li><a href="#contact">Контакт</a></li>
         </ul>
       </nav>
@@ -33,68 +53,163 @@
   </header>
 
   <main id="main">
-    <section class="hero">
-      <div class="container">
-        <p class="hero-eyebrow">Статичен сайт · GitHub Pages</p>
-        <h1>Професионални решения с ясна идея</h1>
-        <p class="hero-lead">
-          Това е начална страница за Savov Pro — лека, бърза и лесна за разширяване с нови секции, снимки и контактна форма.
-        </p>
-        <div class="hero-actions">
-          <a class="btn btn-primary" href="#contact">Свържи се</a>
-          <a class="btn btn-ghost" href="#services">Виж услугите</a>
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="container hero-grid">
+        <div class="hero-copy">
+          <p class="hero-eyebrow">Рекламни решения и персонализация</p>
+          <h1 id="hero-title">САВОВ ПРО</h1>
+          <p class="hero-lead">
+            Производство и търговия с рекламни материали, персонализирани изделия и авто аксесоари — от идеята до готовия продукт.
+          </p>
+          <p class="hero-tags">Стикери · 3D принт · Лазерно гравиране · Сувенири · Авто аксесоари</p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="#services">Виж услугите</a>
+            <a class="btn btn-outline" href="#contact">Свържи се с нас</a>
+          </div>
+          <p class="social-hint">Линкове към социални профили могат да се добавят тук, когато са налични.</p>
+        </div>
+        <div class="hero-visual">
+          <div class="hero-visual-frame">
+            <img
+              src="assets/hero-product.png"
+              width="640"
+              height="640"
+              alt="Продукт с брандинг SAVOV PRO"
+              decoding="async"
+              fetchpriority="high"
+            />
+          </div>
         </div>
       </div>
     </section>
 
-    <section id="about" class="section">
-      <div class="container narrow">
-        <h2>За нас</h2>
-        <p>
-          Замени този текст с кратко представяне — кои сте, какво целите и защо клиентите да изберат вас.
-          На GitHub Pages качваш само файловете; няма нужда от отделен сървър.
-        </p>
-      </div>
-    </section>
-
-    <section id="services" class="section section-alt">
+    <section id="services" class="section section-tight" aria-labelledby="services-title">
       <div class="container">
-        <h2>Услуги</h2>
-        <p class="section-intro">Примерна тройка карти — редактирай заглавията и описанията според реалните услуги.</p>
+        <h2 id="services-title" class="section-heading">Нашите услуги</h2>
+        <p class="section-intro">
+          Комбинираме плотерно рязане, лазер, 3D принт и брандиране, за да отговорим на поръчки за реклама, подаръци и специализирани решения за автомобили.
+        </p>
         <ul class="cards">
           <li class="card">
-            <h3>Консултации</h3>
-            <p>Анализ на нужди, планиране и следващи стъпки.</p>
+            <h3>Стикери и плотерно рязане</h3>
+            <p>Изработка на стикери, етикети и декорации — точни контури и издръжливи материали за интериор и екстериор.</p>
           </li>
           <li class="card">
-            <h3>Разработка</h3>
-            <p>Уеб, автоматизация или интеграции — според твоя фокус.</p>
+            <h3>3D принтиране</h3>
+            <p>Прототипи, резервни части и персонализирани модели с внимание към детайла и функционалността.</p>
           </li>
           <li class="card">
-            <h3>Поддръжка</h3>
-            <p>Актуализации, сигурност и подобрения с времето.</p>
+            <h3>Лазерно гравиране</h3>
+            <p>Гравиране върху дърво, табели, промоционални артикули и подаръци с постоянно и прецизно изображение.</p>
+          </li>
+          <li class="card">
+            <h3>Сувенири и рекламни изделия</h3>
+            <p>Персонализирани сувенири и рекламни материали за събития, фирми и индивидуални поръчки.</p>
+          </li>
+          <li class="card">
+            <h3>Авто аксесоари</h3>
+            <p>Подбор и оферти за авто аксесоари и свързани продукти според нуждите на клиента.</p>
+          </li>
+          <li class="card">
+            <h3>Специализирани решения за автомобили</h3>
+            <p>Монтаж на защитни и тониращи филми и търговия с авточасти и консумативи — в рамките на предмета на дейност.</p>
           </li>
         </ul>
       </div>
     </section>
 
-    <section id="contact" class="section">
+    <section id="about" class="section section-alt" aria-labelledby="about-title">
       <div class="container narrow">
-        <h2>Контакт</h2>
-        <p class="section-intro">
-          За сега използвай пощенска връзка — по-късно можеш да добавиш форма или външна услуга за изпращане на имейли.
-        </p>
+        <h2 id="about-title" class="section-heading">За нас</h2>
         <p>
-          <a class="contact-email" href="mailto:hello@example.com">hello@example.com</a>
+          „САВОВ ПРО“ ЕООД (SAVOV PRO Ltd.) се занимава с рекламни и персонализирани продукти — от визуалната концепция до готовото изделие.
+          Работим с бизнеси и частни клиенти, които търсят качествено изпълнение и ясна комуникация по време на поръчката.
         </p>
+        <p class="legal-line">
+          Еднолично дружество с ограничена отговорност. Управител и едноличен собственик: Евел Делянов Савов.
+        </p>
+      </div>
+    </section>
+
+    <section id="gallery" class="section" aria-labelledby="gallery-title">
+      <div class="container">
+        <h2 id="gallery-title" class="section-heading">Галерия</h2>
+        <p class="section-intro">Част от визията и продуктите на SAVOV PRO.</p>
+        <div class="gallery-grid">
+          <figure class="gallery-item">
+            <img
+              src="assets/gallery-business-card.png"
+              width="800"
+              height="600"
+              alt="Визитки и фирмени материали SAVOV PRO"
+              loading="lazy"
+              decoding="async"
+            />
+            <figcaption>Визитки и фирмен стил</figcaption>
+          </figure>
+          <figure class="gallery-item">
+            <img
+              src="assets/gallery-mockup.png"
+              width="800"
+              height="600"
+              alt="Визия на уеб страница SAVOV PRO"
+              loading="lazy"
+              decoding="async"
+            />
+            <figcaption>Цялостна визия на марката</figcaption>
+          </figure>
+          <figure class="gallery-item">
+            <img
+              src="assets/gallery-brand.png"
+              width="600"
+              height="800"
+              alt="Брандиран продукт SAVOV PRO"
+              loading="lazy"
+              decoding="async"
+            />
+            <figcaption>Продуктова линия</figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <section id="contact" class="section section-alt section-tight" aria-labelledby="contact-title">
+      <div class="container narrow">
+        <h2 id="contact-title" class="section-heading">Контакт</h2>
+        <p class="section-intro">
+          Пишете за оферта, поръчка или въпрос за персонализирани изделия и рекламни материали.
+        </p>
+        <ul class="contact-list">
+          <li>
+            <span class="contact-label">Имейл</span>
+            <a href="mailto:evel.savov@gmail.com">evel.savov@gmail.com</a>
+          </li>
+          <li>
+            <span class="contact-label">Локация</span>
+            <span>с. Късак, област Смолян</span>
+          </li>
+          <li>
+            <span class="contact-label">Уебсайт</span>
+            <a href="https://savovpro.com/" target="_blank" rel="noopener noreferrer">savovpro.com</a>
+          </li>
+        </ul>
+        <div class="contact-cta">
+          <a class="btn btn-primary btn-wide" href="mailto:evel.savov@gmail.com?subject=%D0%97%D0%B0%D0%BF%D0%B8%D1%82%D0%B2%D0%B0%D0%BD%D0%B5%20%D0%BE%D1%82%20%D1%81%D0%B0%D0%B9%D1%82%D0%B0">
+            Изпрати запитване
+          </a>
+        </div>
       </div>
     </section>
   </main>
 
   <footer class="site-footer">
     <div class="container footer-inner">
-      <p>© <span id="year"></span> Savov Pro. Всички права запазени.</p>
-      <p class="footer-note">Хостинг: GitHub Pages · <a href="https://pages.github.com/">Документация</a></p>
+      <p>© <span id="year"></span> „САВОВ ПРО“ ЕООД. Всички права запазени.</p>
+      <p class="footer-note">
+        <a href="https://savovpro.com/" target="_blank" rel="noopener noreferrer">savovpro.com</a>
+        · Хостинг: GitHub Pages
+        · <a href="https://pages.github.com/" target="_blank" rel="noopener noreferrer">Документация</a>
+      </p>
     </div>
   </footer>
 
