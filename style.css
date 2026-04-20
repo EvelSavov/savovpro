@@ -1,4 +1,4 @@
-/* САВОВ ПРО — GitHub Pages · черно · бяло · злато */
+/* SAVOV PRO Ltd. — GitHub Pages · черно · бяло · злато */
 
 :root {
   --bg: #0a0a0a;
@@ -16,7 +16,8 @@
   --font-body: "DM Sans", system-ui, -apple-system, sans-serif;
   --font-heading: "Montserrat", var(--font-body);
   --max: 1040px;
-  --header-h: 72px;
+  --header-inner-h: 72px;
+  --header-h: calc(var(--header-inner-h) + env(safe-area-inset-top, 0px));
 }
 
 *,
@@ -38,7 +39,7 @@ html {
 body {
   margin: 0;
   font-family: var(--font-body);
-  font-size: 1.0625rem;
+  font-size: clamp(1rem, 0.35vw + 0.92rem, 1.0625rem);
   line-height: 1.65;
   color: var(--text);
   background-color: var(--bg);
@@ -46,6 +47,9 @@ body {
     radial-gradient(ellipse 900px 480px at 15% -8%, rgba(201, 162, 39, 0.12), transparent 55%),
     radial-gradient(ellipse 700px 400px at 95% 10%, rgba(201, 162, 39, 0.06), transparent 45%);
   min-height: 100vh;
+  overflow-x: hidden;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  overflow-wrap: break-word;
 }
 
 .skip-link {
@@ -76,7 +80,7 @@ a:hover {
 }
 
 .container {
-  width: min(100% - 32px, var(--max));
+  width: min(100% - max(32px, env(safe-area-inset-left, 0px) + env(safe-area-inset-right, 0px)), var(--max));
   margin-inline: auto;
 }
 
@@ -91,18 +95,32 @@ a:hover {
   top: 0;
   z-index: 50;
   border-bottom: 1px solid var(--border);
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+}
+
+/* Отделен слой: backdrop-filter върху предшественик на nav смачква position:fixed на менюто */
+.site-header-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
   background: rgba(10, 10, 10, 0.85);
   backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
 }
 
 .header-inner {
+  position: relative;
+  z-index: 1;
   display: grid;
   grid-template-columns: 1fr auto auto;
   grid-template-areas:
     "logo contact toggle";
   align-items: center;
   gap: 0.75rem 1rem;
-  min-height: var(--header-h);
+  min-height: var(--header-inner-h);
 }
 
 .logo-link {
@@ -195,22 +213,24 @@ a:hover {
   }
 }
 
-.hero-eyebrow {
-  margin: 0 0 0.65rem;
-  font-size: 0.82rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.14em;
-  color: var(--gold);
-}
-
 .hero h1 {
-  margin: 0 0 1rem;
+  margin: 0 0 0.45rem;
   font-family: var(--font-heading);
   font-size: clamp(2.25rem, 6vw, 3.25rem);
   font-weight: 700;
   line-height: 1.1;
   letter-spacing: 0.06em;
+}
+
+.brand-tagline {
+  margin: 0 0 1.05rem;
+  max-width: 42ch;
+  font-family: var(--font-heading);
+  font-size: clamp(1.05rem, 2.6vw, 1.35rem);
+  font-weight: 600;
+  font-style: italic;
+  letter-spacing: 0.06em;
+  color: var(--gold);
 }
 
 .hero-lead {
@@ -232,11 +252,42 @@ a:hover {
   gap: 0.75rem;
 }
 
-.social-hint {
-  margin: 1.25rem 0 0;
-  font-size: 0.88rem;
+.hero-social {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem;
+  margin-top: 1.25rem;
+}
+
+.social-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.05);
   color: var(--muted);
-  max-width: 40ch;
+  cursor: default;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+
+.social-btn:hover {
+  color: var(--gold);
+  border-color: rgba(201, 162, 39, 0.45);
+  background: rgba(201, 162, 39, 0.08);
+}
+
+.social-btn:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
 }
 
 .hero-visual-frame {
@@ -247,11 +298,148 @@ a:hover {
   background: var(--bg-elevated);
 }
 
-.hero-visual img {
+.hero-carousel {
+  position: relative;
+}
+
+.hero-carousel-viewport {
+  position: relative;
+  aspect-ratio: 1;
+  max-height: min(560px, 85vw);
+  margin-inline: auto;
+}
+
+@supports (height: 100dvh) {
+  .hero-carousel-viewport {
+    max-height: min(560px, 85vw, calc(100dvh - 11rem));
+  }
+}
+
+.hero-carousel-slides {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.hero-carousel-slide {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  padding: 0;
+  opacity: 0;
+  transition: opacity 0.55s ease;
+  pointer-events: none;
+}
+
+.hero-carousel-slide.is-active {
+  opacity: 1;
+  z-index: 1;
+  pointer-events: auto;
+}
+
+.hero-carousel-slide img {
   display: block;
   width: 100%;
-  height: auto;
+  height: 100%;
+  object-fit: cover;
   vertical-align: middle;
+}
+
+.hero-carousel-toolbar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.45rem 0.5rem 0.55rem;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.72), transparent);
+}
+
+.hero-carousel-arrow {
+  flex: 0 0 auto;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-sm);
+  background: rgba(10, 10, 10, 0.55);
+  color: var(--text);
+  font-size: 1.35rem;
+  line-height: 1;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.hero-carousel-arrow:hover {
+  border-color: rgba(201, 162, 39, 0.55);
+  background: rgba(20, 20, 20, 0.85);
+}
+
+.hero-carousel-dots {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: center;
+  align-items: center;
+  gap: 0.28rem;
+  flex: 1;
+  min-width: 0;
+}
+
+/* Малка видима точка + умерен padding; content-box заради глобалния border-box */
+.hero-carousel-dot {
+  box-sizing: content-box;
+  flex: 0 0 auto;
+  width: 8px;
+  height: 8px;
+  padding: 5px;
+  border: 0;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.35);
+  background-clip: content-box;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    background-color 0.15s ease,
+    transform 0.15s ease;
+}
+
+@media (min-width: 600px) {
+  .hero-carousel-dots {
+    gap: 0.4rem;
+  }
+
+  .hero-carousel-dot {
+    width: 9px;
+    height: 9px;
+    padding: 6px;
+  }
+}
+
+.hero-carousel-dot:hover {
+  background-color: rgba(255, 255, 255, 0.55);
+}
+
+.hero-carousel-dot.is-active {
+  background-color: var(--gold);
+  transform: scale(1.12);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-carousel-slide {
+    transition: none;
+  }
 }
 
 /* Buttons */
@@ -268,6 +456,7 @@ a:hover {
   letter-spacing: 0.03em;
   text-decoration: none;
   border: 1px solid transparent;
+  touch-action: manipulation;
   transition:
     background 0.18s ease,
     border-color 0.18s ease,
@@ -334,8 +523,18 @@ a:hover {
 }
 
 .section-alt {
-  background: rgba(255, 255, 255, 0.025);
-  border-block: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.03);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+/* „За нас“ + „Контакт“: един непрекъснат блок без двойна рамка между тях */
+#about.section-alt {
+  border-bottom: none;
+}
+
+#about + #contact.section-alt {
+  border-top: none;
 }
 
 .section-heading {
@@ -353,6 +552,11 @@ a:hover {
   max-width: 62ch;
   text-align: center;
   color: var(--muted);
+}
+
+/* Beat `.section p` so intro keeps horizontal auto margins and stays centered */
+.section p.section-intro {
+  margin: 0 auto 2rem;
 }
 
 #about .section-heading,
@@ -392,7 +596,7 @@ a:hover {
 
 .cards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr));
   gap: 1.15rem;
   list-style: none;
   margin: 0;
@@ -400,17 +604,74 @@ a:hover {
 }
 
 .card {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  min-height: 260px;
   padding: 1.45rem 1.35rem;
-  background: var(--bg-card);
+  background-color: var(--bg-card);
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
   border: 1px solid var(--border);
   border-radius: var(--radius);
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: linear-gradient(
+    to top,
+    rgba(10, 10, 10, 0.94) 0%,
+    rgba(10, 10, 10, 0.55) 42%,
+    rgba(10, 10, 10, 0.2) 100%
+  );
+  transition: opacity 0.2s ease;
+}
+
+.card:hover::before {
+  opacity: 0.92;
+}
+
 .card:hover {
   border-color: rgba(201, 162, 39, 0.35);
   box-shadow: 0 20px 48px rgba(0, 0, 0, 0.35);
+}
+
+.card > * {
+  position: relative;
+  z-index: 1;
+}
+
+.card--service-vinyl {
+  background-image: url("assets/services/service-vinyl-plotter-cutting.png");
+}
+
+.card--service-3d {
+  background-image: url("assets/services/service-3d-printing.png");
+}
+
+.card--service-laser {
+  background-image: url("assets/services/service-laser-engraving.png");
+}
+
+.card--service-promo {
+  background-image: url("assets/services/service-promotional-products.png");
+}
+
+.card--service-auto {
+  background-image: url("assets/services/service-automotive-accessories.png");
+}
+
+.card--service-vehicle {
+  background-image: url("assets/services/service-vehicle-branding.png");
 }
 
 .card h3 {
@@ -426,19 +687,23 @@ a:hover {
   margin: 0;
   font-size: 0.98rem;
   line-height: 1.55;
+  color: rgba(244, 244, 245, 0.88);
 }
 
 /* Gallery */
 
 .gallery-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr));
   gap: 1.25rem;
+  align-items: start;
 }
 
 .gallery-item {
   margin: 0;
   padding: 0;
+  display: flex;
+  flex-direction: column;
   border-radius: var(--radius);
   overflow: hidden;
   border: 1px solid var(--border);
@@ -448,8 +713,12 @@ a:hover {
 .gallery-item img {
   display: block;
   width: 100%;
+  aspect-ratio: 4 / 3;
   height: auto;
+  object-fit: cover;
+  object-position: center;
   vertical-align: middle;
+  flex-shrink: 0;
 }
 
 .gallery-item figcaption {
@@ -504,7 +773,10 @@ a:hover {
 .site-footer {
   border-top: 1px solid var(--border);
   padding: 2rem 0;
+  padding-bottom: max(2rem, env(safe-area-inset-bottom, 0px));
   margin-top: 1rem;
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
 }
 
 .footer-inner {
@@ -519,6 +791,15 @@ a:hover {
   margin: 0;
 }
 
+.footer-tagline {
+  font-family: var(--font-heading);
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-style: italic;
+  letter-spacing: 0.05em;
+  color: var(--gold);
+}
+
 .footer-note a {
   color: var(--muted);
 }
@@ -529,6 +810,13 @@ a:hover {
 
 body.nav-open {
   overflow: hidden;
+}
+
+@media (max-width: 720px) {
+  body.nav-open {
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
 }
 
 /* Desktop navigation */
@@ -574,6 +862,14 @@ body.nav-open {
     grid-template-columns: 1fr auto auto;
   }
 
+  /* Лентата на хедъра винаги над падащото меню (иначе translate/clip причинява „мигане“) */
+  .logo-link,
+  .header-contact,
+  .nav-toggle {
+    position: relative;
+    z-index: 2;
+  }
+
   .header-contact {
     display: flex;
     flex-wrap: wrap;
@@ -586,25 +882,32 @@ body.nav-open {
     left: 0;
     right: 0;
     top: var(--header-h);
-    bottom: 0;
-    padding: 1.5rem 1.25rem 2rem;
-    background: rgba(10, 10, 10, 0.97);
-    transform: translateY(-100%);
+    height: auto;
+    max-height: min(22rem, calc(100dvh - var(--header-h) - 0.75rem));
+    padding: 1rem max(1.25rem, env(safe-area-inset-right, 0px)) 1.15rem
+      max(1.25rem, env(safe-area-inset-left, 0px));
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    border-radius: 0 0 var(--radius) var(--radius);
+    box-shadow: var(--shadow);
+    z-index: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    transform: none;
+    clip-path: inset(0 0 100% 0);
     opacity: 0;
     visibility: hidden;
+    pointer-events: none;
     transition:
-      transform 0.22s ease,
-      opacity 0.22s ease,
-      visibility 0.22s;
-    z-index: 45;
-    overflow-y: auto;
-    border-bottom: 1px solid var(--border);
+      clip-path 0.24s ease,
+      opacity 0.2s ease;
   }
 
   .site-nav.is-open {
-    transform: translateY(0);
+    clip-path: inset(0 0 0 0);
     opacity: 1;
     visibility: visible;
+    pointer-events: auto;
   }
 
   .site-nav ul {
@@ -624,5 +927,50 @@ body.nav-open {
 
   .contact-label {
     display: block;
+  }
+
+  .card {
+    min-height: 220px;
+  }
+}
+
+@media (max-width: 720px) and (prefers-reduced-motion: reduce) {
+  .site-nav {
+    transition: opacity 0.12s ease;
+    clip-path: none;
+  }
+
+  .site-nav:not(.is-open) {
+    opacity: 0;
+  }
+}
+
+/* Тесни телефони: пълна ширина за основните бутони */
+@media (max-width: 560px) {
+  .hero-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .hero-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .contact-cta {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .contact-cta .btn-wide {
+    width: 100%;
+    box-sizing: border-box;
+  }
+}
+
+/* Таблет портрет: по-компактен hero, за да остане повече място за текста */
+@media (min-width: 721px) and (max-width: 879px) {
+  .hero-carousel-viewport {
+    max-height: min(480px, 58vw);
   }
 }
