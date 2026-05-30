@@ -2,20 +2,45 @@
 <html lang="bg">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Savov Pro — професионални услуги и проекти." />
-  <title>Savov Pro</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0a0a0a" />
+  <meta
+    name="description"
+    content="SAVOV PRO Ltd. — персонализирани подаръци и индивидуални изделия: стикери, 3D принт, лазерно гравиране, сувенири и авто аксесоари. Made specially for you."
+  />
+  <title>SAVOV PRO Ltd. — Made specially for you</title>
+  <link rel="icon" href="assets/logo/logo-mark.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700&family=Montserrat:ital,wght@0,600;0,700;1,600&display=swap"
+    rel="stylesheet"
+  />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <a class="skip-link" href="#main">Към съдържанието</a>
 
   <header class="site-header">
+    <div class="site-header-backdrop" aria-hidden="true"></div>
     <div class="container header-inner">
-      <a class="logo" href="#">Savov Pro</a>
+      <a class="logo-link" href="#" aria-label="SAVOV PRO Ltd., Made specially for you — начало">
+        <img
+          class="logo-svg"
+          src="assets/logo/logo-full.svg"
+          width="976"
+          height="429"
+          alt="SAVOV PRO Ltd."
+          decoding="async"
+        />
+      </a>
+      <div class="header-contact">
+        <a
+          class="btn btn-ghost btn-compact"
+          href="tel:+359884121606"
+          aria-label="Обадете се на +359 884 121 606"
+        >Обади се</a>
+      </div>
       <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Меню">
         <span class="nav-toggle-bar" aria-hidden="true"></span>
         <span class="nav-toggle-bar" aria-hidden="true"></span>
@@ -23,8 +48,9 @@
       </button>
       <nav id="site-nav" class="site-nav" aria-label="Основна навигация">
         <ul>
-          <li><a href="#about">За нас</a></li>
           <li><a href="#services">Услуги</a></li>
+          <li><a href="#gallery">Галерия</a></li>
+          <li><a href="#about">За нас</a></li>
           <li><a href="#contact">Контакт</a></li>
         </ul>
       </nav>
@@ -32,68 +58,586 @@
   </header>
 
   <main id="main">
-    <section class="hero">
-      <div class="container">
-        <p class="hero-eyebrow">Статичен сайт · GitHub Pages</p>
-        <h1>Професионални решения с ясна идея</h1>
-        <p class="hero-lead">
-          Това е начална страница за Savov Pro — лека, бърза и лесна за разширяване с нови секции, снимки и контактна форма.
-        </p>
-        <div class="hero-actions">
-          <a class="btn btn-primary" href="#contact">Свържи се</a>
-          <a class="btn btn-ghost" href="#services">Виж услугите</a>
+    <section class="hero" aria-labelledby="hero-title" aria-describedby="brand-tagline">
+      <div class="container hero-grid">
+        <div class="hero-copy">
+          <h1 id="hero-title" lang="en">SAVOV PRO Ltd.</h1>
+          <p id="brand-tagline" class="brand-tagline" lang="en">Made specially for you.</p>
+          <p class="hero-lead">
+            За автомобилните фенове и за всички останали — персонализирани продукти по ваша идея, заедно с авто аксесоари.
+          </p>
+          <p class="hero-tags">• Стикери • 3D Принтиране • Лазерно Гравиране • Персонализирани сувенири и авто аксесоари.</p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="#services">Виж услугите</a>
+            <a class="btn btn-outline" href="#contact">Свържи се с нас</a>
+          </div>
+          <div class="hero-social" aria-label="Социални мрежи">
+            <a class="social-btn" href="https://www.facebook.com/savovpro" target="_blank" rel="noopener noreferrer" aria-label="Facebook — savovpro">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22" fill="none" aria-hidden="true" focusable="false">
+                <path
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"
+                />
+              </svg>
+            </a>
+            <a class="social-btn" href="https://www.instagram.com/savovpro" target="_blank" rel="noopener noreferrer" aria-label="Instagram — savovpro">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22" fill="none" aria-hidden="true" focusable="false">
+                <rect x="2" y="2" width="20" height="20" rx="5" ry="5" stroke="currentColor" stroke-width="2" />
+                <path
+                  stroke="currentColor"
+                  stroke-width="2"
+                  d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"
+                />
+                <path stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M17.5 6.5h.01" />
+              </svg>
+            </a>
+            <a class="social-btn" href="https://www.tiktok.com/@savovpro" target="_blank" rel="noopener noreferrer" aria-label="TikTok — @savovpro">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false">
+                <path
+                  fill="currentColor"
+                  d="M19.59 6.69A4.83 4.83 0 0 1 15.82 2.44V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 1.18.23V10.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43V8.67a8.16 8.16 0 0 0 4.77 1.52V6.79a4.85 4.85 0 0 1-1-.1z"
+                />
+              </svg>
+            </a>
+          </div>
+        </div>
+        <div class="hero-visual">
+          <div
+            class="hero-visual-frame hero-carousel"
+            role="region"
+            aria-label="Наши продукти — карусел"
+          >
+            <div class="hero-carousel-viewport">
+              <ul class="hero-carousel-slides">
+                <li class="hero-carousel-slide is-active" aria-hidden="false">
+                  <img
+                    src="assets/products/20260111_161704-2.jpg"
+                    width="640"
+                    height="640"
+                    alt="Кръгли дървени ключодържатели с автомобилни марки"
+                    decoding="async"
+                    fetchpriority="high"
+                  />
+                </li>
+                <li class="hero-carousel-slide" aria-hidden="true">
+                  <img
+                    src="assets/products/20260111_162946-2.jpg"
+                    width="640"
+                    height="640"
+                    alt="Бамбукови химикалки с лазерно гравиране на автомобилни марки"
+                    decoding="async"
+                    loading="lazy"
+                  />
+                </li>
+                <li class="hero-carousel-slide" aria-hidden="true">
+                  <img
+                    src="assets/products/20260111_162509-2.jpg"
+                    width="640"
+                    height="640"
+                    alt="Колекция дървени ключодържатели с автомобилни лога"
+                    decoding="async"
+                    loading="lazy"
+                  />
+                </li>
+                <li class="hero-carousel-slide" aria-hidden="true">
+                  <img
+                    src="assets/products/91375B5B-8D13-46BE-B325-9DB1B715294A_1_201_a-2.jpeg"
+                    width="640"
+                    height="640"
+                    alt="Ароматизатори за автомобил SAVOV PRO Premium Car Fragrance"
+                    decoding="async"
+                    loading="lazy"
+                  />
+                </li>
+                <li class="hero-carousel-slide" aria-hidden="true">
+                  <img
+                    src="assets/products/DABF0698-9C20-422D-A22C-24D1A6F53FD1_1_201_a-2.jpeg"
+                    width="640"
+                    height="640"
+                    alt="Комплект ароматизатор Ocean за автомобил SAVOV PRO"
+                    decoding="async"
+                    loading="lazy"
+                  />
+                </li>
+                <li class="hero-carousel-slide" aria-hidden="true">
+                  <img
+                    src="assets/products/665D1722-16FF-4A70-BB4F-7B542D7EDFEE_1_201_a-2.jpeg"
+                    width="640"
+                    height="640"
+                    alt="Брандирани дървени ключодържатели SAVOV PRO с лого, телефон и сайт"
+                    decoding="async"
+                    loading="lazy"
+                  />
+                </li>
+                <li class="hero-carousel-slide" aria-hidden="true">
+                  <img
+                    src="assets/products/20260111_163436-2.jpg"
+                    width="640"
+                    height="640"
+                    alt="Персонализирани дървени ключодържатели с автомобилни марки"
+                    decoding="async"
+                    loading="lazy"
+                  />
+                </li>
+                <li class="hero-carousel-slide" aria-hidden="true">
+                  <img
+                    src="assets/products/B0336199-BC7E-4DC8-A714-27EA968D3CB1_1_201_a-2.jpeg"
+                    width="640"
+                    height="640"
+                    alt="Дървени ключодържатели Mercedes-Benz, BMW и Jeep в опаковка"
+                    decoding="async"
+                    loading="lazy"
+                  />
+                </li>
+                <li class="hero-carousel-slide" aria-hidden="true">
+                  <img
+                    src="assets/products/20260111_161439-2.jpg"
+                    width="640"
+                    height="640"
+                    alt="Дървени ключодържатели Renault, BMW и Volkswagen"
+                    decoding="async"
+                    loading="lazy"
+                  />
+                </li>
+                <li class="hero-carousel-slide" aria-hidden="true">
+                  <img
+                    src="assets/products/20260111_161618-2.jpg"
+                    width="640"
+                    height="640"
+                    alt="Дървени ключодържатели Suzuki, Ford, Peugeot и Jeep"
+                    decoding="async"
+                    loading="lazy"
+                  />
+                </li>
+                <li class="hero-carousel-slide" aria-hidden="true">
+                  <img
+                    src="assets/products/823D4033-0777-4886-B96E-208D2ED4AFCD_1_201_a-2.jpeg"
+                    width="640"
+                    height="640"
+                    alt="Кръгли дървени ключодържатели Honda, Fiat, Seat, Ford и Audi"
+                    decoding="async"
+                    loading="lazy"
+                  />
+                </li>
+                <li class="hero-carousel-slide" aria-hidden="true">
+                  <img
+                    src="assets/products/D09159B1-3915-4130-BC23-7BD22466BDD8_1_201_a-2.jpeg"
+                    width="640"
+                    height="640"
+                    alt="Дървени ключодържатели Mitsubishi, Suzuki и Volvo в опаковка"
+                    decoding="async"
+                    loading="lazy"
+                  />
+                </li>
+                <li class="hero-carousel-slide" aria-hidden="true">
+                  <img
+                    src="assets/products/C3A9CC97-DEAA-46D9-85B1-327C9D0F581D_1_201_a-2.jpeg"
+                    width="640"
+                    height="640"
+                    alt="Дървени поставки за визитки SAVOV PRO с персонализирани имена"
+                    decoding="async"
+                    loading="lazy"
+                  />
+                </li>
+                <li class="hero-carousel-slide" aria-hidden="true">
+                  <img
+                    src="assets/products/E03AFA0E-3410-4468-8A12-5650C84A705A_1_201_a-2.jpeg"
+                    width="640"
+                    height="640"
+                    alt="Дървена кутия за визитки SAVOV PRO с лазерно гравиране"
+                    decoding="async"
+                    loading="lazy"
+                  />
+                </li>
+                <li class="hero-carousel-slide" aria-hidden="true">
+                  <img
+                    src="assets/products/20260111_163111-2.jpg"
+                    width="640"
+                    height="640"
+                    alt="Бамбукови химикалки с автомобилни лога върху дървен фон"
+                    decoding="async"
+                    loading="lazy"
+                  />
+                </li>
+              </ul>
+            </div>
+            <div class="hero-carousel-toolbar">
+              <button type="button" class="hero-carousel-arrow" data-carousel-dir="prev" aria-label="Предишна снимка">
+                <span aria-hidden="true">‹</span>
+              </button>
+              <div class="hero-carousel-dots" role="group" aria-label="Избор на снимка"></div>
+              <button type="button" class="hero-carousel-arrow" data-carousel-dir="next" aria-label="Следваща снимка">
+                <span aria-hidden="true">›</span>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </section>
 
-    <section id="about" class="section">
-      <div class="container narrow">
-        <h2>За нас</h2>
-        <p>
-          Замени този текст с кратко представяне — кои сте, какво целите и защо клиентите да изберат вас.
-          На GitHub Pages качваш само файловете; няма нужда от отделен сървър.
-        </p>
-      </div>
-    </section>
-
-    <section id="services" class="section section-alt">
+    <section id="services" class="section section-tight" aria-labelledby="services-title">
       <div class="container">
-        <h2>Услуги</h2>
-        <p class="section-intro">Примерна тройка карти — редактирай заглавията и описанията според реалните услуги.</p>
+        <h2 id="services-title" class="section-heading">Нашите услуги</h2>
+        <p class="section-intro">
+          Комбинираме плотерно рязане, лазер, 3D принт и гравиране, за да изработваме уникални неща — персонализирани и съобразени с човека отсреща, включително решения за автомобили.
+        </p>
         <ul class="cards">
-          <li class="card">
-            <h3>Консултации</h3>
-            <p>Анализ на нужди, планиране и следващи стъпки.</p>
+          <li class="card card--service-vinyl">
+            <h3>Стикери и плотерно рязане</h3>
+            <p>Изработка на стикери, етикети и декорации — точни контури и издръжливи материали за интериор и екстериор.</p>
           </li>
-          <li class="card">
-            <h3>Разработка</h3>
-            <p>Уеб, автоматизация или интеграции — според твоя фокус.</p>
+          <li class="card card--service-3d">
+            <h3>3D принтиране</h3>
+            <p>Прототипи, резервни части и персонализирани модели с внимание към детайла и функционалността.</p>
           </li>
-          <li class="card">
-            <h3>Поддръжка</h3>
-            <p>Актуализации, сигурност и подобрения с времето.</p>
+          <li class="card card--service-laser">
+            <h3>Лазерно гравиране</h3>
+            <p>Гравиране върху дърво, табели, аксесоари и подаръци с постоянно и прецизно изображение.</p>
+          </li>
+          <li class="card card--service-promo">
+            <h3>Сувенири и лични подаръци</h3>
+            <p>Персонализирани сувенири и подаръци за повод, жест към близък или корпоративен жест — всяко нещо е замислено и направено специално за получателя.</p>
+          </li>
+          <li class="card card--service-auto">
+            <h3>Авто аксесоари</h3>
+            <p>Подбор и оферти за авто аксесоари и свързани продукти според нуждите на клиента.</p>
+          </li>
+          <li class="card card--service-vehicle">
+            <h3>Специализирани решения за автомобили</h3>
+            <p>Монтаж на защитни и тониращи филми и търговия с авточасти и консумативи.</p>
           </li>
         </ul>
       </div>
     </section>
 
-    <section id="contact" class="section">
+    <section id="gallery" class="section" aria-labelledby="gallery-title">
+      <div class="container">
+        <h2 id="gallery-title" class="section-heading">Галерия</h2>
+        <p class="section-intro">Реализирани продукти от нашата работа — само готови неща, които сме изработили.</p>
+        <!-- Галерията използва само assets/products/; снимки за услуги са в assets/services/ -->
+        <div class="gallery-grid">
+          <figure class="gallery-item">
+            <a
+              class="gallery-open"
+              href="assets/products/20260111_161704-2.jpg"
+              aria-label="Увеличи: Кръгли дървени ключодържатели с автомобилни марки"
+            >
+              <img
+                src="assets/products/20260111_161704-2.jpg"
+                width="800"
+                height="800"
+                alt="Кръгли дървени ключодържатели с автомобилни марки"
+                loading="lazy"
+                decoding="async"
+              />
+            </a>
+          </figure>
+          <figure class="gallery-item">
+            <a
+              class="gallery-open"
+              href="assets/products/20260111_162946-2.jpg"
+              aria-label="Увеличи: Бамбукови химикалки с лазерно гравиране на автомобилни марки"
+            >
+              <img
+                src="assets/products/20260111_162946-2.jpg"
+                width="800"
+                height="800"
+                alt="Бамбукови химикалки с лазерно гравиране на автомобилни марки"
+                loading="lazy"
+                decoding="async"
+              />
+            </a>
+          </figure>
+          <figure class="gallery-item">
+            <a
+              class="gallery-open"
+              href="assets/products/20260111_162509-2.jpg"
+              aria-label="Увеличи: Колекция дървени ключодържатели с автомобилни лога"
+            >
+              <img
+                src="assets/products/20260111_162509-2.jpg"
+                width="800"
+                height="800"
+                alt="Колекция дървени ключодържатели с автомобилни лога"
+                loading="lazy"
+                decoding="async"
+              />
+            </a>
+          </figure>
+          <figure class="gallery-item">
+            <a
+              class="gallery-open"
+              href="assets/products/91375B5B-8D13-46BE-B325-9DB1B715294A_1_201_a-2.jpeg"
+              aria-label="Увеличи: Ароматизатори за автомобил SAVOV PRO Premium Car Fragrance"
+            >
+              <img
+                src="assets/products/91375B5B-8D13-46BE-B325-9DB1B715294A_1_201_a-2.jpeg"
+                width="800"
+                height="800"
+                alt="Ароматизатори за автомобил SAVOV PRO Premium Car Fragrance"
+                loading="lazy"
+                decoding="async"
+              />
+            </a>
+          </figure>
+          <figure class="gallery-item">
+            <a
+              class="gallery-open"
+              href="assets/products/DABF0698-9C20-422D-A22C-24D1A6F53FD1_1_201_a-2.jpeg"
+              aria-label="Увеличи: Комплект ароматизатор Ocean за автомобил SAVOV PRO"
+            >
+              <img
+                src="assets/products/DABF0698-9C20-422D-A22C-24D1A6F53FD1_1_201_a-2.jpeg"
+                width="800"
+                height="800"
+                alt="Комплект ароматизатор Ocean за автомобил SAVOV PRO"
+                loading="lazy"
+                decoding="async"
+              />
+            </a>
+          </figure>
+          <figure class="gallery-item">
+            <a
+              class="gallery-open"
+              href="assets/products/665D1722-16FF-4A70-BB4F-7B542D7EDFEE_1_201_a-2.jpeg"
+              aria-label="Увеличи: Брандирани дървени ключодържатели SAVOV PRO с лого, телефон и сайт"
+            >
+              <img
+                src="assets/products/665D1722-16FF-4A70-BB4F-7B542D7EDFEE_1_201_a-2.jpeg"
+                width="800"
+                height="800"
+                alt="Брандирани дървени ключодържатели SAVOV PRO с лого, телефон и сайт"
+                loading="lazy"
+                decoding="async"
+              />
+            </a>
+          </figure>
+          <figure class="gallery-item">
+            <a
+              class="gallery-open"
+              href="assets/products/20260111_163436-2.jpg"
+              aria-label="Увеличи: Персонализирани дървени ключодържатели с автомобилни марки"
+            >
+              <img
+                src="assets/products/20260111_163436-2.jpg"
+                width="800"
+                height="800"
+                alt="Персонализирани дървени ключодържатели с автомобилни марки"
+                loading="lazy"
+                decoding="async"
+              />
+            </a>
+          </figure>
+          <figure class="gallery-item">
+            <a
+              class="gallery-open"
+              href="assets/products/B0336199-BC7E-4DC8-A714-27EA968D3CB1_1_201_a-2.jpeg"
+              aria-label="Увеличи: Дървени ключодържатели Mercedes-Benz, BMW и Jeep в опаковка"
+            >
+              <img
+                src="assets/products/B0336199-BC7E-4DC8-A714-27EA968D3CB1_1_201_a-2.jpeg"
+                width="800"
+                height="800"
+                alt="Дървени ключодържатели Mercedes-Benz, BMW и Jeep в опаковка"
+                loading="lazy"
+                decoding="async"
+              />
+            </a>
+          </figure>
+          <figure class="gallery-item">
+            <a
+              class="gallery-open"
+              href="assets/products/20260111_161439-2.jpg"
+              aria-label="Увеличи: Дървени ключодържатели Renault, BMW и Volkswagen"
+            >
+              <img
+                src="assets/products/20260111_161439-2.jpg"
+                width="800"
+                height="800"
+                alt="Дървени ключодържатели Renault, BMW и Volkswagen"
+                loading="lazy"
+                decoding="async"
+              />
+            </a>
+          </figure>
+          <figure class="gallery-item">
+            <a
+              class="gallery-open"
+              href="assets/products/20260111_161618-2.jpg"
+              aria-label="Увеличи: Дървени ключодържатели Suzuki, Ford, Peugeot и Jeep"
+            >
+              <img
+                src="assets/products/20260111_161618-2.jpg"
+                width="800"
+                height="800"
+                alt="Дървени ключодържатели Suzuki, Ford, Peugeot и Jeep"
+                loading="lazy"
+                decoding="async"
+              />
+            </a>
+          </figure>
+          <figure class="gallery-item">
+            <a
+              class="gallery-open"
+              href="assets/products/823D4033-0777-4886-B96E-208D2ED4AFCD_1_201_a-2.jpeg"
+              aria-label="Увеличи: Кръгли дървени ключодържатели Honda, Fiat, Seat, Ford и Audi"
+            >
+              <img
+                src="assets/products/823D4033-0777-4886-B96E-208D2ED4AFCD_1_201_a-2.jpeg"
+                width="800"
+                height="800"
+                alt="Кръгли дървени ключодържатели Honda, Fiat, Seat, Ford и Audi"
+                loading="lazy"
+                decoding="async"
+              />
+            </a>
+          </figure>
+          <figure class="gallery-item">
+            <a
+              class="gallery-open"
+              href="assets/products/D09159B1-3915-4130-BC23-7BD22466BDD8_1_201_a-2.jpeg"
+              aria-label="Увеличи: Дървени ключодържатели Mitsubishi, Suzuki и Volvo в опаковка"
+            >
+              <img
+                src="assets/products/D09159B1-3915-4130-BC23-7BD22466BDD8_1_201_a-2.jpeg"
+                width="800"
+                height="800"
+                alt="Дървени ключодържатели Mitsubishi, Suzuki и Volvo в опаковка"
+                loading="lazy"
+                decoding="async"
+              />
+            </a>
+          </figure>
+          <figure class="gallery-item">
+            <a
+              class="gallery-open"
+              href="assets/products/C3A9CC97-DEAA-46D9-85B1-327C9D0F581D_1_201_a-2.jpeg"
+              aria-label="Увеличи: Дървени поставки за визитки SAVOV PRO с персонализирани имена"
+            >
+              <img
+                src="assets/products/C3A9CC97-DEAA-46D9-85B1-327C9D0F581D_1_201_a-2.jpeg"
+                width="800"
+                height="800"
+                alt="Дървени поставки за визитки SAVOV PRO с персонализирани имена"
+                loading="lazy"
+                decoding="async"
+              />
+            </a>
+          </figure>
+          <figure class="gallery-item">
+            <a
+              class="gallery-open"
+              href="assets/products/E03AFA0E-3410-4468-8A12-5650C84A705A_1_201_a-2.jpeg"
+              aria-label="Увеличи: Дървена кутия за визитки SAVOV PRO с лазерно гравиране"
+            >
+              <img
+                src="assets/products/E03AFA0E-3410-4468-8A12-5650C84A705A_1_201_a-2.jpeg"
+                width="800"
+                height="800"
+                alt="Дървена кутия за визитки SAVOV PRO с лазерно гравиране"
+                loading="lazy"
+                decoding="async"
+              />
+            </a>
+          </figure>
+          <figure class="gallery-item">
+            <a
+              class="gallery-open"
+              href="assets/products/20260111_163111-2.jpg"
+              aria-label="Увеличи: Бамбукови химикалки с автомобилни лога върху дървен фон"
+            >
+              <img
+                src="assets/products/20260111_163111-2.jpg"
+                width="800"
+                height="800"
+                alt="Бамбукови химикалки с автомобилни лога върху дървен фон"
+                loading="lazy"
+                decoding="async"
+              />
+            </a>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <section id="about" class="section section-alt" aria-labelledby="about-title">
       <div class="container narrow">
-        <h2>Контакт</h2>
-        <p class="section-intro">
-          За сега използвай пощенска връзка — по-късно можеш да добавиш форма или външна услуга за изпращане на имейли.
-        </p>
+        <h2 id="about-title" class="section-heading">За нас</h2>
         <p>
-          <a class="contact-email" href="mailto:hello@example.com">hello@example.com</a>
+          SAVOV PRO Ltd. се занимава с персонализирани подаръци и индивидуални изделия — от идеята до готовия продукт.
+          Работим с частни клиенти и фирми, които търсят качествено изпълнение и ясна комуникация по време на поръчката.
         </p>
+      </div>
+    </section>
+
+    <section id="contact" class="section section-alt" aria-labelledby="contact-title">
+      <div class="container narrow">
+        <h2 id="contact-title" class="section-heading">Контакт</h2>
+        <p class="section-intro">
+          Обадете се или пишете ни в социалните мрежи за оферта, поръчка или въпрос.
+        </p>
+        <ul class="contact-list">
+          <li>
+            <span class="contact-label">Телефон</span>
+            <a class="contact-link" href="tel:+359884121606">+359 884 121 606</a>
+          </li>
+          <li>
+            <span class="contact-label">Имейл</span>
+            <a class="contact-link" href="mailto:info@savovpro.com">info@savovpro.com</a>
+          </li>
+          <li>
+            <span class="contact-label">Локация</span>
+            <span>с. Късак, област Смолян</span>
+          </li>
+          <li>
+            <span class="contact-label">Социални мрежи</span>
+            <span class="contact-social-links">
+              <a href="https://www.facebook.com/savovpro" target="_blank" rel="noopener noreferrer" title="Facebook — savovpro" aria-label="Facebook — savovpro">savovpro</a>
+              <span class="contact-social-sep" aria-hidden="true">·</span>
+              <a href="https://www.instagram.com/savovpro" target="_blank" rel="noopener noreferrer" title="Instagram — savovpro" aria-label="Instagram — savovpro">savovpro</a>
+              <span class="contact-social-sep" aria-hidden="true">·</span>
+              <a href="https://www.tiktok.com/@savovpro" target="_blank" rel="noopener noreferrer" title="TikTok — @savovpro" aria-label="TikTok — @savovpro">@savovpro</a>
+            </span>
+          </li>
+        </ul>
+        <div class="contact-cta">
+          <a class="btn btn-primary btn-wide" href="tel:+359884121606" aria-label="Обадете се на +359 884 121 606">Обади се</a>
+        </div>
       </div>
     </section>
   </main>
 
+  <dialog class="gallery-lightbox" id="gallery-lightbox" aria-label="Преглед на снимка от галерията">
+    <div class="gallery-lightbox-frame">
+      <button type="button" class="gallery-lightbox-close" aria-label="Затвори">
+        <span aria-hidden="true">×</span>
+      </button>
+      <button type="button" class="gallery-lightbox-nav gallery-lightbox-prev" aria-label="Предишна снимка" hidden>
+        <span aria-hidden="true">‹</span>
+      </button>
+      <button type="button" class="gallery-lightbox-nav gallery-lightbox-next" aria-label="Следваща снимка" hidden>
+        <span aria-hidden="true">›</span>
+      </button>
+      <img class="gallery-lightbox-img" alt="" decoding="async" />
+    </div>
+  </dialog>
+
   <footer class="site-footer">
     <div class="container footer-inner">
-      <p>© <span id="year"></span> Savov Pro. Всички права запазени.</p>
-      <p class="footer-note">Хостинг: GitHub Pages · <a href="https://pages.github.com/">Документация</a></p>
+      <img
+        class="footer-logo"
+        src="assets/logo/logo-signature.svg"
+        width="339"
+        height="98"
+        alt="SAVOV PRO"
+        loading="lazy"
+        decoding="async"
+      />
+      <p class="footer-tagline" lang="en">Made specially for you.</p>
+      <p class="footer-copy">© <span id="year"></span> SAVOV PRO Ltd. Всички права запазени.</p>
     </div>
   </footer>
 
