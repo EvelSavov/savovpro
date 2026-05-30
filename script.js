@@ -34,171 +34,8 @@
     });
   });
 
-  var contactDialog = document.getElementById("contact-dialog");
-  var contactForm = document.getElementById("contact-form");
-  var contactSuccess = document.getElementById("contact-form-success");
-  var contactStatus = document.getElementById("contact-form-status");
-  var contactOpeners = document.querySelectorAll(".js-open-contact-form");
-  var contactClosers = document.querySelectorAll("[data-close-contact]");
-  var web3formsMeta = document.querySelector('meta[name="web3forms-access-key"]');
-  var web3formsKey = web3formsMeta ? (web3formsMeta.getAttribute("content") || "").trim() : "";
-  var contactAccessKeyHidden = document.getElementById("contact-form-access-key");
-  var contactSubjectHidden = document.getElementById("contact-form-subject");
-  var contactRedirectHidden = document.getElementById("contact-form-redirect");
-
-  if (contactAccessKeyHidden && web3formsKey) {
-    contactAccessKeyHidden.value = web3formsKey;
-  }
-
-  function buildContactReturnUrl() {
-    var url = new URL(window.location.origin + window.location.pathname);
-    url.searchParams.set("contact", "sent");
-    url.hash = window.location.hash || "contact";
-    return url.toString();
-  }
-
-  function openContactDialogWithSuccess() {
-    if (!contactDialog || typeof contactDialog.showModal !== "function") return;
-    if (contactForm) contactForm.hidden = true;
-    if (contactSuccess) contactSuccess.hidden = false;
-    if (contactStatus) contactStatus.hidden = true;
-    setOpen(false);
-    contactDialog.showModal();
-  }
-
-  function showContactSubmitError(message) {
-    if (contactStatus) {
-      contactStatus.textContent =
-        message ||
-        "Изпращането не успя. Опитайте отново или пишете директно на info@savovpro.com.";
-      contactStatus.classList.add("is-error");
-      contactStatus.hidden = false;
-    }
-    var submitBtn = contactForm && contactForm.querySelector('[type="submit"]');
-    if (submitBtn) {
-      submitBtn.disabled = false;
-      submitBtn.removeAttribute("aria-busy");
-    }
-  }
-
-  function resetContactFormView() {
-    if (!contactForm || !contactSuccess) return;
-    contactForm.hidden = false;
-    contactForm.reset();
-    contactSuccess.hidden = true;
-    if (contactStatus) {
-      contactStatus.hidden = true;
-      contactStatus.textContent = "";
-      contactStatus.classList.remove("is-error");
-    }
-    var submitBtn = contactForm.querySelector('[type="submit"]');
-    if (submitBtn) {
-      submitBtn.disabled = false;
-      submitBtn.removeAttribute("aria-busy");
-    }
-  }
-
-  function openContactDialog() {
-    if (!contactDialog || typeof contactDialog.showModal !== "function") return;
-    resetContactFormView();
-    setOpen(false);
-    contactDialog.showModal();
-    var firstField = contactForm && contactForm.querySelector("input:not([name='_honey'])");
-    if (firstField) {
-      window.setTimeout(function () {
-        firstField.focus();
-      }, 0);
-    }
-  }
-
-  function closeContactDialog() {
-    if (!contactDialog || !contactDialog.open) return;
-    contactDialog.close();
-  }
-
-  contactOpeners.forEach(function (btn) {
-    btn.addEventListener("click", openContactDialog);
-  });
-
-  contactClosers.forEach(function (btn) {
-    btn.addEventListener("click", closeContactDialog);
-  });
-
-  if (contactDialog) {
-    contactDialog.addEventListener("close", resetContactFormView);
-    contactDialog.addEventListener("click", function (e) {
-      if (e.target === contactDialog) closeContactDialog();
-    });
-  }
-
-  if (new URLSearchParams(window.location.search).get("contact") === "sent") {
-    openContactDialogWithSuccess();
-    history.replaceState(null, "", window.location.pathname + (window.location.hash || "#contact"));
-  }
-
-  if (contactForm) {
-    contactForm.addEventListener("submit", function (e) {
-      e.preventDefault();
-
-      var honey = contactForm.querySelector('[name="_honey"]');
-      if (honey && honey.value.trim()) return;
-
-      if (!contactForm.checkValidity()) {
-        contactForm.reportValidity();
-        return;
-      }
-
-      var topic = contactForm.querySelector('[name="topic"]');
-      var email = contactForm.querySelector('[name="email"]');
-      var message = contactForm.querySelector('[name="message"]');
-
-      if (!web3formsKey) {
-        var topicVal = topic ? topic.value.trim() : "";
-        var emailVal = email ? email.value.trim() : "";
-        var messageVal = message ? message.value.trim() : "";
-        var mailSubject = encodeURIComponent("[SAVOV PRO] " + (topicVal || "Запитване"));
-        var mailBody = encodeURIComponent(
-          "Имейл за обратна връзка: " + emailVal + "\n\n" + messageVal
-        );
-        window.location.href =
-          "mailto:info@savovpro.com?subject=" + mailSubject + "&body=" + mailBody;
-        closeContactDialog();
-        contactForm.reset();
-        return;
-      }
-
-      var submitBtn = contactForm.querySelector('[type="submit"]');
-      if (submitBtn) {
-        submitBtn.disabled = true;
-        submitBtn.setAttribute("aria-busy", "true");
-      }
-      if (contactStatus) {
-        contactStatus.hidden = true;
-        contactStatus.classList.remove("is-error");
-      }
-
-      if (contactSubjectHidden) {
-        contactSubjectHidden.value =
-          "[SAVOV PRO] " + (topic ? topic.value.trim() : "Запитване");
-      }
-      if (contactRedirectHidden) {
-        contactRedirectHidden.value = buildContactReturnUrl();
-      }
-      if (contactAccessKeyHidden) {
-        contactAccessKeyHidden.value = web3formsKey;
-      }
-
-      HTMLFormElement.prototype.submit.call(contactForm);
-    });
-  }
-
   document.addEventListener("keydown", function (e) {
-    if (e.key !== "Escape") return;
-    if (contactDialog && contactDialog.open) {
-      closeContactDialog();
-      return;
-    }
-    setOpen(false);
+    if (e.key === "Escape") setOpen(false);
   });
 
   window.addEventListener("resize", function () {
@@ -293,5 +130,104 @@
     });
 
     startAutoplay();
+  }
+
+  var lightbox = document.getElementById("gallery-lightbox");
+  if (lightbox) {
+    var lightboxImg = lightbox.querySelector(".gallery-lightbox-img");
+    var closeBtn = lightbox.querySelector(".gallery-lightbox-close");
+    var prevBtn = lightbox.querySelector(".gallery-lightbox-prev");
+    var nextBtn = lightbox.querySelector(".gallery-lightbox-next");
+    var galleryLinks = Array.prototype.slice.call(document.querySelectorAll(".gallery-open"));
+    var galleryIndex = 0;
+    var showNav = galleryLinks.length > 1;
+
+    function showGallerySlide(i) {
+      if (!galleryLinks.length) return;
+      galleryIndex = ((i % galleryLinks.length) + galleryLinks.length) % galleryLinks.length;
+      var link = galleryLinks[galleryIndex];
+      var thumb = link.querySelector("img");
+      lightboxImg.src = link.getAttribute("href");
+      lightboxImg.alt = thumb ? thumb.getAttribute("alt") || "" : "";
+      if (prevBtn) prevBtn.hidden = !showNav;
+      if (nextBtn) nextBtn.hidden = !showNav;
+    }
+
+    function openGallery(i) {
+      showGallerySlide(i);
+      if (typeof lightbox.showModal === "function") {
+        lightbox.showModal();
+      } else {
+        lightbox.setAttribute("open", "");
+      }
+      document.body.classList.add("lightbox-open");
+    }
+
+    function isGalleryOpen() {
+      return lightbox.open || lightbox.hasAttribute("open");
+    }
+
+    function closeGallery() {
+      if (isGalleryOpen()) {
+        if (typeof lightbox.close === "function") {
+          lightbox.close();
+        } else {
+          lightbox.removeAttribute("open");
+        }
+      }
+      document.body.classList.remove("lightbox-open");
+      lightboxImg.removeAttribute("src");
+    }
+
+    galleryLinks.forEach(function (link, i) {
+      link.addEventListener("click", function (e) {
+        e.preventDefault();
+        openGallery(i);
+      });
+    });
+
+    if (closeBtn) {
+      closeBtn.addEventListener("click", closeGallery);
+    }
+
+    if (prevBtn) {
+      prevBtn.addEventListener("click", function () {
+        showGallerySlide(galleryIndex - 1);
+      });
+    }
+
+    if (nextBtn) {
+      nextBtn.addEventListener("click", function () {
+        showGallerySlide(galleryIndex + 1);
+      });
+    }
+
+    lightbox.addEventListener("click", function (e) {
+      if (e.target === lightbox) closeGallery();
+    });
+
+    lightbox.addEventListener("close", function () {
+      document.body.classList.remove("lightbox-open");
+      lightboxImg.removeAttribute("src");
+    });
+
+    lightbox.addEventListener("cancel", function (e) {
+      e.preventDefault();
+      closeGallery();
+    });
+
+    document.addEventListener("keydown", function (e) {
+      if (!isGalleryOpen()) return;
+      if (e.key === "Escape") {
+        e.preventDefault();
+        closeGallery();
+      } else if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        showGallerySlide(galleryIndex - 1);
+      } else if (e.key === "ArrowRight") {
+        e.preventDefault();
+        showGallerySlide(galleryIndex + 1);
+      }
+    });
   }
 })();
