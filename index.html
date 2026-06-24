@@ -19,6 +19,7 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <div id="fb-root"></div>
   <a class="skip-link" href="#main">Към съдържанието</a>
 
   <header class="site-header">
@@ -50,6 +51,7 @@
         <ul>
           <li><a href="#services">Услуги</a></li>
           <li><a href="#gallery">Галерия</a></li>
+          <li><a href="configurator.html">Персонализирай</a></li>
           <li><a href="#about">За нас</a></li>
           <li><a href="#contact">Контакт</a></li>
         </ul>
@@ -69,7 +71,7 @@
           <p class="hero-tags">• Стикери • 3D Принтиране • Лазерно Гравиране • Персонализирани сувенири и авто аксесоари.</p>
           <div class="hero-actions">
             <a class="btn btn-primary" href="#services">Виж услугите</a>
-            <a class="btn btn-outline" href="#contact">Свържи се с нас</a>
+            <a class="btn btn-outline" href="configurator.html">Персонализирай продукт</a>
           </div>
           <div class="hero-social" aria-label="Социални мрежи">
             <a class="social-btn" href="https://www.facebook.com/savovpro" target="_blank" rel="noopener noreferrer" aria-label="Facebook — savovpro">
@@ -563,6 +565,26 @@
       </div>
     </section>
 
+    <section id="social" class="section" aria-labelledby="social-title">
+      <div class="container">
+        <h2 id="social-title" class="section-heading">Следвайте ни</h2>
+        <p class="section-intro">Вижте последните ни публикации и продукти директно от Facebook.</p>
+        <div class="social-feed">
+          <div
+            class="fb-page"
+            data-href="https://www.facebook.com/savovpro"
+            data-tabs="timeline"
+            data-width="500"
+            data-height="600"
+            data-small-header="true"
+            data-adapt-container-width="true"
+            data-hide-cover="false"
+            data-show-facepile="false"
+          ></div>
+        </div>
+      </div>
+    </section>
+
     <section id="about" class="section section-alt" aria-labelledby="about-title">
       <div class="container narrow">
         <h2 id="about-title" class="section-heading">За нас</h2>
@@ -595,11 +617,11 @@
           <li>
             <span class="contact-label">Социални мрежи</span>
             <span class="contact-social-links">
-              <a href="https://www.facebook.com/savovpro" target="_blank" rel="noopener noreferrer" title="Facebook — savovpro" aria-label="Facebook — savovpro">savovpro</a>
+              <a class="contact-social-link" href="https://www.facebook.com/savovpro" target="_blank" rel="noopener noreferrer" title="Facebook — savovpro" aria-label="Facebook — savovpro">Facebook</a>
               <span class="contact-social-sep" aria-hidden="true">·</span>
-              <a href="https://www.instagram.com/savovpro" target="_blank" rel="noopener noreferrer" title="Instagram — savovpro" aria-label="Instagram — savovpro">savovpro</a>
+              <a class="contact-social-link" href="https://www.instagram.com/savovpro" target="_blank" rel="noopener noreferrer" title="Instagram — savovpro" aria-label="Instagram — savovpro">Instagram</a>
               <span class="contact-social-sep" aria-hidden="true">·</span>
-              <a href="https://www.tiktok.com/@savovpro" target="_blank" rel="noopener noreferrer" title="TikTok — @savovpro" aria-label="TikTok — @savovpro">@savovpro</a>
+              <a class="contact-social-link" href="https://www.tiktok.com/@savovpro" target="_blank" rel="noopener noreferrer" title="TikTok — @savovpro" aria-label="TikTok — @savovpro">TikTok</a>
             </span>
           </li>
         </ul>
@@ -642,5 +664,15 @@
   </footer>
 
   <script src="script.js"></script>
+  <script>
+    (function(d, s, id) {
+      if (d.getElementById(id)) return;
+      var js = d.createElement(s); js.id = id;
+      js.src = "https://connect.facebook.net/bg_BG/sdk.js#xfbml=1&version=v22.0";
+      js.crossOrigin = "anonymous";
+      js.async = true; js.defer = true;
+      d.getElementsByTagName('head')[0].appendChild(js);
+    }(document, 'script', 'facebook-jssdk'));
+  </script>
 </body>
 </html>

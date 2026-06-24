@@ -1,0 +1,40 @@
+window.CFG_CONFIG = {
+  id: 'stickers',
+  title: 'Стикери',
+  currency: '€',
+  size: {
+    minW: 2,
+    maxW: 120,
+    minH: 2,
+    maxH: 120,
+    defaultW: 10,
+    defaultH: 5,
+  },
+  quickSizes: [
+    { label: '5 × 5', w: 5, h: 5 },
+    { label: '10 × 5', w: 10, h: 5 },
+    { label: '10 × 10', w: 10, h: 10 },
+    { label: '15 × 5', w: 15, h: 5 },
+    { label: '20 × 10', w: 20, h: 10 },
+    { label: '60 × 30', w: 60, h: 30 },
+    { label: '120 × 60', w: 120, h: 60 },
+  ],
+  pricing: {
+    minPrice: 2,
+    setupFee: 1,
+    pricePerCm2: 0.07,
+  },
+  fonts: [
+    { id: 'Montserrat', label: 'Montserrat — модерен' },
+    { id: 'Playfair Display', label: 'Playfair Display — класически' },
+    { id: 'Caveat', label: 'Caveat — ръкописен' },
+    { id: 'Dancing Script', label: 'Dancing Script — курсив' },
+    { id: 'DM Sans', label: 'DM Sans — минималистичен' },
+  ],
+  defaults: {
+    widthCm: 10,
+    heightCm: 5,
+    removeBg: true,
+    font: 'Montserrat',
+  },
+};

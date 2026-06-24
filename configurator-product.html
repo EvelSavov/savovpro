@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0a0a0a" />
+  <meta name="description" content="Персонализирай своя продукт онлайн — избери модел, текст и шрифт. SAVOV PRO Ltd." />
+  <title>SAVOV PRO Конфигуратор</title>
+  <link rel="icon" href="assets/logo/logo-mark.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700&family=Montserrat:ital,wght@0,600;0,700;1,600&family=Playfair+Display:wght@400;700&family=Caveat:wght@400;700&family=Dancing+Script:wght@400;700&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="assets/css/configurator.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header-backdrop" aria-hidden="true"></div>
+    <div class="container header-inner cfg-header-inner">
+      <a class="logo-link" href="index.html" aria-label="SAVOV PRO Ltd. — начало">
+        <img
+          class="logo-svg"
+          src="assets/logo/logo-full.svg"
+          width="140"
+          height="40"
+          alt="SAVOV PRO"
+          loading="eager"
+          decoding="async"
+        />
+      </a>
+      <span class="cfg-header-title" id="cfg-category-title">Конфигуратор</span>
+      <a class="cfg-header-back" id="cfg-back-link" href="configurator.html">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+        <span class="cfg-header-back-label">Категории</span>
+      </a>
+    </div>
+  </header>
+
+  <div class="cfg-wrap">
+    <section class="section">
+      <div class="container">
+        <div class="cfg-layout">
+
+          <!-- Canvas preview -->
+          <div class="cfg-preview">
+            <div class="cfg-canvas-toolbar">
+              <div style="display:flex;gap:0.35rem;">
+                <button class="cfg-icon-btn" id="kc-undo" type="button" disabled title="Отмени (Ctrl+Z)" aria-label="Отмени">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"/><path d="M3 13a9 9 0 1 0 2.1-5.9"/></svg>
+                </button>
+                <button class="cfg-icon-btn" id="kc-redo" type="button" disabled title="Повтори (Ctrl+Y)" aria-label="Повтори">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 7v6h-6"/><path d="M21 13a9 9 0 1 1-2.1-5.9"/></svg>
+                </button>
+              </div>
+              <button class="cfg-engrave-toggle" id="kc-engrave-sim" type="button" title="Симулирай ефекта на гравиране">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                Гравиране
+              </button>
+              <div style="display:flex;gap:0.35rem;">
+                <button class="cfg-icon-btn" id="kc-snap" type="button" title="Центрирай елемента" aria-label="Центрирай">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/></svg>
+                </button>
+                <button class="cfg-icon-btn" id="kc-download" type="button" title="Свали превю като PNG" aria-label="Свали">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                </button>
+              </div>
+            </div>
+            <canvas id="kc-canvas" width="440" height="440"></canvas>
+            <p class="cfg-hint">Кликни върху елемент за да го избереш &middot; Плъзни за да го местиш</p>
+            <p id="kc-side-indicator" class="cfg-side-indicator" style="display:none;"></p>
+          </div>
+
+          <!-- Controls -->
+          <div class="cfg-controls">
+
+            <!-- ═══ 0. СЛОЕВЕ ═══ -->
+            <div class="cfg-acc is-open" id="acc-layers">
+              <button class="cfg-acc-head" type="button" aria-expanded="true">
+                <span class="cfg-acc-title">Слоеве</span>
+                <svg class="cfg-acc-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <div class="cfg-acc-body">
+                <div class="cfg-acc-inner">
+                  <div class="cfg-layers-add-row">
+                    <button type="button" id="kc-add-text" class="cfg-layer-add-btn">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M5 4v3h5.5v12h3V7H19V4z"/></svg>
+                      Текст
+                    </button>
+                  </div>
+                  <div id="kc-layers-list" class="cfg-layers-list"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ═══ 1. МОДЕЛ ═══ -->
+            <div class="cfg-acc is-open" id="acc-model">
+              <button class="cfg-acc-head" type="button" aria-expanded="true">
+                <span class="cfg-acc-title">Модел</span>
+                <svg class="cfg-acc-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <div class="cfg-acc-body">
+                <div class="cfg-acc-inner">
+                  <div class="cfg-model-grid" id="kc-model-grid"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ═══ 2. ГРАВИРАНЕ ═══ -->
+            <div class="cfg-acc is-open" id="acc-engrave">
+              <button class="cfg-acc-head" type="button" aria-expanded="true">
+                <span class="cfg-acc-title">Гравиране</span>
+                <svg class="cfg-acc-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <div class="cfg-acc-body">
+                <div class="cfg-acc-inner">
+                  <div class="cfg-group" id="kc-sides-group">
+                    <div class="cfg-option-cards">
+                      <button class="cfg-option-card cfg-sides-btn is-active" data-sides="1" type="button">
+                        <span class="cfg-option-card__icon">
+                          <svg width="32" height="26" viewBox="0 0 32 26" fill="none"><rect x="6" y="1" width="20" height="24" rx="3" stroke="currentColor" stroke-width="1.5"/><line x1="10" y1="9" x2="22" y2="9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><line x1="11" y1="14" x2="21" y2="14" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><line x1="13" y1="19" x2="19" y2="19" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+                        </span>
+                        <span class="cfg-option-card__title">Едностранно</span>
+                        <span class="cfg-option-card__desc">Гравиране само от едната страна</span>
+                      </button>
+                      <button class="cfg-option-card cfg-sides-btn" data-sides="2" type="button">
+                        <span class="cfg-option-card__icon">
+                          <svg width="46" height="26" viewBox="0 0 46 26" fill="none"><rect x="1" y="1" width="18" height="24" rx="2" stroke="currentColor" stroke-width="1.5"/><line x1="5" y1="9" x2="15" y2="9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="5" y1="14" x2="15" y2="14" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="6" y1="19" x2="12" y2="19" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/><rect x="27" y="1" width="18" height="24" rx="2" stroke="currentColor" stroke-width="1.5"/><line x1="31" y1="9" x2="41" y2="9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="31" y1="14" x2="41" y2="14" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="32" y1="19" x2="38" y2="19" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>
+                        </span>
+                        <span class="cfg-option-card__title">Двустранно</span>
+                        <span class="cfg-option-card__price"><span id="kc-extra-double">+3 €</span></span>
+                      </button>
+                    </div>
+
+                    <!-- Step 2: Same or different design — shown only when double-sided -->
+                    <div id="kc-design-mode" style="display:none; margin-top:0.75rem;">
+                      <span class="cfg-sub-label">Дизайн на двете страни</span>
+                      <div class="cfg-option-cards">
+                        <button class="cfg-option-card cfg-dmode-btn is-active" data-dmode="same" type="button">
+                          <span class="cfg-option-card__icon">
+                            <svg width="46" height="26" viewBox="0 0 46 26" fill="none"><rect x="1" y="1" width="18" height="24" rx="2" stroke="currentColor" stroke-width="1.5"/><line x1="5" y1="9" x2="15" y2="9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="6" y1="14" x2="14" y2="14" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><text x="23" y="16" text-anchor="middle" fill="currentColor" font-size="9" font-weight="bold">=</text><rect x="27" y="1" width="18" height="24" rx="2" stroke="currentColor" stroke-width="1.5"/><line x1="31" y1="9" x2="41" y2="9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="32" y1="14" x2="40" y2="14" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+                          </span>
+                          <span class="cfg-option-card__title">Еднакъв</span>
+                          <span class="cfg-option-card__desc">Двете страни — един дизайн</span>
+                        </button>
+                        <button class="cfg-option-card cfg-dmode-btn" data-dmode="diff" type="button">
+                          <span class="cfg-option-card__icon">
+                            <svg width="46" height="26" viewBox="0 0 46 26" fill="none"><rect x="1" y="1" width="18" height="24" rx="2" stroke="currentColor" stroke-width="1.5"/><line x1="5" y1="9" x2="15" y2="9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="6" y1="14" x2="14" y2="14" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><text x="23" y="16" text-anchor="middle" fill="currentColor" font-size="9" font-weight="bold">≠</text><rect x="27" y="1" width="18" height="24" rx="2" stroke="currentColor" stroke-width="1.5"/><circle cx="36" cy="10" r="4" stroke="currentColor" stroke-width="1.3"/><line x1="31" y1="19" x2="41" y2="19" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+                          </span>
+                          <span class="cfg-option-card__title">Различен</span>
+                          <span class="cfg-option-card__price">+2 €</span>
+                          <span class="cfg-option-card__desc">Всяка страна — свой дизайн</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Step 3: Side switcher — shown only when different designs -->
+                    <div id="kc-side-tabs" style="display:none; margin-top:0.75rem;">
+                      <span class="cfg-sub-label">Редактирай страна</span>
+                      <div class="cfg-side-tabs-wrap">
+                        <button class="cfg-side-card cfg-side-tab is-active" data-side="0" type="button">
+                          <span class="cfg-side-card__num">1</span>
+                          <span class="cfg-side-card__text">Лице</span>
+                          <span class="cfg-side-card__sub">Страна 1</span>
+                        </button>
+                        <button class="cfg-side-card cfg-side-tab" data-side="1" type="button">
+                          <span class="cfg-side-card__num">2</span>
+                          <span class="cfg-side-card__text">Гръб</span>
+                          <span class="cfg-side-card__sub">Страна 2</span>
+                        </button>
+                      </div>
+                      <p class="cfg-hint" style="margin-top:0.4rem; font-size:0.72rem;">Кликни за да превключиш и редактираш всяка страна независимо</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ═══ 3. ТЕКСТ ═══ -->
+            <div class="cfg-acc is-open" id="acc-text">
+              <button class="cfg-acc-head" type="button" aria-expanded="true">
+                <span class="cfg-acc-title">Текст</span>
+                <svg class="cfg-acc-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <div class="cfg-acc-body">
+                <div class="cfg-acc-inner">
+                  <!-- Templates -->
+                  <div class="cfg-group">
+                    <span class="cfg-label">Шаблони <span class="cfg-label-note">(бърз старт)</span></span>
+                    <div class="cfg-templates" id="kc-templates"></div>
+                  </div>
+
+                  <!-- Text inputs (linked to selected text layer) -->
+                  <p id="kc-text-layer-hint" class="cfg-text-layer-hint"></p>
+                  <div id="kc-text-inputs">
+                    <!-- Line 1 -->
+                    <div class="cfg-group">
+                      <label class="cfg-label" for="kc-line1">Ред 1</label>
+                      <input
+                        class="cfg-input"
+                        id="kc-line1"
+                        type="text"
+                        maxlength="24"
+                        placeholder="Напр. ИВАН ПЕТРОВ"
+                        value="ИМЕ"
+                        autocomplete="off"
+                        spellcheck="false"
+                      />
+                      <div class="cfg-char-row"><span class="cfg-char-count" id="kc-line1-count">3 / 24</span></div>
+                    </div>
+
+                    <!-- Line 2 -->
+                    <div class="cfg-group">
+                      <label class="cfg-label" for="kc-line2">
+                        Ред 2 <span class="cfg-label-note">(по желание)</span>
+                      </label>
+                      <input
+                        class="cfg-input"
+                        id="kc-line2"
+                        type="text"
+                        maxlength="24"
+                        placeholder="Напр. 2025 или марка"
+                        autocomplete="off"
+                        spellcheck="false"
+                      />
+                      <div class="cfg-char-row"><span class="cfg-char-count" id="kc-line2-count">0 / 24</span></div>
+                    </div>
+
+                    <!-- Symbols -->
+                    <div class="cfg-group">
+                      <span class="cfg-label">Символи <span class="cfg-label-note">(добавят се в активния ред)</span></span>
+                      <div class="cfg-symbols">
+                        <button class="cfg-sym-btn" data-sym="★" type="button" title="Звезда">★</button>
+                        <button class="cfg-sym-btn" data-sym="✦" type="button" title="Диамантена звезда">✦</button>
+                        <button class="cfg-sym-btn" data-sym="✧" type="button" title="Звезда контур">✧</button>
+                        <button class="cfg-sym-btn" data-sym="♥" type="button" title="Сърце">♥</button>
+                        <button class="cfg-sym-btn" data-sym="❤" type="button" title="Сърце пълно">❤</button>
+                        <button class="cfg-sym-btn" data-sym="♦" type="button" title="Диамант">♦</button>
+                        <button class="cfg-sym-btn" data-sym="∞" type="button" title="Безкрайност">∞</button>
+                        <button class="cfg-sym-btn" data-sym="☾" type="button" title="Луна">☾</button>
+                        <button class="cfg-sym-btn" data-sym="☀" type="button" title="Слънце">☀</button>
+                        <button class="cfg-sym-btn" data-sym="✿" type="button" title="Цвете">✿</button>
+                        <button class="cfg-sym-btn" data-sym="⚓" type="button" title="Котва">⚓</button>
+                        <button class="cfg-sym-btn" data-sym="✈" type="button" title="Самолет">✈</button>
+                        <button class="cfg-sym-btn" data-sym="⚜" type="button" title="Флор де лис">⚜</button>
+                        <button class="cfg-sym-btn" data-sym="❋" type="button" title="Цвете 2">❋</button>
+                        <button class="cfg-sym-btn" data-sym="·" type="button" title="Точка разделител">·</button>
+                        <button class="cfg-sym-btn" data-sym="—" type="button" title="Тире">—</button>
+                      </div>
+                    </div>
+
+                    <!-- Font -->
+                    <div class="cfg-group">
+                      <label class="cfg-label" for="kc-font">Шрифт</label>
+                      <select class="cfg-select" id="kc-font">
+                        <option value="Montserrat">Montserrat — модерен</option>
+                        <option value="Playfair Display">Playfair Display — класически</option>
+                        <option value="Caveat">Caveat — ръкописен</option>
+                        <option value="Dancing Script">Dancing Script — курсив</option>
+                        <option value="DM Sans">DM Sans — минималистичен</option>
+                      </select>
+                    </div>
+
+                    <!-- Letter spacing -->
+                    <div class="cfg-group">
+                      <span class="cfg-label">Разредка на буквите</span>
+                      <div class="cfg-range-row">
+                        <input class="cfg-range" id="kc-spacing" type="range" min="-1" max="12" value="0" step="0.5" />
+                        <span class="cfg-range-val" id="kc-spacing-val">0</span>
+                      </div>
+                    </div>
+                  </div><!-- /kc-text-inputs -->
+                </div>
+              </div>
+            </div>
+
+            <!-- ═══ 4. ИКОНИ & ЛОГО ═══ -->
+            <div class="cfg-acc" id="acc-media">
+              <button class="cfg-acc-head" type="button" aria-expanded="false">
+                <span class="cfg-acc-title">Икони &amp; Лого</span>
+                <svg class="cfg-acc-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <div class="cfg-acc-body">
+                <div class="cfg-acc-inner">
+                  <!-- Clipart library — clicking an icon adds a new icon layer -->
+                  <div class="cfg-group">
+                    <span class="cfg-label">Клипарт <span class="cfg-label-note">(добавя нов слой)</span></span>
+                    <div class="cfg-clipart-search-row">
+                      <input
+                        type="search"
+                        id="kc-clipart-q"
+                        class="cfg-input cfg-clipart-q"
+                        placeholder="Търси — сърце, котка, корона…"
+                        autocomplete="off"
+                        spellcheck="false"
+                      />
+                      <button type="button" id="kc-clipart-search-btn" class="cfg-icon-btn" title="Търси">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        Търси
+                      </button>
+                    </div>
+                    <div class="cfg-clipart-tabs" id="kc-clipart-tabs"></div>
+                    <div class="cfg-clipart-grid" id="kc-clipart-grid"></div>
+                  </div>
+
+                  <!-- Upload image — adds a new image layer -->
+                  <div class="cfg-group">
+                    <span class="cfg-label">Собствено лого <span class="cfg-label-note">(добавя нов слой)</span></span>
+                    <label class="cfg-upload-label">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="17 8 12 3 7 8"/>
+                        <line x1="12" y1="3" x2="12" y2="15"/>
+                      </svg>
+                      Избери файл
+                      <input type="file" id="kc-upload" accept="image/*" style="display:none;" />
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ═══ 5. СТИЛ ═══ -->
+            <div class="cfg-acc" id="acc-style">
+              <button class="cfg-acc-head" type="button" aria-expanded="false">
+                <span class="cfg-acc-title">Стил &amp; Позиция</span>
+                <svg class="cfg-acc-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <div class="cfg-acc-body">
+                <div class="cfg-acc-inner">
+                  <!-- Size -->
+                  <div class="cfg-group">
+                    <span class="cfg-label" id="kc-size-label">Размер на текста</span>
+                    <div class="cfg-range-row">
+                      <input class="cfg-range" id="kc-size" type="range" min="10" max="38" value="18" />
+                      <span class="cfg-range-val" id="kc-size-val">18</span>
+                    </div>
+                  </div>
+
+                  <!-- Rotation -->
+                  <div class="cfg-group">
+                    <span class="cfg-label">Завъртане</span>
+                    <div class="cfg-range-row">
+                      <input class="cfg-range" id="kc-rotation" type="range" min="-45" max="45" value="0" />
+                      <span class="cfg-range-val" id="kc-rotation-val">0°</span>
+                    </div>
+                  </div>
+
+                  <!-- Color -->
+                  <div class="cfg-group">
+                    <span class="cfg-label">Цвят на гравирането</span>
+                    <div class="cfg-colors">
+                      <button class="cfg-color-btn is-active" data-color="#2D1005" style="background:#2D1005;" title="Тъмно кафяво"></button>
+                      <button class="cfg-color-btn" data-color="#1a1a1a" style="background:#1a1a1a;" title="Черно"></button>
+                      <button class="cfg-color-btn" data-color="#C9A227" style="background:#C9A227;" title="Злато"></button>
+                      <button class="cfg-color-btn" data-color="#8B4513" style="background:#8B4513;" title="Медено кафяво"></button>
+                      <button class="cfg-color-btn cfg-color-btn--light" data-color="#F0F0F0" style="background:#F0F0F0;" title="Бяло"></button>
+                    </div>
+                  </div>
+
+                  <!-- Reset -->
+                  <button class="cfg-reset-btn" id="kc-reset" type="button">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                      <path d="M3 3v5h5"/>
+                    </svg>
+                    Върни по подразбиране
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Price + CTA (always visible) -->
+            <div class="cfg-price-row">
+              <span class="cfg-label" style="margin:0;">Ориентировъчна цена</span>
+              <span style="font-size:1.35rem;font-weight:700;color:var(--gold);" id="kc-price-display">9 €</span>
+            </div>
+
+            <div class="cfg-cta">
+              <a id="btn-wa" class="btn btn-primary" href="#" target="_blank" rel="noopener noreferrer">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                </svg>
+                Поръчай в WhatsApp
+              </a>
+              <a id="btn-email" class="btn btn-outline" href="#">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <rect x="2" y="4" width="20" height="16" rx="2"/>
+                  <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+                </svg>
+                Поръчай по имейл
+              </a>
+            </div>
+
+          </div><!-- /cfg-controls -->
+        </div><!-- /cfg-layout -->
+      </div>
+    </section>
+  </div>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <img
+        class="footer-logo"
+        src="assets/logo/logo-signature.svg"
+        width="339"
+        height="98"
+        alt="SAVOV PRO"
+        loading="lazy"
+        decoding="async"
+      />
+      <p class="footer-tagline" lang="en">Made specially for you.</p>
+      <p class="footer-copy">© <span id="year"></span> SAVOV PRO Ltd. Всички права запазени.</p>
+    </div>
+  </footer>
+
+  <!-- ── Sticky order bar (visible only on mobile ≤600px) ── -->
+  <div class="cfg-mobile-order-bar" aria-label="Поръчай">
+    <a id="btn-wa-mobile" class="btn btn-primary" href="#" target="_blank" rel="noopener noreferrer" style="gap:0.4rem;">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+      WhatsApp
+    </a>
+    <a id="btn-email-mobile" class="btn btn-outline" href="#">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+      Имейл
+    </a>
+  </div>
+
+  <script src="assets/js/configurator/categories.js"></script>
+  <script src="assets/js/configurator/boot-engrave.js"></script>
+
+</body>
+</html>

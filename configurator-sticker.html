@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0a0a0a" />
+  <meta name="description" content="Поръчай текстови стикери или качи SVG/PNG дизайн с персонализиран размер. SAVOV PRO Ltd." />
+  <meta property="og:type" content="website" />
+  <meta property="og:locale" content="bg_BG" />
+  <meta property="og:title" content="SAVOV PRO — Стикери" />
+  <meta property="og:description" content="Създай текстов или PNG/SVG стикер с точен размер. Преглед на canvas и SVG за плотер." />
+  <meta property="og:site_name" content="SAVOV PRO Ltd." />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="SAVOV PRO — Стикери" />
+  <meta name="twitter:description" content="Създай текстов или PNG/SVG стикер с точен размер. Преглед на canvas и SVG за плотер." />
+  <title>SAVOV PRO — Стикери</title>
+  <link rel="icon" href="assets/logo/logo-mark.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,700&family=Montserrat:wght@500;700&family=Playfair+Display:wght@700&family=Caveat:wght@700&family=Dancing+Script:wght@700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="assets/css/configurator.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header-backdrop" aria-hidden="true"></div>
+    <div class="container header-inner cfg-header-inner">
+      <a class="logo-link" href="index.html" aria-label="SAVOV PRO Ltd. — начало">
+        <img class="logo-svg" src="assets/logo/logo-full.svg" width="140" height="40" alt="SAVOV PRO" loading="eager" decoding="async" />
+      </a>
+      <span class="cfg-header-title" id="cfg-category-title">Стикери</span>
+      <a class="cfg-header-back" href="configurator.html">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+        <span class="cfg-header-back-label">Категории</span>
+      </a>
+    </div>
+  </header>
+
+  <div class="cfg-wrap">
+    <section class="section">
+      <div class="container">
+        <div class="cfg-layout st-layout st-mode-basic" id="st-layout">
+
+          <div class="cfg-preview st-preview">
+            <div class="cfg-canvas-toolbar">
+              <span class="st-dim-label" id="st-dim-label">10 × 5 cm</span>
+              <div class="st-toolbar-actions">
+                <button class="cfg-icon-btn" id="st-undo" type="button" disabled title="Отмени (Ctrl+Z)" aria-label="Отмени">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"/><path d="M3 13a9 9 0 1 0 2.1-5.9"/></svg>
+                </button>
+                <button class="cfg-icon-btn" id="st-redo" type="button" disabled title="Повтори (Ctrl+Y)" aria-label="Повтори" data-st-mode="advanced">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 7v6h-6"/><path d="M21 13a9 9 0 1 1-2.1-5.9"/></svg>
+                </button>
+                <span class="st-toolbar-sep" aria-hidden="true" data-st-mode="advanced"></span>
+                <button class="cfg-icon-btn" id="st-zoom-out" type="button" title="Намали" aria-label="Намали" data-st-mode="advanced">−</button>
+                <span class="st-zoom-label" id="st-zoom-label" data-st-mode="advanced">125%</span>
+                <button class="cfg-icon-btn" id="st-zoom-in" type="button" title="Увеличи" aria-label="Увеличи" data-st-mode="advanced">+</button>
+                <button class="cfg-icon-btn" id="st-zoom-reset" type="button" title="Нулирай zoom" aria-label="Нулирай zoom" data-st-mode="advanced">1:1</button>
+                <span class="st-toolbar-sep" aria-hidden="true" data-st-mode="advanced"></span>
+                <button class="cfg-icon-btn" id="st-fullscreen" type="button" title="Цял екран" aria-label="Цял екран" data-st-mode="advanced">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+                </button>
+                <button class="cfg-icon-btn" id="st-snap" type="button" title="Центрирай слой" aria-label="Центрирай" data-st-mode="advanced">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/></svg>
+                </button>
+                <button class="cfg-icon-btn" id="st-fit-layer" type="button" title="Побери в stикера" aria-label="Побери в stикера">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="1"/><path d="M9 9h6v6H9z"/><path d="M4 9V4h5"/><path d="M15 4h5v5"/><path d="M20 15v5h-5"/><path d="M9 20H4v-5"/></svg>
+                </button>
+                <button class="cfg-icon-btn is-active" id="st-snap-guides" type="button" title="Магнитно подравняване: вкл." aria-label="Магнитно подравняване" aria-pressed="true" data-st-mode="advanced">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 4v6a6 6 0 0 0 12 0V4"/><line x1="6" y1="10" x2="6" y2="20"/><line x1="18" y1="10" x2="18" y2="20"/></svg>
+                </button>
+                <button class="cfg-icon-btn" id="st-download" type="button" title="Свали превю (PNG)" aria-label="Свали превю PNG" data-st-mode="advanced">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                </button>
+                <button class="cfg-icon-btn" id="st-download-svg" type="button" title="SVG за плотер (точен размер)" aria-label="SVG за плотер">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M8 13h2v5H8z"/><path d="M14 13h2v5h-2z"/></svg>
+                </button>
+              </div>
+            </div>
+            <div class="st-canvas-viewport" id="st-canvas-viewport">
+              <p class="st-bounds-warn" id="st-bounds-warn" hidden>
+                <span id="st-bounds-warn-text">⚠ Един или повече слоя излизат извън размера на стикера</span>
+                <button type="button" class="st-bounds-fit-btn" id="st-bounds-fit">Побери в стикера</button>
+              </p>
+              <p class="st-draft-notice" id="st-draft-notice" hidden role="status">Възстановен последен дизайн</p>
+              <canvas id="st-canvas" width="520" height="520"></canvas>
+            </div>
+            <div class="st-zoom-row" data-st-mode="advanced">
+              <span class="st-zoom-row-label">Приближение</span>
+              <button class="cfg-icon-btn st-zoom-row-btn" id="st-zoom-out-2" type="button" title="Намали" aria-label="Намали">−</button>
+              <input class="cfg-range st-zoom-slider" id="st-zoom-slider" type="range" min="40" max="600" value="125" step="5" aria-label="Приближение" />
+              <button class="cfg-icon-btn st-zoom-row-btn" id="st-zoom-in-2" type="button" title="Увеличи" aria-label="Увеличи">+</button>
+            </div>
+            <p class="cfg-hint" data-st-mode="advanced">Кликни слой · Space/плъзгане = местиш изгледа · Shift+scroll = pan · 1:1 = нулирай · <button type="button" class="st-hint-link" id="st-fullscreen-hint">цял екран</button> · <button type="button" class="st-hint-link" id="st-shortcuts-btn">клавиши</button></p>
+            <p class="cfg-hint st-basic-hint" id="st-basic-hint">Пиши текста · влачи на canvas · избери размер · поръчай</p>
+          </div>
+
+          <div class="cfg-controls">
+            <div class="st-mode-toggle" role="group" aria-label="Режим на конфигуратор">
+              <button type="button" class="st-mode-btn is-active" id="st-mode-basic" aria-pressed="true">Лесно</button>
+              <button type="button" class="st-mode-btn" id="st-mode-advanced" aria-pressed="false">Напреднал</button>
+            </div>
+            <button type="button" class="st-start-over-btn" id="st-start-over">Започни отначало</button>
+
+            <div class="st-onboarding st-basic-only" id="st-onboarding">
+              <p class="st-onboarding-title">Как работи</p>
+              <ol class="st-onboarding-steps">
+                <li>Напиши текст или качи PNG/SVG</li>
+                <li>Избери размер и мести слоя на canvas</li>
+                <li>Поръчай в WhatsApp или свали SVG за плотер</li>
+              </ol>
+              <button type="button" class="st-onboarding-dismiss" id="st-onboarding-dismiss">Разбрах</button>
+            </div>
+
+            <div class="cfg-acc is-open" id="acc-layers">
+              <button class="cfg-acc-head" type="button" aria-expanded="true">
+                <span class="cfg-acc-title">Слоеве</span>
+                <svg class="cfg-acc-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <div class="cfg-acc-body">
+                <div class="cfg-acc-inner">
+                  <div class="cfg-layers-add-row">
+                    <button type="button" id="st-add-text" class="cfg-layer-add-btn">+ Текст</button>
+                    <label class="cfg-layer-add-btn cfg-layer-add-btn--file">
+                      + SVG / PNG
+                      <input type="file" id="st-upload" accept=".svg,.png,image/svg+xml,image/png" hidden />
+                    </label>
+                  </div>
+                  <div class="st-fit-basic-row st-basic-only">
+                    <button type="button" class="btn btn-outline st-fit-basic-btn" id="st-fit-basic">Побери в стикера</button>
+                  </div>
+                  <div class="st-layers-tools" data-st-mode="advanced">
+                    <p class="st-align-hint">Клик = избор · Shift = добави · ⌘ = премахни · ⌘A = всички · Space = мести изгледа</p>
+                    <span class="st-align-sub">Към стикера</span>
+                    <div class="st-align-grid" id="st-align-sticker"></div>
+                    <span class="st-align-sub">Между избраните <span class="cfg-label-note">(2+ слоя)</span></span>
+                    <div class="st-align-grid" id="st-align-layers"></div>
+                  </div>
+                  <div id="st-layers-list" class="cfg-layers-list"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="cfg-acc" id="acc-clipart" data-st-mode="advanced">
+              <button class="cfg-acc-head" type="button" aria-expanded="false">
+                <span class="cfg-acc-title">Икони &amp; клипарт</span>
+                <svg class="cfg-acc-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <div class="cfg-acc-body">
+                <div class="cfg-acc-inner">
+                  <div class="cfg-group">
+                    <span class="cfg-label">Търсене <span class="cfg-label-note">(добавя нов слой)</span></span>
+                    <div class="cfg-clipart-search-row">
+                      <input type="search" id="st-clipart-q" class="cfg-input cfg-clipart-q" placeholder="Търси — сърце, котка, BMW…" autocomplete="off" spellcheck="false" />
+                      <button type="button" id="st-clipart-search-btn" class="cfg-icon-btn" title="Търси" aria-label="Търси">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                      </button>
+                    </div>
+                    <div class="cfg-clipart-tabs" id="st-clipart-tabs"></div>
+                    <div class="cfg-clipart-grid" id="st-clipart-grid"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="cfg-acc is-open" id="acc-edit">
+              <button class="cfg-acc-head" type="button" aria-expanded="true">
+                <span class="cfg-acc-title">Редакция</span>
+                <svg class="cfg-acc-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <div class="cfg-acc-body">
+                <div class="cfg-acc-inner">
+                  <p id="st-layer-hint" class="cfg-text-layer-hint" data-st-mode="advanced"></p>
+
+                  <div id="st-edit-text">
+                    <div class="cfg-group">
+                      <label class="cfg-label" for="st-text">Текст</label>
+                      <textarea class="cfg-input st-text-input" id="st-text" rows="4" maxlength="200" placeholder="Напр. SAVOV PRO&#10;Made for you" autocomplete="off" spellcheck="false"></textarea>
+                    </div>
+                    <div class="cfg-group" data-st-mode="advanced">
+                      <span class="cfg-label">Подравняване на текста</span>
+                      <div class="st-align-row" id="st-text-align">
+                        <button type="button" class="st-align-btn" data-text-align="left" title="Ляво" aria-label="Ляво">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="14" y2="12"/><line x1="4" y1="18" x2="18" y2="18"/></svg>
+                        </button>
+                        <button type="button" class="st-align-btn is-active" data-text-align="center" title="Център" aria-label="Център">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="7" y1="12" x2="17" y2="12"/><line x1="5" y1="18" x2="19" y2="18"/></svg>
+                        </button>
+                        <button type="button" class="st-align-btn" data-text-align="right" title="Дясно" aria-label="Дясно">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="10" y1="12" x2="20" y2="12"/><line x1="6" y1="18" x2="20" y2="18"/></svg>
+                        </button>
+                      </div>
+                    </div>
+                    <div class="cfg-group">
+                      <label class="cfg-label" for="st-font">Шрифт</label>
+                      <select class="cfg-select" id="st-font"></select>
+                    </div>
+                    <div class="cfg-group" data-st-mode="advanced">
+                      <span class="cfg-label">Разредка</span>
+                      <div class="cfg-range-row">
+                        <input class="cfg-range" id="st-spacing" type="range" min="-1" max="12" value="0" step="0.5" />
+                        <span class="cfg-range-val" id="st-spacing-val">0</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div id="st-edit-image" hidden>
+                    <p class="st-file-name" id="st-file-name"></p>
+                    <label class="st-bg-toggle" data-st-mode="advanced">
+                      <input type="checkbox" id="st-remove-bg" checked />
+                      Премахни фона автоматично <span class="cfg-label-note">(PNG)</span>
+                    </label>
+                  </div>
+
+                  <p class="st-canvas-edit-hint" data-st-mode="advanced">Местене, мащаб и завъртане — от маркерите на canvas</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="cfg-acc is-open">
+              <button class="cfg-acc-head" type="button" aria-expanded="true">
+                <span class="cfg-acc-title">Размер на стикера</span>
+                <svg class="cfg-acc-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <div class="cfg-acc-body">
+                <div class="cfg-acc-inner">
+                  <div class="st-size-row" data-st-mode="advanced">
+                    <div class="cfg-group st-size-field">
+                      <label class="cfg-label" for="st-width">Ширина (cm)</label>
+                      <input class="cfg-input" id="st-width" type="number" min="2" max="120" step="0.5" value="10" />
+                    </div>
+                    <span class="st-size-x" aria-hidden="true">×</span>
+                    <div class="cfg-group st-size-field">
+                      <label class="cfg-label" for="st-height">Височина (cm)</label>
+                      <input class="cfg-input" id="st-height" type="number" min="2" max="120" step="0.5" value="5" />
+                    </div>
+                  </div>
+                  <div class="cfg-group">
+                    <span class="cfg-label">Бърз избор</span>
+                    <div class="st-pill-grid" id="st-quick-sizes"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="cfg-price-row">
+              <span class="cfg-label" style="margin:0;">Ориентировъчна цена</span>
+              <span style="font-size:1.35rem;font-weight:700;color:var(--gold);" id="st-price-display">—</span>
+            </div>
+
+            <div class="st-plotter-dl-row st-basic-only">
+              <button type="button" class="btn btn-outline" id="st-download-svg-basic">SVG за плотер</button>
+              <p class="cfg-hint st-plotter-dl-hint">Точен размер · бяло върху прозрачно · контур за рязане</p>
+            </div>
+
+            <div class="cfg-cta">
+              <a id="btn-wa" class="btn btn-primary" href="#" target="_blank" rel="noopener noreferrer">Поръчай в WhatsApp</a>
+              <a id="btn-email" class="btn btn-outline" href="#" data-st-mode="advanced">Поръчай по имейл</a>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <img class="footer-logo" src="assets/logo/logo-signature.svg" width="339" height="98" alt="SAVOV PRO" loading="lazy" decoding="async" />
+      <p class="footer-tagline" lang="en">Made specially for you.</p>
+      <p class="footer-copy">© <span id="year"></span> SAVOV PRO Ltd. Всички права запазени.</p>
+    </div>
+  </footer>
+
+  <dialog class="st-shortcuts-dialog" id="st-shortcuts-dialog" aria-labelledby="st-shortcuts-title">
+    <div class="st-shortcuts-dialog__panel">
+      <header class="st-shortcuts-dialog__head">
+        <h2 class="st-shortcuts-dialog__title" id="st-shortcuts-title">Клавишни комбинации</h2>
+        <button type="button" class="st-shortcuts-dialog__close" id="st-shortcuts-close-x" aria-label="Затвори">×</button>
+      </header>
+      <dl class="st-shortcuts-list">
+        <div><dt>Space + плъзгане</dt><dd>Мести изгледа</dd></div>
+        <div><dt>Shift + scroll</dt><dd>Pan на canvas</dd></div>
+        <div><dt>Стрелки</dt><dd>Мести слой (Shift = 5px)</dd></div>
+        <div><dt>Ctrl/⌘ + Z</dt><dd>Отмени</dd></div>
+        <div><dt>Ctrl/⌘ + Y</dt><dd>Повтори</dd></div>
+        <div><dt>Ctrl/⌘ + A</dt><dd>Избери всички слоеве</dd></div>
+        <div><dt>Ctrl/⌘ + D</dt><dd>Дублирай слой</dd></div>
+        <div><dt>Delete / Backspace</dt><dd>Изтрий слой</dd></div>
+        <div><dt>Shift + клик</dt><dd>Добави към избора</dd></div>
+        <div><dt>⌘/Ctrl + клик</dt><dd>Премахни от избора</dd></div>
+        <div><dt>Escape</dt><dd>Изход от цял екран</dd></div>
+      </dl>
+      <button type="button" class="btn btn-outline st-shortcuts-dialog__done" id="st-shortcuts-close">Затвори</button>
+    </div>
+  </dialog>
+
+  <div class="cfg-mobile-order-bar" aria-label="Поръчай">
+    <a id="btn-wa-mobile" class="btn btn-primary" href="#" target="_blank" rel="noopener noreferrer">WhatsApp</a>
+    <a id="btn-email-mobile" class="btn btn-outline" href="#" data-st-mode="advanced">Имейл</a>
+  </div>
+
+  <script src="assets/js/configurator/categories.js"></script>
+  <script src="assets/js/configurator/boot-sticker.js"></script>
+</body>
+</html>
