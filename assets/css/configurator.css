@@ -558,6 +558,33 @@
     }
 
     /* CTA */
+    .cfg-order-exports {
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+      padding-top: 0.35rem;
+    }
+
+    .cfg-order-exports__btns {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .cfg-order-exports__btn,
+    .cfg-order-exports__btns .btn {
+      width: 100%;
+      justify-content: center;
+      min-height: 44px;
+      gap: 0.45rem;
+    }
+
+    .cfg-order-exports__hint {
+      margin: 0;
+      text-align: center;
+      line-height: 1.45;
+    }
+
     .cfg-cta {
       display: flex;
       flex-direction: column;
@@ -1861,23 +1888,6 @@
   justify-content: center;
 }
 
-.st-plotter-dl-row {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-}
-
-.st-plotter-dl-row .btn {
-  width: 100%;
-  justify-content: center;
-  min-height: 44px;
-}
-
-.st-plotter-dl-hint {
-  margin: 0;
-  text-align: center;
-}
-
 @media (max-width: 600px) {
   .st-layout.st-mode-basic .cfg-layer-add-btn {
     min-height: 48px;
@@ -1889,7 +1899,12 @@
   }
 
   .st-layout.st-mode-basic .st-fit-basic-btn,
-  .st-layout.st-mode-basic .st-plotter-dl-row .btn {
+  .st-layout.st-mode-basic .cfg-order-exports__btns .btn {
+    min-height: 50px;
+  }
+
+  .cfg-order-exports__btn,
+  .cfg-order-exports__btns .btn {
     min-height: 50px;
   }
 }

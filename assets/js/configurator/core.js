@@ -563,7 +563,7 @@
         lines.push(p + 'Шрифт:  ' + l.font);
       });
       if (iconLayers.length)  lines.push('Икони:  ' + iconLayers.map(function(l) { return l.iconId; }).join(', '));
-      if (imageLayers.length) lines.push('Лого:   да (приложено)');
+      if (imageLayers.length) lines.push('Лого:   да');
       return lines;
     }
 
@@ -599,6 +599,9 @@
           lines.push('  (все още не е настроена)');
         }
       }
+
+      lines.push('');
+      lines.push('Моля свали превю PNG от конфигуратора и го прикачи в чата.');
 
       return lines.join('\n');
     }
@@ -1373,12 +1376,15 @@
     });
 
     /* ── Download preview ── */
-    document.getElementById('kc-download').addEventListener('click', function () {
+    function downloadPreview() {
       var link = document.createElement('a');
       link.download = 'savovpro-preview.png';
       link.href = canvas.toDataURL('image/png');
       link.click();
-    });
+    }
+    document.getElementById('kc-download').addEventListener('click', downloadPreview);
+    var kcDownloadOrder = document.getElementById('kc-download-order');
+    if (kcDownloadOrder) kcDownloadOrder.addEventListener('click', downloadPreview);
 
     /* ── Character counters ── */
     function updateCharCount(inputId, val) {

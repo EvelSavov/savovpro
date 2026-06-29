@@ -2883,6 +2883,8 @@
         lines.push('  ' + (i + 1) + '. Файл: ' + layer.fileName + (layer.isSvg ? ' (SVG)' : ' (PNG)'));
       }
     });
+    lines.push('');
+    lines.push('Моля прикачи SVG за плотер (и PNG превю ако имаш).');
     return lines.join('\n');
   }
 
@@ -3950,7 +3952,7 @@
   document.getElementById('st-fullscreen').addEventListener('click', function () { toggleFullscreen(); });
   document.getElementById('st-fullscreen-hint').addEventListener('click', function () { toggleFullscreen(); });
 
-  document.getElementById('st-download').addEventListener('click', function () {
+  function downloadPreviewPng() {
     var off = document.createElement('canvas');
     off.width = CW;
     off.height = CH;
@@ -3959,7 +3961,9 @@
     link.download = 'savovpro-sticker-preview.png';
     link.href = off.toDataURL('image/png');
     link.click();
-  });
+  }
+  document.getElementById('st-download').addEventListener('click', downloadPreviewPng);
+  on('st-download-order-png', 'click', downloadPreviewPng);
 
   on('st-download-svg', 'click', downloadPlotterSvg);
   on('st-download-svg-basic', 'click', downloadPlotterSvg);
