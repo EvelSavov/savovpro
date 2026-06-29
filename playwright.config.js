@@ -1,6 +1,8 @@
 // @ts-check
 const { defineConfig, devices } = require('@playwright/test');
 
+const skipWebServer = process.env.PLAYWRIGHT_NO_WEBSERVER === '1';
+
 module.exports = defineConfig({
   testDir: 'tests/e2e',
   timeout: 90_000,
@@ -15,7 +17,7 @@ module.exports = defineConfig({
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
   },
-  webServer: {
+  webServer: skipWebServer ? undefined : {
     command: 'python3 -m http.server 8765',
     url: 'http://127.0.0.1:8765',
     reuseExistingServer: !process.env.CI,

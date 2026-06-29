@@ -3,10 +3,10 @@
   "private": true,
   "scripts": {
     "test": "playwright test --project=desktop --project=mobile",
-    "test:headed": "playwright test --headed --project=desktop",
+    "test:headed": "playwright test --headed --project=desktop --project=mobile",
     "test:ui": "playwright test --ui",
     "test:configurator": "playwright test tests/e2e",
-    "test:production": "playwright test tests/e2e/production.spec.js",
+    "test:production": "PLAYWRIGHT_NO_WEBSERVER=1 playwright test tests/e2e/production.spec.js --project=production",
     "test:report": "playwright show-report"
   },
   "devDependencies": {
