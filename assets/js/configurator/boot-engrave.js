@@ -8,6 +8,17 @@
   var yEl = document.getElementById('year');
   if (yEl) yEl.textContent = String(new Date().getFullYear());
 
+  function showBootError(message) {
+    var root = document.querySelector('.cfg-wrap') || document.getElementById('main');
+    if (!root) return;
+    root.innerHTML =
+      '<div class="container"><div class="cfg-boot-error" role="alert">' +
+      '<p class="cfg-boot-error__title">Конфигураторът не се зареди</p>' +
+      '<p class="cfg-boot-error__msg">' + message + '</p>' +
+      '<p><a class="btn btn-outline" href="configurator.html">← Към категориите</a></p>' +
+      '</div></div>';
+  }
+
   var params = new URLSearchParams(window.location.search);
   var catId = params.get('cat') || '';
   var meta = (window.CONFIGURATOR_CATEGORIES || []).find(function (c) {
@@ -23,15 +34,18 @@
   catalog.src = meta.catalog;
   catalog.onload = function () {
     if (!window.CFG_CONFIG || !CFG_CONFIG.models) {
-      window.location.replace('configurator.html');
+      showBootError('Липсва конфигурация за тази категория. Опитай отново или избери друга.');
       return;
     }
     var core = document.createElement('script');
     core.src = 'assets/js/configurator/core.js';
+    core.onerror = function () {
+      showBootError('Неуспешно зареждане на конфигуратора. Провери интернет връзката и опитай отново.');
+    };
     document.body.appendChild(core);
   };
   catalog.onerror = function () {
-    window.location.replace('configurator.html');
+    showBootError('Неуспешно зареждане на каталога. Провери интернет връзката и опитай отново.');
   };
   document.body.appendChild(catalog);
 })();

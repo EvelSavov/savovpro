@@ -1842,6 +1842,37 @@
   display: none;
 }
 
+.cfg-boot-error {
+  max-width: 36rem;
+  margin: 2.5rem auto;
+  padding: 1.5rem 1.35rem;
+  text-align: center;
+  background: rgba(220, 38, 38, 0.08);
+  border: 1px solid rgba(220, 38, 38, 0.35);
+  border-radius: var(--radius, 12px);
+}
+
+.cfg-boot-error__title {
+  margin: 0 0 0.5rem;
+  font-family: var(--font-heading, inherit);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text, #f4f4f5);
+}
+
+.cfg-boot-error__msg {
+  margin: 0 0 1rem;
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: var(--muted, #a1a1aa);
+}
+
+.kc-flow-hint {
+  text-align: left;
+  max-width: none;
+  margin-bottom: 0.65rem;
+}
+
 .st-layout.st-mode-basic .cfg-layer-drag,
 .st-layout.st-mode-basic .cfg-layer-dup {
   display: none !important;

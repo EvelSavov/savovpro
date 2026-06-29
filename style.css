@@ -621,6 +621,16 @@ button.btn {
   padding: 0;
 }
 
+a.card {
+  text-decoration: none;
+  color: inherit;
+}
+
+a.card:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+}
+
 .card {
   position: relative;
   isolation: isolate;
