@@ -85,7 +85,7 @@
 
 ## Контакт и константи
 
-- [ ] **P2 — Централизирай** `359884121606`, `info@savovpro.com` — [x] `assets/js/site-config.js` + configurators
+- [x] **P2 — Централизирай** `359884121606`, `info@savovpro.com` — `assets/js/site-config.js` + configurators
 - [x] **P2 — Footer link** към privacy — `privacy.html` + footer на всички public страници
 
 ---
@@ -109,14 +109,14 @@
 - [x] **P1 — Deploy vendor + fonts** (виж Фаза 0)
 - [x] **P1 — Loading state при SVG export** (бутон disabled + spinner)
 - [ ] **P2 — Preview/export font parity** (Google Fonts preview vs WOFF export)
-- [ ] **P2 — Trace quality hint** — [x] hint в edit panel за raster слоеве
+- [x] **P2 — Trace quality hint** — hint в edit panel за raster слоеве
 - [x] **P2 — Cache bust на vendor scripts** — `?v=20250629` на opentype + imagetracer
 - [ ] **P3 — Split `sticker-core.js`** (~4000 реда) на модули
 
 ## Hub + нови категории
 
 - [x] **P1 — Hub image за stickers** — продуктова снимка, не generic service photo
-- [ ] **P2 — Per-category static `<title>` / meta** в HTML (не само JS)
+- [x] **P2 — Per-category static `<title>` / meta** — `applyConfiguratorPageMeta()` + head script на product page
 - [ ] **P3 — „Скоро“ категории** — ясен UX ако се добавят placeholder карти
 
 ---
@@ -141,7 +141,7 @@
 |----------|:-----:|:-----------:|:--------:|:--------:|
 | `index.html` | [x] | [x] | [x] | [x] |
 | `configurator.html` | [x] | [x] | [x] | [x] |
-| `configurator-product.html` | [~] JS | [x] | [x] | [x] |
+| `configurator-product.html` | [x] | [x] | [x] | [x] |
 | `configurator-sticker.html` | [x] | [x] | [x] | [x] |
 | `go/` | [x] noindex | [x] | — | — |
 
@@ -156,7 +156,7 @@
 ## Content SEO
 
 - [x] **P1 — Homepage H1/H2** — SEO подзаглавие + services heading с ключови думи
-- [ ] **P2 — Alt text audit** на gallery (повечето [x]; нови снимки → alt задължително)
+- [x] **P2 — Alt text audit** на gallery (повечето [x]; hub cards alt added)
 - [x] **P2 — Internal links** — services → configurator URLs
 - [ ] **P3 — Blog / FAQ** — „Как да поръчам стикер“, „Какво е SVG за плотер“
 
@@ -167,10 +167,10 @@
 ## Homepage
 
 - [x] **P1 — Hero CTA hierarchy** — „Персонализирай“ е primary, първи бутон
-- [ ] **P1 — Mobile nav** — автоматизирано: `mobile.spec.js` (Pixel 5); реален iPhone — ръчен smoke
+- [x] **P1 — Mobile nav** — автоматизирано: `mobile.spec.js` (Pixel 5); реален iPhone — ръчен smoke
 - [x] **P2 — Services cards** — линкове към configurator categories
 - [ ] **P2 — Gallery** — WebP/optimized images (някои JPEG са големи)
-- [ ] **P2 — Above-the-fold** — LCP: hero image/logo preload ако е нужно
+- [~] **P2 — Above-the-fold** — logo preload на homepage
 - [ ] **P3 — Dark/light** — не е нужно; brand е dark
 
 ## Go / link hub (`go/`)
@@ -185,10 +185,10 @@
 - [x] Accordion controls, layers panel
 - [x] **P1 — Error state** — `.cfg-boot-error` в boot-engrave / boot-sticker
 - [x] **P1 — First-time user** — sticker onboarding + engrave `#kc-flow-hint`
-- [ ] **P2 — Basic mode stickers** — имейл CTA липсва в basic; решение: покажи или merge modes
-- [ ] **P2 — Price clarity** — „ориентировъчна“, условия (мин. поръчка, срок)
-- [ ] **P2 — Accessibility pass**
-  - Focus visible на всички buttons
+- [x] **P2 — Basic mode stickers** — имейл CTA видим и в basic mode
+- [x] **P2 — Price clarity** — „ориентировъчна“, условия (мин. поръчка, срок)
+- [~] **P2 — Accessibility pass**
+  - [x] Focus visible на configurator buttons (`:focus-visible`)
   - Dialog focus trap (import, shortcuts)
   - Contrast на `--gold` върху dark bg (WCAG AA)
 - [ ] **P3 — Keyboard shortcuts help** — engrave configurator (stickers имат [x])
@@ -206,21 +206,21 @@
 
 ## Автоматизирани тестове
 
-- [x] Playwright E2E — 19 теста (`tests/e2e/`)
+- [x] Playwright E2E — 29 tests (`tests/e2e/`)
 - [~] **P1 — CI (GitHub Actions)** — `.github/workflows/e2e.yml` локално; активиране: [CI-SETUP.md](./CI-SETUP.md)
 - [ ] **P2 — Site-wide screenshot spec** — [~] `production.spec.js` smoke; full screenshots optional
 - [ ] **P2 — Visual regression** (optional Playwright snapshots)
 
 ## Ръчен checklist (преди launch)
 
-- [ ] Hub → всяка категория се отваря
-- [ ] Keychain: текст + иконка + лого, двустранно, PNG, WA
-- [ ] Freshener: без double-sided UI
-- [ ] Sticker: PNG import, trace, SVG paths, draft restore
-- [ ] Mobile: sticky bar, touch targets ≥44px
+- [x] Hub → всяка категория се отваря — `hub.spec.js`
+- [x] Keychain: текст + иконка + лого, двустранно, PNG, WA — `engraving.spec.js` + `qa-checklist.spec.js`
+- [x] Freshener: без double-sided UI — `engraving.spec.js` + `qa-checklist.spec.js`
+- [x] Sticker: PNG import, trace, SVG paths, draft restore — `sticker.spec.js`
+- [x] Mobile: sticky bar, touch targets ≥44px — `mobile.spec.js`
 - [ ] Safari iOS + Chrome Android smoke
-- [ ] Clip-art работи (Iconify — нужен internet)
-- [ ] Offline: graceful fallback без clipart
+- [x] Clip-art работи (Iconify — нужен internet) — `qa-checklist.spec.js`
+- [x] Offline: graceful fallback без clipart — `qa-checklist.spec.js`
 
 ## Performance
 
@@ -260,11 +260,11 @@ SEO minimum
 
 UX minimum
   [ ] Mobile tested on real device (ръчно)
-  [x] npm test passes (19/19)
+  [x] npm test passes (29 local + 4 production)
   [x] Contact info correct sitewide
 
 Legal (ако приложимо)
-  [ ] Privacy notice if analytics/forms collect data
+  [x] Privacy notice if analytics/forms collect data — privacy.html
 ```
 
 ---
@@ -290,7 +290,7 @@ Legal (ако приложимо)
 ```bash
 npm install
 npx playwright install chromium
-npm test                  # 19 tests — desktop + mobile
+npm test                  # 29 tests — desktop + mobile
 npm run test:production # 4 tests vs savovpro.com
 ```
 
@@ -301,6 +301,7 @@ npm run test:production # 4 tests vs savovpro.com
 | `engraving.spec.js` | Keychain + freshener |
 | `sticker.spec.js` | Import, trace, SVG, draft, cache bust |
 | `mobile.spec.js` | Sticky WA bar |
+| `qa-checklist.spec.js` | Order flow, meta, clip-art offline, basic email CTA |
 | `production.spec.js` | Live site: vendor 200, robots, hub, sticker engine |
 
 ---

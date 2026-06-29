@@ -22,7 +22,7 @@
 ```bash
 npm ci
 npx playwright install chromium --with-deps
-npm test   # 19 tests, Desktop Chrome + Pixel 5 mobile
+npm test   # 29 tests, Desktop Chrome + Pixel 5 mobile
 ```
 
 При fail — artifact `playwright-report/` (7 дни).

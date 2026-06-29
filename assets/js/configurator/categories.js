@@ -47,3 +47,42 @@ window.getConfiguratorUrl = function (cat) {
   }
   return 'configurator-product.html?cat=' + encodeURIComponent(cat.id);
 };
+
+/** Updates document title + meta tags for engrave product pages (?cat=). */
+window.applyConfiguratorPageMeta = function (catId) {
+  var meta = (window.CONFIGURATOR_CATEGORIES || []).find(function (c) {
+    return c.id === catId;
+  });
+  if (!meta) return;
+
+  var pageTitle = 'SAVOV PRO — ' + meta.title;
+  document.title = pageTitle;
+
+  var desc = meta.metaDescription || meta.description || '';
+  var canonical =
+    'https://savovpro.com/configurator-product.html?cat=' + encodeURIComponent(catId);
+  var ogImage = meta.ogImage || meta.image || '';
+  if (ogImage && ogImage.indexOf('http') !== 0) {
+    ogImage = 'https://savovpro.com/' + ogImage.replace(/^\//, '');
+  }
+
+  function setMeta(attr, name, value) {
+    if (!value) return;
+    var el = document.querySelector('meta[' + attr + '="' + name + '"]');
+    if (el) el.setAttribute('content', value);
+  }
+
+  setMeta('name', 'description', desc);
+  setMeta('property', 'og:title', pageTitle);
+  setMeta('property', 'og:description', desc);
+  setMeta('property', 'og:url', canonical);
+  setMeta('name', 'twitter:title', pageTitle);
+  setMeta('name', 'twitter:description', desc);
+  if (ogImage) {
+    setMeta('property', 'og:image', ogImage);
+    setMeta('name', 'twitter:image', ogImage);
+  }
+
+  var link = document.querySelector('link[rel="canonical"]');
+  if (link) link.setAttribute('href', canonical);
+};

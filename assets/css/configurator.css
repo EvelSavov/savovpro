@@ -1980,3 +1980,18 @@
     min-height: 50px;
   }
 }
+
+/* Keyboard focus — WCAG visible indicator on configurator controls */
+.btn:focus-visible,
+.cfg-icon-btn:focus-visible,
+.cfg-model-btn:focus-visible,
+.cfg-sides-btn:focus-visible,
+.cfg-acc-head:focus-visible,
+.cfg-layer-item:focus-visible,
+.cfg-clipart-btn:focus-visible,
+.st-mode-btn:focus-visible,
+.cfg-reset-btn:focus-visible,
+.cfg-engrave-toggle:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}

@@ -28,6 +28,16 @@
   />
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="assets/css/configurator.css" />
+  <script src="assets/js/configurator/categories.js"></script>
+  <script>
+  (function () {
+    'use strict';
+    var catId = new URLSearchParams(window.location.search).get('cat') || '';
+    if (catId && typeof window.applyConfiguratorPageMeta === 'function') {
+      window.applyConfiguratorPageMeta(catId);
+    }
+  })();
+  </script>
 </head>
 <body>
   <header class="site-header">

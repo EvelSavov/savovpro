@@ -92,7 +92,7 @@
       if (url) card.href = url;
 
       card.innerHTML =
-        '<div class="cfg-hub-card__img"><img src="' + cat.image + '" alt="" loading="lazy" decoding="async" /></div>' +
+        '<div class="cfg-hub-card__img"><img src="' + cat.image + '" alt="' + cat.title + '" loading="lazy" decoding="async" /></div>' +
         '<span class="cfg-hub-card__title">' + cat.title + '</span>' +
         '<span class="cfg-hub-card__desc">' + cat.description + '</span>' +
         (cat.comingSoon ? '<span class="cfg-hub-card__badge">Скоро</span>' : '');

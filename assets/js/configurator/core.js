@@ -15,7 +15,11 @@
     }
 
     function applyCategoryUI() {
-      document.title = 'SAVOV PRO — ' + CFG.title;
+      if (typeof window.applyConfiguratorPageMeta === 'function') {
+        window.applyConfiguratorPageMeta(CFG.id);
+      } else {
+        document.title = 'SAVOV PRO — ' + CFG.title;
+      }
       var titleEl = document.getElementById('cfg-category-title');
       if (titleEl) titleEl.textContent = CFG.title;
       var sidesAcc = document.getElementById('acc-engrave');
