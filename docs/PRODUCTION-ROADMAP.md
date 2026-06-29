@@ -41,7 +41,7 @@
 | Configurator hub | [x] Стабилен |
 | Keychains / fresheners | [~] Autosave + start over; clip fallback (не mask PNG файлове) |
 | Stickers | [x] Vendor assets committed |
-| E2E тестове (Playwright) | [x] 19 теста — `npm test` + CI |
+| E2E тестове (Playwright) | [x] 21 local + 4 production — `npm test` / `npm run test:production` |
 | SEO infra | [~] robots + sitemap + canonical; GSC pending |
 | Order с файл | [~] Download CTA + точен WA текст; без file upload |
 
@@ -132,7 +132,7 @@
   - Disallow: `/go/` (вече noindex), `/test-results/`, `/playwright-report/`
 - [x] **P1 — `sitemap.xml`**
   - `index.html`, `configurator.html`, `configurator-product.html?cat=*`, `configurator-sticker.html?cat=stickers`
-  - [ ] Submit в Google Search Console
+  - [ ] Submit в Google Search Console — виж [GSC-SETUP.md](./GSC-SETUP.md)
 - [x] **P1 — Canonical URLs** на всички public страници
 
 ## Meta tags (липсват на повечето страници)
@@ -167,7 +167,7 @@
 ## Homepage
 
 - [x] **P1 — Hero CTA hierarchy** — „Персонализирай“ е primary, първи бутон
-- [ ] **P1 — Mobile nav** — тест на реално iPhone/Android (ръчно)
+- [ ] **P1 — Mobile nav** — автоматизирано: `mobile.spec.js` (Pixel 5); реален iPhone — ръчен smoke
 - [x] **P2 — Services cards** — линкове към configurator categories
 - [ ] **P2 — Gallery** — WebP/optimized images (някои JPEG са големи)
 - [ ] **P2 — Above-the-fold** — LCP: hero image/logo preload ако е нужно
@@ -207,7 +207,7 @@
 ## Автоматизирани тестове
 
 - [x] Playwright E2E — 19 теста (`tests/e2e/`)
-- [~] **P1 — CI (GitHub Actions)** — `.github/workflows/e2e.yml` създаден локално; **push блокиран** (PAT без `workflow` scope)
+- [~] **P1 — CI (GitHub Actions)** — `.github/workflows/e2e.yml` локално; активиране: [CI-SETUP.md](./CI-SETUP.md)
 - [ ] **P2 — Site-wide screenshot spec** — [~] `production.spec.js` smoke; full screenshots optional
 - [ ] **P2 — Visual regression** (optional Playwright snapshots)
 

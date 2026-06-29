@@ -2,7 +2,8 @@
   "name": "savovpro-website",
   "private": true,
   "scripts": {
-    "test": "playwright test",
+    "test": "playwright test --project=desktop --project=mobile",
+    "test:headed": "playwright test --headed --project=desktop",
     "test:ui": "playwright test --ui",
     "test:configurator": "playwright test tests/e2e",
     "test:production": "playwright test tests/e2e/production.spec.js",
