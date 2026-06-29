@@ -585,6 +585,28 @@
       line-height: 1.45;
     }
 
+    .cfg-price-note {
+      margin: 0.25rem 0 0;
+      font-size: 0.72rem;
+      opacity: 0.85;
+      text-align: center;
+    }
+
+    .footer-legal {
+      margin: 0.35rem 0 0;
+      font-size: 0.82rem;
+    }
+
+    .footer-legal a {
+      color: var(--text-muted);
+      text-decoration: underline;
+    }
+
+    .st-trace-quality-hint {
+      margin-top: 0.35rem;
+      font-size: 0.72rem;
+    }
+
     .cfg-cta {
       display: flex;
       flex-direction: column;

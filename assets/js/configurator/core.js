@@ -24,6 +24,15 @@
         state.sides = 1;
         state.sameDesign = true;
       }
+      var simBtn = document.getElementById('kc-engrave-sim');
+      if (simBtn) {
+        if (CFG_FEATURES.engraveSim === false) {
+          simBtn.style.display = 'none';
+          state.engraveSim = false;
+        } else {
+          simBtn.style.display = '';
+        }
+      }
     }
 
     function renderModelGrid() {
@@ -922,10 +931,10 @@
 
     function updateLinks() {
       var msg = buildMsg();
-      var waHref    = 'https://wa.me/359884121606?text=' + encodeURIComponent(msg);
-      var emailHref = 'mailto:info@savovpro.com'
-        + '?subject=' + encodeURIComponent('Поръчка: Персонализиран продукт')
-        + '&body='    + encodeURIComponent(msg);
+      var waHref = window.getWaLink ? getWaLink(msg) : 'https://wa.me/359884121606?text=' + encodeURIComponent(msg);
+      var emailHref = window.getEmailLink
+        ? getEmailLink('Поръчка: Персонализиран продукт', msg)
+        : 'mailto:info@savovpro.com?subject=' + encodeURIComponent('Поръчка: Персонализиран продукт') + '&body=' + encodeURIComponent(msg);
       document.getElementById('btn-wa').href    = waHref;
       document.getElementById('btn-email').href = emailHref;
       /* Sync mobile sticky bar buttons */

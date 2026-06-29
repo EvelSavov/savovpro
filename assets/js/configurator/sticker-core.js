@@ -2890,8 +2890,10 @@
 
   function updateLinks() {
     var msg = buildMsg();
-    var waHref = 'https://wa.me/359884121606?text=' + encodeURIComponent(msg);
-    var emailHref = 'mailto:info@savovpro.com?subject=' + encodeURIComponent('Поръчка: Стикери') + '&body=' + encodeURIComponent(msg);
+    var waHref = window.getWaLink ? getWaLink(msg) : 'https://wa.me/359884121606?text=' + encodeURIComponent(msg);
+    var emailHref = window.getEmailLink
+      ? getEmailLink('Поръчка: Стикери', msg)
+      : 'mailto:info@savovpro.com?subject=' + encodeURIComponent('Поръчка: Стикери') + '&body=' + encodeURIComponent(msg);
     ['btn-wa', 'btn-wa-mobile'].forEach(function (id) {
       var el = document.getElementById(id);
       if (el) el.href = waHref;

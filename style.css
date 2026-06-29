@@ -1143,3 +1143,26 @@ body.nav-open {
     max-height: min(480px, 58vw);
   }
 }
+
+.hero-seo-heading {
+  margin: 0.35rem 0 0;
+  font-size: clamp(0.95rem, 2.5vw, 1.1rem);
+  font-weight: 600;
+  color: var(--gold);
+  line-height: 1.35;
+}
+
+.footer-legal {
+  margin: 0.35rem 0 0;
+  font-size: 0.82rem;
+}
+
+.footer-legal a {
+  color: var(--text-muted);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.footer-legal a:hover {
+  color: var(--gold);
+}

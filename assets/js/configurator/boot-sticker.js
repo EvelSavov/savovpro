@@ -47,8 +47,8 @@
       return;
     }
     loadScript('assets/js/configurator/clipart.js', function () {
-      loadScript('assets/js/vendor/opentype.min.js', function () {
-        loadScript('assets/js/vendor/imagetracer.js', function () {
+      loadScript('assets/js/vendor/opentype.min.js?v=20250629', function () {
+        loadScript('assets/js/vendor/imagetracer.js?v=20250629', function () {
           loadScript('assets/js/configurator/sticker-vector.js?v=20250629', function () {
             loadScript('assets/js/configurator/sticker-core.js?v=20250629', function () {});
           });

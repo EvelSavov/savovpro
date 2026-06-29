@@ -25,12 +25,17 @@ module.exports = defineConfig({
     {
       name: 'desktop',
       use: { ...devices['Desktop Chrome'] },
-      testIgnore: '**/mobile.spec.js',
+      testIgnore: ['**/mobile.spec.js', '**/production.spec.js'],
     },
     {
       name: 'mobile',
       use: { ...devices['Pixel 5'] },
       testMatch: '**/mobile.spec.js',
+    },
+    {
+      name: 'production',
+      use: { ...devices['Desktop Chrome'] },
+      testMatch: '**/production.spec.js',
     },
   ],
 });
