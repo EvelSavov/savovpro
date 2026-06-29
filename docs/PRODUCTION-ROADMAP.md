@@ -26,14 +26,14 @@
 
 | Област | Статус |
 |--------|--------|
-| Homepage (`index.html`) | [~] Работи; липсват OG/social meta |
+| Homepage (`index.html`) | [x] OG/Twitter meta + JSON-LD |
 | Link hub (`go/`) | [x] noindex — OK за bio линкове |
 | Configurator hub | [x] Стабилен |
-| Keychains / fresheners | [~] Работи; без autosave, частични masks |
-| Stickers | [~] Най-развит; **vendor assets неcommit-нати** |
-| E2E тестове (Playwright) | [x] 15 теста — `npm test` |
-| SEO infra | [ ] robots, sitemap, JSON-LD |
-| Order с файл | [ ] WA/имейл = само текст |
+| Keychains / fresheners | [~] Autosave + start over; masks само round keychain |
+| Stickers | [x] Vendor assets committed |
+| E2E тестове (Playwright) | [x] 19 теста — `npm test` + CI |
+| SEO infra | [~] robots + sitemap + canonical; GSC pending |
+| Order с файл | [~] Download CTA + точен WA текст; без file upload |
 
 ---
 
@@ -62,13 +62,13 @@
 
 ## Order flow (всички конфигуратори)
 
-- [ ] **P0 — Ясен CTA „Свали дизайна“ преди WhatsApp**
-  - Engrave: `#kc-download` по-видим + текст „Свали и прикачи при поръчка“
+- [x] **P0 — Ясен CTA „Свали дизайна“ преди WhatsApp**
+  - Engrave: `#kc-download-order` + hint „Свали превю и го прикачи при поръчка“
   - Stickers: PNG preview + SVG plotter — двата export бутона преди WA
-- [ ] **P0 — Коригирай misleading текст в WA съобщението**
-  - `core.js` buildMsg не трябва да казва „лого приложено“, ако няма attachment
-  - Добави: „Моля свали превю/SVG от конфигуратора и го прикачи тук“
-- [ ] **P1 — Sticker order message**
+- [x] **P0 — Коригирай misleading текст в WA съобщението**
+  - `core.js` buildMsg: „Моля свали превю PNG от конфигуратора и го прикачи в чата.“
+  - Stickers: „Моля прикачи SVG за плотер (и PNG превю ако имаш).“
+- [x] **P1 — Sticker order message**
   - Напомняне за SVG plotter файла (не само PNG preview)
   - Опционално: quantity + бележки (премахнати по-рано)
 - [ ] **P2 — Реален file upload при поръчка**
@@ -88,9 +88,9 @@
 
 ## Ключодържатели + ароматизатори (`core.js`)
 
-- [ ] **P1 — Autosave / draft restore** (като stickers `localStorage`)
+- [x] **P1 — Autosave / draft restore** (като stickers `localStorage`)
 - [ ] **P1 — Mask PNG за всички модели** (сега само round keychain)
-- [ ] **P1 — „Започни отначало“** + потвърждение
+- [x] **P1 — „Започни отначало“** + потвърждение
 - [ ] **P2 — Import preview за лого** (preview + optional remove BG)
 - [ ] **P2 — Bounds warning** когато текст/лого излиза извън зоната
 - [ ] **P2 — `CFG.features.engraveSim`** — core.js да чете flag от catalog
@@ -98,8 +98,8 @@
 
 ## Стикери (`sticker-core.js`)
 
-- [ ] **P1 — Deploy vendor + fonts** (виж Фаза 0)
-- [ ] **P1 — Loading state при SVG export** (бутон disabled + spinner)
+- [x] **P1 — Deploy vendor + fonts** (виж Фаза 0)
+- [x] **P1 — Loading state при SVG export** (бутон disabled + spinner)
 - [ ] **P2 — Preview/export font parity** (Google Fonts preview vs WOFF export)
 - [ ] **P2 — Trace quality hint** в UI за сложни PNG
 - [ ] **P2 — Cache bust на vendor scripts** (не само core/vector)
@@ -107,7 +107,7 @@
 
 ## Hub + нови категории
 
-- [ ] **P1 — Hub image за stickers** — продуктова снимка, не generic service photo
+- [x] **P1 — Hub image за stickers** — продуктова снимка, не generic service photo
 - [ ] **P2 — Per-category static `<title>` / meta** в HTML (не само JS)
 - [ ] **P3 — „Скоро“ категории** — ясен UX ако се добавят placeholder карти
 
@@ -119,27 +119,27 @@
 
 ## Site-wide infra
 
-- [ ] **P1 — `robots.txt`**
+- [x] **P1 — `robots.txt`**
   - Allow: `/`, `/configurator*.html`, `/index.html`
   - Disallow: `/go/` (вече noindex), `/test-results/`, `/playwright-report/`
-- [ ] **P1 — `sitemap.xml`**
+- [x] **P1 — `sitemap.xml`**
   - `index.html`, `configurator.html`, `configurator-product.html?cat=*`, `configurator-sticker.html?cat=stickers`
-  - Submit в Google Search Console
-- [ ] **P1 — Canonical URLs** на всички public страници
+  - [ ] Submit в Google Search Console
+- [x] **P1 — Canonical URLs** на всички public страници
 
 ## Meta tags (липсват на повечето страници)
 
 | Страница | title | description | og:image | og:title |
 |----------|:-----:|:-----------:|:--------:|:--------:|
-| `index.html` | [~] | [x] | [ ] | [ ] |
-| `configurator.html` | [~] | [x] | [ ] | [ ] |
-| `configurator-product.html` | [~] JS | [~] generic | [ ] | [ ] |
-| `configurator-sticker.html` | [x] | [x] | [ ] | [~] partial OG |
+| `index.html` | [x] | [x] | [x] | [x] |
+| `configurator.html` | [x] | [x] | [x] | [x] |
+| `configurator-product.html` | [~] JS | [x] | [x] | [x] |
+| `configurator-sticker.html` | [x] | [x] | [x] | [x] |
 | `go/` | [x] noindex | [x] | — | — |
 
-- [ ] **P1 — `og:image`** — 1200×630 за homepage + configurator hub + stickers (единен brand image или per product)
-- [ ] **P1 — Twitter/X card** tags на homepage и hub
-- [ ] **P2 — JSON-LD**
+- [x] **P1 — `og:image`** — homepage + configurator hub + stickers (+ product page)
+- [x] **P1 — Twitter/X card** tags на homepage, hub, product и sticker страници
+- [x] **P2 — JSON-LD**
   - `LocalBusiness` на homepage (име, телефон, адрес Късак, sameAs social)
   - `Product` / `Offer` на configurator страници (ориентировъчна цена)
 - [ ] **P2 — Google Search Console** + Bing Webmaster — verify domain
@@ -198,8 +198,8 @@
 
 ## Автоматизирани тестове
 
-- [x] Playwright E2E — 15 теста (`tests/e2e/`)
-- [ ] **P1 — CI (GitHub Actions)** — `npm test` on push to main
+- [x] Playwright E2E — 19 теста (`tests/e2e/`)
+- [x] **P1 — CI (GitHub Actions)** — `npm test` on push to main / feature/social-media + PR
 - [ ] **P2 — Site-wide screenshot spec** — index, hub, all configurators @ desktop + mobile
 - [ ] **P2 — Visual regression** (optional Playwright snapshots)
 
@@ -252,7 +252,7 @@ SEO minimum
 
 UX minimum
   [ ] Mobile tested on real device
-  [ ] npm test passes (15/15)
+  [ ] npm test passes (19/19)
   [ ] Contact info correct sitewide
 
 Legal (ако приложимо)
@@ -271,7 +271,7 @@ Legal (ако приложимо)
 | 4 | Engrave autosave | 2 | 4–6 h |
 | 5 | Masks за всички engrave модели | 2 | 2–4 h |
 | 6 | Hub sticker image + per-page meta | 2–3 | 2 h |
-| 7 | GitHub Actions CI for tests | 5 | 1 h |
+| 7 | GitHub Actions CI for tests | 5 | [x] |
 | 8 | Homepage → configurator internal links | 3–4 | 2 h |
 | 9 | Clip-art refactor + sticker-core split | 2 | later |
 
@@ -282,12 +282,13 @@ Legal (ако приложимо)
 ```bash
 npm install
 npx playwright install chromium
-npm test                  # 15 tests — desktop + mobile
+npm test                  # 19 tests — desktop + mobile
 npm run test:ui           # watch in browser
 ```
 
 | Spec | Покрива |
 |------|---------|
+| `site.spec.js` | Homepage hero + configurator hub grid |
 | `hub.spec.js` | Hub categories |
 | `engraving.spec.js` | Keychain + freshener |
 | `sticker.spec.js` | Import, trace, SVG, draft, cache bust |
