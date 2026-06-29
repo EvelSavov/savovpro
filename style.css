@@ -863,19 +863,6 @@ body.lightbox-open {
   overflow: hidden;
 }
 
-/* Social feed */
-
-.social-feed {
-  display: flex;
-  justify-content: center;
-}
-
-.social-feed .fb-page,
-.social-feed .fb-page span,
-.social-feed .fb-page iframe {
-  max-width: 100% !important;
-}
-
 /* Contact */
 
 .contact-list {

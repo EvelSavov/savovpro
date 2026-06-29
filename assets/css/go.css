@@ -1,0 +1,440 @@
+/* QR / NFC link hub — savovpro.com/go/ */
+
+.go-page {
+  min-height: 100vh;
+  min-height: 100dvh;
+  position: relative;
+  isolation: isolate;
+}
+
+.go-page::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  background:
+    radial-gradient(ellipse 120% 70% at 50% -15%, rgba(201, 162, 39, 0.14), transparent 55%),
+    radial-gradient(ellipse 80% 50% at 100% 100%, rgba(201, 162, 39, 0.06), transparent 50%),
+    var(--bg);
+}
+
+.go-page::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  opacity: 0.35;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+  background-size: 28px 28px;
+  mask-image: radial-gradient(ellipse 90% 80% at 50% 20%, #000 20%, transparent 75%);
+  pointer-events: none;
+}
+
+.go-main {
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
+  padding: calc(1.75rem + env(safe-area-inset-top, 0px)) 1rem calc(1.25rem + env(safe-area-inset-bottom, 0px));
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.go-profile {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0 0.25rem;
+}
+
+.go-avatar {
+  position: relative;
+  width: 88px;
+  height: 88px;
+  margin-bottom: 0.15rem;
+}
+
+.go-avatar::before {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  background: linear-gradient(145deg, rgba(201, 162, 39, 0.85), rgba(201, 162, 39, 0.15) 55%, rgba(255, 255, 255, 0.08));
+  opacity: 0.9;
+}
+
+.go-avatar::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--bg);
+}
+
+.go-logo {
+  position: relative;
+  z-index: 1;
+  width: 88px;
+  height: 88px;
+  padding: 1.1rem;
+  object-fit: contain;
+}
+
+.go-brand {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.go-tagline {
+  margin: 0;
+  font-size: 0.84rem;
+  font-style: italic;
+  color: var(--gold);
+  letter-spacing: 0.04em;
+}
+
+.go-services {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.35rem;
+  margin: 0.35rem 0 0;
+  padding: 0;
+  list-style: none;
+  max-width: 34ch;
+}
+
+.go-services li {
+  padding: 0.28rem 0.55rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.03);
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.go-panel {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: calc(var(--radius) + 4px);
+  background: rgba(20, 20, 20, 0.72);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow:
+    0 24px 48px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  padding: 0.85rem;
+}
+
+.go-links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.go-chat-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin-bottom: 0.15rem;
+}
+
+.go-chat-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  min-height: 72px;
+  padding: 0.75rem 0.5rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  text-decoration: none;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--text);
+  transition: border-color 0.18s ease, background 0.18s ease, transform 0.14s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.go-chat-btn:hover {
+  color: var(--text);
+}
+
+.go-chat-btn:active {
+  transform: scale(0.97);
+}
+
+.go-chat-btn-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 11px;
+}
+
+.go-chat-btn--wa {
+  border-color: rgba(37, 211, 102, 0.28);
+  background: linear-gradient(160deg, rgba(37, 211, 102, 0.12), rgba(37, 211, 102, 0.03));
+}
+
+.go-chat-btn--wa:hover {
+  border-color: rgba(37, 211, 102, 0.45);
+  background: linear-gradient(160deg, rgba(37, 211, 102, 0.16), rgba(37, 211, 102, 0.05));
+}
+
+.go-chat-btn--wa .go-chat-btn-icon {
+  background: rgba(37, 211, 102, 0.14);
+  color: #3ddc84;
+}
+
+.go-chat-btn--viber {
+  border-color: rgba(115, 96, 242, 0.28);
+  background: linear-gradient(160deg, rgba(115, 96, 242, 0.12), rgba(115, 96, 242, 0.03));
+}
+
+.go-chat-btn--viber:hover {
+  border-color: rgba(115, 96, 242, 0.45);
+  background: linear-gradient(160deg, rgba(115, 96, 242, 0.16), rgba(115, 96, 242, 0.05));
+}
+
+.go-chat-btn--viber .go-chat-btn-icon {
+  background: rgba(115, 96, 242, 0.14);
+}
+
+.go-chat-btn--viber .go-chat-btn-icon img {
+  display: block;
+  width: 22px;
+  height: 22px;
+}
+
+.go-link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  min-height: 58px;
+  padding: 0.7rem 0.85rem 0.7rem 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.025);
+  color: var(--text);
+  text-decoration: none;
+  transition:
+    border-color 0.18s ease,
+    background 0.18s ease,
+    transform 0.14s ease,
+    box-shadow 0.18s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.go-link:hover {
+  border-color: rgba(201, 162, 39, 0.35);
+  background: rgba(255, 255, 255, 0.045);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
+  color: var(--text);
+}
+
+.go-link:active {
+  transform: scale(0.988);
+}
+
+.go-link::after {
+  content: "";
+  flex-shrink: 0;
+  width: 7px;
+  height: 7px;
+  margin-left: auto;
+  margin-right: 0.15rem;
+  border-top: 1.5px solid rgba(255, 255, 255, 0.22);
+  border-right: 1.5px solid rgba(255, 255, 255, 0.22);
+  transform: rotate(45deg);
+  transition: border-color 0.18s ease, transform 0.18s ease;
+}
+
+.go-link:hover::after {
+  border-color: rgba(201, 162, 39, 0.65);
+  transform: rotate(45deg) translate(1px, -1px);
+}
+
+.go-link--whatsapp {
+  border-color: rgba(37, 211, 102, 0.22);
+  background: linear-gradient(135deg, rgba(37, 211, 102, 0.1), rgba(37, 211, 102, 0.03));
+}
+
+.go-link--whatsapp:hover {
+  border-color: rgba(37, 211, 102, 0.42);
+  background: linear-gradient(135deg, rgba(37, 211, 102, 0.14), rgba(37, 211, 102, 0.05));
+}
+
+.go-link--whatsapp .go-link-icon {
+  background: rgba(37, 211, 102, 0.14);
+  color: #3ddc84;
+}
+
+.go-link--gold {
+  border-color: rgba(201, 162, 39, 0.28);
+  background: linear-gradient(135deg, rgba(201, 162, 39, 0.12), rgba(201, 162, 39, 0.03));
+}
+
+.go-link--gold:hover {
+  border-color: rgba(201, 162, 39, 0.5);
+  background: linear-gradient(135deg, rgba(201, 162, 39, 0.16), rgba(201, 162, 39, 0.05));
+}
+
+.go-link--gold .go-link-icon {
+  background: rgba(201, 162, 39, 0.14);
+  color: var(--gold);
+}
+
+.go-link-icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 11px;
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.go-link-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.12rem;
+  min-width: 0;
+  text-align: left;
+}
+
+.go-link-label {
+  font-weight: 600;
+  font-size: 0.92rem;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+}
+
+.go-link-sub {
+  font-size: 0.76rem;
+  color: var(--muted);
+  line-height: 1.25;
+}
+
+.go-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1rem 0 0.75rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.go-divider::before,
+.go-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+}
+
+.go-social {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+}
+
+.go-social-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  min-height: 76px;
+  padding: 0.65rem 0.35rem;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--text);
+  text-decoration: none;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  transition: border-color 0.18s ease, background 0.18s ease, transform 0.14s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.go-social-link:hover {
+  border-color: rgba(201, 162, 39, 0.35);
+  background: rgba(255, 255, 255, 0.045);
+  color: var(--text);
+}
+
+.go-social-link:active {
+  transform: scale(0.97);
+}
+
+.go-social-link svg {
+  opacity: 0.88;
+}
+
+.go-social-link--fb:hover { border-color: rgba(24, 119, 242, 0.35); }
+.go-social-link--ig:hover { border-color: rgba(225, 48, 108, 0.35); }
+.go-social-link--tt:hover { border-color: rgba(255, 255, 255, 0.2); }
+
+.go-footer {
+  padding-top: 0.25rem;
+  text-align: center;
+}
+
+.go-footer-mark {
+  display: block;
+  width: 96px;
+  height: auto;
+  margin: 0 auto 0.55rem;
+  opacity: 0.55;
+}
+
+.go-footer p {
+  margin: 0;
+  font-size: 0.72rem;
+  letter-spacing: 0.03em;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+@media (min-width: 480px) {
+  .go-main {
+    padding-top: 2.75rem;
+  }
+
+  .go-panel {
+    padding: 1rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .go-link,
+  .go-social-link {
+    transition: none;
+  }
+
+  .go-link:active,
+  .go-social-link:active {
+    transform: none;
+  }
+}

@@ -781,6 +781,7 @@
     .cfg-layer-badge--text  { background: rgba(100,149,237,0.18); color: #6495ed; }
     .cfg-layer-badge--icon  { background: rgba(201,162,39,0.18);  color: var(--gold); }
     .cfg-layer-badge--image { background: rgba(100,200,130,0.18); color: #64c882; }
+    .cfg-layer-badge--vector { background: rgba(201,162,39,0.18); color: var(--gold); }
     .cfg-layer-name { flex: 1; font-size: 0.82rem; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .cfg-layer-vis, .cfg-layer-del, .cfg-layer-dup {
       display: flex; align-items: center; justify-content: center;
@@ -1490,6 +1491,168 @@
   color: #ff8a8a;
   border-color: rgba(255, 90, 90, 0.45);
   background: rgba(255, 90, 90, 0.08);
+}
+
+.st-import-dialog {
+  width: min(94vw, 440px);
+  max-height: 90vh;
+  padding: 0;
+  border: 1px solid rgba(201, 162, 39, 0.35);
+  border-radius: 14px;
+  background: #141414;
+  color: var(--text);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.55);
+}
+
+.st-import-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.72);
+}
+
+.st-import-dialog__panel {
+  padding: 1.1rem 1.15rem 1.15rem;
+}
+
+.st-import-dialog__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.85rem;
+}
+
+.st-import-dialog__title {
+  margin: 0 0 0.25rem;
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.st-import-dialog__file {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--muted);
+  word-break: break-all;
+}
+
+.st-import-dialog__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text);
+  font-size: 1.35rem;
+  line-height: 1;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.st-import-preview-wrap {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background:
+    linear-gradient(45deg, rgba(255, 255, 255, 0.06) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(255, 255, 255, 0.06) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, rgba(255, 255, 255, 0.06) 75%),
+    linear-gradient(-45deg, transparent 75%, rgba(255, 255, 255, 0.06) 75%);
+  background-size: 16px 16px;
+  background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+  background-color: rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 160px;
+  max-height: min(42vh, 280px);
+}
+
+#st-import-preview {
+  display: block;
+  max-width: 100%;
+  max-height: min(42vh, 280px);
+  width: auto;
+  height: auto;
+}
+
+.st-import-preview-hint {
+  margin: 0.45rem 0 0.85rem;
+  font-size: 0.72rem;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.st-import-options {
+  display: grid;
+  gap: 0.75rem;
+  margin-bottom: 0.85rem;
+}
+
+.st-import-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  font-size: 0.88rem;
+  cursor: pointer;
+}
+
+.st-import-check input {
+  margin-top: 0.15rem;
+  accent-color: var(--gold);
+}
+
+.st-import-tolerance-hint {
+  margin: 0.35rem 0 0;
+}
+
+.st-import-stats {
+  margin: 0.45rem 0 0;
+  color: var(--gold);
+}
+
+.st-import-svg-note {
+  margin: 0 0 0.85rem;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid rgba(201, 162, 39, 0.28);
+  border-radius: var(--radius-sm);
+  background: rgba(201, 162, 39, 0.06);
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.st-import-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.55rem;
+}
+
+.st-import-actions--raster {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.st-import-actions--raster .btn {
+  padding-left: 0.55rem;
+  padding-right: 0.55rem;
+  font-size: 0.78rem;
+}
+
+.st-trace-btn {
+  width: 100%;
+  margin-top: 0.55rem;
+}
+
+@media (max-width: 420px) {
+  .st-import-actions--raster {
+    grid-template-columns: 1fr;
+  }
+}
+
+.st-file-type-hint {
+  margin: 0.35rem 0 0;
 }
 
 .st-shortcuts-dialog {

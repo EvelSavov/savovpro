@@ -27,6 +27,7 @@
     ghostLeft: 0,
   };
   var removeBg = CFG.defaults.removeBg !== false;
+  var bgTolerance = 52;
 
   var stickerSize = { widthCm: CFG.defaults.widthCm, heightCm: CFG.defaults.heightCm };
   var VIEW_ZOOM_MIN = 0.4;
@@ -327,6 +328,7 @@
   var TYPE_SVG = {
     text: '<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M5 4v3h5.5v12h3V7H19V4z"/></svg>',
     image: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>',
+    vector: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 22 12 12 22 2 12"/><circle cx="12" cy="12" r="2" fill="currentColor" stroke="none"/></svg>',
   };
   var EYE_SVG = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
   var EYE_OFF_SVG = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24M1 1l22 22"/></svg>';
@@ -406,10 +408,36 @@
       imgEl: imgEl,
       fileName: fileName,
       isSvg: !!isSvg,
+      stickerProcessed: !!opts.stickerProcessed,
       size: opts.size !== undefined ? opts.size : 1,
       x: opts.x || 0, y: opts.y || 0,
       rotation: opts.rotation || 0,
       visible: true,
+    };
+  }
+
+  function makeVectorLayer(fileName, vectorData, opts) {
+    opts = opts || {};
+    return {
+      id: nextLayerId++,
+      type: 'vector',
+      name: opts.name || fileName || 'Вектор',
+      fileName: fileName || 'vector.svg',
+      paths: (vectorData.paths || []).slice(),
+      viewW: vectorData.viewW || 1,
+      viewH: vectorData.viewH || 1,
+      size: opts.size !== undefined ? opts.size : 1,
+      x: opts.x || 0, y: opts.y || 0,
+      rotation: opts.rotation || 0,
+      visible: true,
+    };
+  }
+
+  function cloneVectorData(data) {
+    return {
+      paths: (data.paths || []).slice(),
+      viewW: data.viewW,
+      viewH: data.viewH,
     };
   }
 
@@ -469,12 +497,29 @@
         name: layer.name,
         fileName: layer.fileName,
         isSvg: layer.isSvg,
+        stickerProcessed: !!layer.stickerProcessed,
         size: layer.size,
         x: layer.x,
         y: layer.y,
         rotation: layer.rotation,
         visible: layer.visible,
         dataUrl: layer.imgEl && layer.imgEl.src ? layer.imgEl.src : null,
+      };
+    }
+    if (layer.type === 'vector') {
+      return {
+        id: layer.id,
+        type: 'vector',
+        name: layer.name,
+        fileName: layer.fileName,
+        paths: layer.paths,
+        viewW: layer.viewW,
+        viewH: layer.viewH,
+        size: layer.size,
+        x: layer.x,
+        y: layer.y,
+        rotation: layer.rotation,
+        visible: layer.visible,
       };
     }
     return null;
@@ -487,6 +532,7 @@
       stickerSize: { widthCm: stickerSize.widthCm, heightCm: stickerSize.heightCm },
       view: { scale: view.scale, panX: view.panX, panY: view.panY },
       removeBg: removeBg,
+      bgTolerance: bgTolerance,
       snapEnabled: snapEnabled,
       uiMode: uiMode,
       nextLayerId: nextLayerId,
@@ -523,6 +569,24 @@
     };
   }
 
+  function restoreVectorLayerFromDraft(data) {
+    if (!data.paths || !data.paths.length) return null;
+    return {
+      id: data.id,
+      type: 'vector',
+      name: data.name || data.fileName || 'Вектор',
+      fileName: data.fileName || data.name || 'vector.svg',
+      paths: data.paths.slice(),
+      viewW: data.viewW || 1,
+      viewH: data.viewH || 1,
+      size: data.size != null ? data.size : 1,
+      x: data.x || 0,
+      y: data.y || 0,
+      rotation: data.rotation || 0,
+      visible: data.visible !== false,
+    };
+  }
+
   function loadImageLayerFromDraft(data) {
     return new Promise(function (resolve) {
       if (!data.dataUrl) {
@@ -538,6 +602,7 @@
           imgEl: img,
           fileName: data.fileName || data.name || 'Файл',
           isSvg: !!data.isSvg,
+          stickerProcessed: data.stickerProcessed != null ? !!data.stickerProcessed : !data.isSvg,
           size: data.size != null ? data.size : 1,
           x: data.x || 0,
           y: data.y || 0,
@@ -561,6 +626,7 @@
       view.panY = draft.view.panY || 0;
     }
     if (draft.removeBg != null) removeBg = draft.removeBg;
+    if (draft.bgTolerance != null) bgTolerance = draft.bgTolerance;
     if (draft.snapEnabled != null) snapEnabled = !!draft.snapEnabled;
     if (draft.uiMode === 'advanced' || draft.uiMode === 'basic') uiMode = draft.uiMode;
     if (draft.nextLayerId != null) nextLayerId = draft.nextLayerId;
@@ -571,10 +637,8 @@
 
     var wEl = document.getElementById('st-width');
     var hEl = document.getElementById('st-height');
-    var bgEl = document.getElementById('st-remove-bg');
     if (wEl) wEl.value = String(stickerSize.widthCm);
     if (hEl) hEl.value = String(stickerSize.heightCm);
-    if (bgEl) bgEl.checked = removeBg;
     updateSnapToggleUi();
     setUiMode(uiMode, { skipSave: true });
     updateZoomUI();
@@ -612,16 +676,15 @@
     view.panX = 0;
     view.panY = 0;
     removeBg = CFG.defaults.removeBg !== false;
+    bgTolerance = 52;
     snapEnabled = true;
     history = [];
     historyIdx = -1;
 
     var wEl = document.getElementById('st-width');
     var hEl = document.getElementById('st-height');
-    var bgEl = document.getElementById('st-remove-bg');
     if (wEl) wEl.value = String(stickerSize.widthCm);
     if (hEl) hEl.value = String(stickerSize.heightCm);
-    if (bgEl) bgEl.checked = removeBg;
 
     updateSnapToggleUi();
     updateZoomUI();
@@ -665,6 +728,7 @@
 
     return Promise.all(draft.layers.map(function (data) {
       if (data.type === 'text') return Promise.resolve(restoreTextLayerFromDraft(data));
+      if (data.type === 'vector') return Promise.resolve(restoreVectorLayerFromDraft(data));
       if (data.type === 'image') return loadImageLayerFromDraft(data);
       return Promise.resolve(null);
     })).then(function (restoredLayers) {
@@ -909,6 +973,18 @@
         localTop: -px.uH / 2,
       };
     }
+    if (layer.type === 'vector') {
+      var vpx = getVectorLayerPxSize(layer, rect);
+      return {
+        cx: lx,
+        cy: ly,
+        w: vpx.uW,
+        h: vpx.uH,
+        rotation: layer.rotation || 0,
+        localLeft: -vpx.uW / 2,
+        localTop: -vpx.uH / 2,
+      };
+    }
     return {
       cx: lx,
       cy: ly,
@@ -1027,6 +1103,8 @@
     copy.y = src.y + 14;
     if (src.type === 'text') {
       copy.name = defaultTextLayerLabel(getNextTextLayerNumber());
+    } else if (src.type === 'vector') {
+      copy.paths = src.paths.slice();
     }
     layers.push(copy);
     selectedLayerIds = [copy.id];
@@ -1336,6 +1414,7 @@
   function measureLayerDims(layer, rect) {
     if (layer.type === 'text') return drawTextLayer(measureCtx, layer, rect.w * 0.92);
     if (layer.type === 'image') return drawImageLayer(measureCtx, layer, rect);
+    if (layer.type === 'vector') return drawVectorLayer(measureCtx, layer, rect);
     return { w: 40, h: 40 };
   }
 
@@ -1468,7 +1547,7 @@
         else hi = mid - 1;
       }
       layer.size = best;
-    } else if (layer.type === 'image') {
+    } else if (layer.type === 'image' || layer.type === 'vector') {
       var dims = measureLayerDims(layer, rect);
       var factor = Math.min(allowedW / dims.w, allowedH / dims.h, 1);
       layer.size = Math.max(0.1, layer.size * factor * 0.98);
@@ -1637,6 +1716,37 @@
     };
   }
 
+  function getVectorLayerPxSize(layer, rect) {
+    if (!layer.viewW || !layer.viewH) return { uW: 40, uH: 40 };
+    var fitW = rect.w * 0.45;
+    var fitH = rect.h * 0.45;
+    var fitScale = Math.min(fitW / layer.viewW, fitH / layer.viewH);
+    return {
+      uW: layer.viewW * fitScale * layer.size,
+      uH: layer.viewH * fitScale * layer.size,
+    };
+  }
+
+  function drawVectorLayer(lc, layer, rect) {
+    if (!layer.paths || !layer.paths.length || !layer.viewW || !layer.viewH) {
+      return { w: 40, h: 40, localLeft: -20, localTop: -20 };
+    }
+    var px = getVectorLayerPxSize(layer, rect);
+    var uW = px.uW;
+    var uH = px.uH;
+    lc.save();
+    lc.translate(-uW / 2, -uH / 2);
+    lc.scale(uW / layer.viewW, uH / layer.viewH);
+    lc.fillStyle = TEXT_COLOR;
+    layer.paths.forEach(function (d) {
+      try {
+        lc.fill(new Path2D(d));
+      } catch (e) { /* skip invalid path */ }
+    });
+    lc.restore();
+    return { w: uW, h: uH, localLeft: -uW / 2, localTop: -uH / 2 };
+  }
+
   function drawImageLayer(lc, layer, rect) {
     var img = layer.imgEl;
     if (!img || !img.complete || !img.naturalWidth) return { w: 40, h: 40 };
@@ -1647,7 +1757,14 @@
     var uH = img.naturalHeight * fitScale * layer.size;
     var x = -uW / 2;
     var y = -uH / 2;
+    lc.save();
     lc.drawImage(img, x, y, uW, uH);
+    if (layer.isSvg) {
+      lc.globalCompositeOperation = 'source-in';
+      lc.fillStyle = TEXT_COLOR;
+      lc.fillRect(x, y, uW, uH);
+    }
+    lc.restore();
     return { w: uW, h: uH, localLeft: -uW / 2, localTop: -uH / 2 };
   }
 
@@ -1846,6 +1963,8 @@
         dims = drawTextLayer(ctx, layer, rect.w * 0.92);
       } else if (layer.type === 'image') {
         dims = drawImageLayer(ctx, layer, rect);
+      } else if (layer.type === 'vector') {
+        dims = drawVectorLayer(ctx, layer, rect);
       }
       ctx.restore();
       if (layer.type === 'text' && dims) {
@@ -1868,6 +1987,9 @@
           localTop: dims.inkTop,
         };
       } else if (layer.type === 'image' && dims) {
+        elementBoxes[layer.id] = getLayerContentBox(layer, rect);
+        elementInkBoxes[layer.id] = elementBoxes[layer.id];
+      } else if (layer.type === 'vector' && dims) {
         elementBoxes[layer.id] = getLayerContentBox(layer, rect);
         elementInkBoxes[layer.id] = elementBoxes[layer.id];
       }
@@ -1934,6 +2056,7 @@
       targetCtx.rotate(layer.rotation * Math.PI / 180);
       if (layer.type === 'text') drawTextLayer(targetCtx, layer, rect.w * 0.92);
       else if (layer.type === 'image') drawImageLayer(targetCtx, layer, rect);
+      else if (layer.type === 'vector') drawVectorLayer(targetCtx, layer, rect);
       targetCtx.restore();
     });
   }
@@ -1987,6 +2110,13 @@
   function rasterizeImageLayerWhite(layer, uW, uH) {
     try {
       if (!layer.imgEl || !layer.imgEl.naturalWidth) return null;
+      if (layer.stickerProcessed) {
+        var direct = document.createElement('canvas');
+        direct.width = Math.max(1, Math.ceil(uW));
+        direct.height = Math.max(1, Math.ceil(uH));
+        direct.getContext('2d').drawImage(layer.imgEl, 0, 0, direct.width, direct.height);
+        return direct.toDataURL('image/png');
+      }
       var off = document.createElement('canvas');
       off.width = Math.max(1, Math.ceil(uW));
       off.height = Math.max(1, Math.ceil(uH));
@@ -2009,7 +2139,104 @@
     'DM Sans': 'DM+Sans:wght@700',
   };
 
-  function buildExportSvg() {
+  function buildExportSvgAsync(done) {
+    if (!window.ST_VECTOR || !ST_VECTOR.ready()) {
+      done(buildExportSvgFallback(), null);
+      return;
+    }
+
+    var rect = getStickerRect();
+    var widthCm = stickerSize.widthCm;
+    var heightCm = stickerSize.heightCm;
+    var widthMm = mm(widthCm * 10);
+    var heightMm = mm(heightCm * 10);
+    var fontsNeeded = {};
+    layers.forEach(function (layer) {
+      if (layer.visible && layer.type === 'text' && layer.font) fontsNeeded[layer.font] = true;
+    });
+
+    ST_VECTOR.preloadFonts(Object.keys(fontsNeeded)).then(function () {
+      var parts = [];
+      parts.push('<?xml version="1.0" encoding="UTF-8"?>');
+      parts.push('<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"');
+      parts.push(' width="' + widthCm + 'cm" height="' + heightCm + 'cm"');
+      parts.push(' viewBox="0 0 ' + widthMm + ' ' + heightMm + '">');
+      parts.push('<title>SAVOV PRO — Sticker ' + widthCm + '×' + heightCm + ' cm</title>');
+      parts.push('<desc>Plotter export. Physical size: ' + widthCm + ' × ' + heightCm + ' cm. White (#FFFFFF) vector paths on transparent.</desc>');
+      parts.push('<g id="cut-contour" data-role="cut">');
+      parts.push('<rect x="0" y="0" width="' + widthMm + '" height="' + heightMm + '" fill="none" stroke="#000000" stroke-width="0.1"/>');
+      parts.push('</g>');
+      parts.push('<g id="sticker-art" data-role="print">');
+
+      var jobs = layers.map(function (layer) {
+        if (!layer.visible) return Promise.resolve('');
+
+        var c = layerCenterMm(layer, rect, widthMm, heightMm);
+        var rot = layer.rotation || 0;
+        function wrap(content) {
+          if (!content) return '';
+          return '<g transform="translate(' + c.x + ' ' + c.y + ') rotate(' + rot + ')">' + content + '</g>';
+        }
+
+        if (layer.type === 'text') {
+          return ST_VECTOR.loadFont(layer.font || CFG.defaults.font).then(function (font) {
+            var metrics = computeTextLayerMetrics(layer, rect.w * 0.92, measureCtx);
+            var pathStrings = ST_VECTOR.buildTextPathStrings(font, layer, metrics);
+            if (!pathStrings.length) return '';
+            var inner = pathStrings.map(function (d) {
+              return '<path fill="#FFFFFF" d="' + escXml(d) + '"/>';
+            }).join('\n');
+            return wrap(inner);
+          });
+        }
+
+        if (layer.type === 'vector') {
+          var vpx = getVectorLayerPxSize(layer, rect);
+          var vwMm = mm(pxToMm(vpx.uW, rect.w, widthMm));
+          var vhMm = mm(pxToMm(vpx.uH, rect.h, heightMm));
+          return Promise.resolve(wrap(ST_VECTOR.pathsGroupSvg(layer.paths, layer.viewW, layer.viewH, vwMm, vhMm, escXml)));
+        }
+
+        if (layer.type === 'image') {
+          if (layer.stickerProcessed && layer.imgEl && layer.imgEl.naturalWidth) {
+            var off = document.createElement('canvas');
+            off.width = layer.imgEl.naturalWidth;
+            off.height = layer.imgEl.naturalHeight;
+            off.getContext('2d').drawImage(layer.imgEl, 0, 0);
+            var traced = ST_VECTOR.traceCanvas(off);
+            if (traced.paths && traced.paths.length) {
+              var tpx = getImageLayerPxSize(layer, rect);
+              var twMm = mm(pxToMm(tpx.uW, rect.w, widthMm));
+              var thMm = mm(pxToMm(tpx.uH, rect.h, heightMm));
+              return Promise.resolve(wrap(ST_VECTOR.pathsGroupSvg(traced.paths, traced.viewW, traced.viewH, twMm, thMm, escXml)));
+            }
+          }
+          var ipx = getImageLayerPxSize(layer, rect);
+          var iwMm = mm(pxToMm(ipx.uW, rect.w, widthMm));
+          var ihMm = mm(pxToMm(ipx.uH, rect.h, heightMm));
+          var href = rasterizeImageLayerWhite(layer, ipx.uW, ipx.uH);
+          if (!href) return Promise.resolve('');
+          return Promise.resolve(wrap(
+            '<image x="' + (-iwMm / 2) + '" y="' + (-ihMm / 2) + '" width="' + iwMm + '" height="' + ihMm + '" href="' + href + '" xlink:href="' + href + '" preserveAspectRatio="xMidYMid meet"/>'
+          ));
+        }
+
+        return Promise.resolve('');
+      });
+
+      return Promise.all(jobs).then(function (chunks) {
+        parts.push(chunks.join('\n'));
+        parts.push('</g></svg>');
+        return parts.join('\n');
+      });
+    }).then(function (svg) {
+      done(svg, null);
+    }).catch(function (err) {
+      done(null, err);
+    });
+  }
+
+  function buildExportSvgFallback() {
     var rect = getStickerRect();
     var widthCm = stickerSize.widthCm;
     var heightCm = stickerSize.heightCm;
@@ -2081,6 +2308,18 @@
         parts.push('<g transform="translate(' + c.x + ' ' + c.y + ') rotate(' + rot + ')">');
         parts.push('<image x="' + (-wMm / 2) + '" y="' + (-hMm / 2) + '" width="' + wMm + '" height="' + hMm + '" href="' + href + '" xlink:href="' + href + '" preserveAspectRatio="xMidYMid meet"/>');
         parts.push('</g>');
+      } else if (layer.type === 'vector') {
+        var vpx = getVectorLayerPxSize(layer, rect);
+        var vwMm = mm(pxToMm(vpx.uW, rect.w, widthMm));
+        var vhMm = mm(pxToMm(vpx.uH, rect.h, heightMm));
+        var sx = vwMm / layer.viewW;
+        var sy = vhMm / layer.viewH;
+        parts.push('<g transform="translate(' + c.x + ' ' + c.y + ') rotate(' + rot + ')">');
+        parts.push('<g transform="translate(' + (-vwMm / 2) + ' ' + (-vhMm / 2) + ') scale(' + sx + ' ' + sy + ')">');
+        layer.paths.forEach(function (d) {
+          parts.push('<path fill="#FFFFFF" d="' + escXml(d) + '"/>');
+        });
+        parts.push('</g></g>');
       }
     });
 
@@ -2115,16 +2354,143 @@
     return Math.sqrt((r1 - r2) * (r1 - r2) + (g1 - g2) * (g1 - g2) + (b1 - b2) * (b1 - b2));
   }
 
-  function removeBackgroundFromImage(img, cb) {
-    var off = document.createElement('canvas');
-    off.width = img.naturalWidth;
-    off.height = img.naturalHeight;
-    var oc = off.getContext('2d');
-    oc.drawImage(img, 0, 0);
-    var id = oc.getImageData(0, 0, off.width, off.height);
+  function detectBackgroundColor(d, w, h) {
+    var pad = Math.max(4, Math.min(24, Math.floor(Math.min(w, h) * 0.08)));
+    var regions = [
+      [0, 0, pad, pad],
+      [w - pad, 0, pad, pad],
+      [0, h - pad, pad, pad],
+      [w - pad, h - pad, pad, pad],
+    ];
+    var samples = [];
+
+    function sampleRegion(x0, y0, rw, rh) {
+      var r = 0; var g = 0; var b = 0; var n = 0;
+      var x; var y;
+      for (y = y0; y < y0 + rh && y < h; y++) {
+        for (x = x0; x < x0 + rw && x < w; x++) {
+          var i = (y * w + x) * 4;
+          if (d[i + 3] < 10) continue;
+          r += d[i]; g += d[i + 1]; b += d[i + 2];
+          n++;
+        }
+      }
+      if (!n) return null;
+      return { r: Math.round(r / n), g: Math.round(g / n), b: Math.round(b / n), lum: (r + g + b) / (3 * n) };
+    }
+
+    regions.forEach(function (reg) {
+      var s = sampleRegion(reg[0], reg[1], reg[2], reg[3]);
+      if (s) samples.push(s);
+    });
+
+    if (!samples.length) return { r: 255, g: 255, b: 255 };
+
+    samples.sort(function (a, b) { return b.lum - a.lum; });
+    var bg = samples[0];
+    var similar = samples.filter(function (s) {
+      return colorDist(s.r, s.g, s.b, bg.r, bg.g, bg.b) <= 28;
+    });
+    var r = 0; var g = 0; var b = 0;
+    similar.forEach(function (s) { r += s.r; g += s.g; b += s.b; });
+    return {
+      r: Math.round(r / similar.length),
+      g: Math.round(g / similar.length),
+      b: Math.round(b / similar.length),
+    };
+  }
+
+  function isRasterImageFile(file) {
+    if (!file) return false;
+    if (/\.svg$/i.test(file.name) || file.type === 'image/svg+xml') return false;
+    if (/\.(png|jpe?g|webp)$/i.test(file.name)) return true;
+    return /^image\//.test(file.type || '') && file.type !== 'image/svg+xml';
+  }
+
+  function countImageAlphaStats(d) {
+    var transparent = 0;
+    var opaque = 0;
+    var i;
+    for (i = 3; i < d.length; i += 4) {
+      if (d[i] < 20) transparent++;
+      else opaque++;
+    }
+    return { transparent: transparent, opaque: opaque, total: transparent + opaque };
+  }
+
+  function updateImportStats(stats, removeBackground) {
+    var el = document.getElementById('st-import-stats');
+    if (!el) return;
+    if (!removeBackground || !stats) {
+      el.hidden = true;
+      return;
+    }
+    var pct = stats.total ? Math.round((stats.transparent / stats.total) * 100) : 0;
+    el.hidden = false;
+    el.textContent = pct > 2
+      ? 'Премахнат фон · ' + pct + '% прозрачни пиксели'
+      : 'Фонът почти не е премахнат — увеличи чувствителността или ползвай по-контрастно изображение.';
+  }
+
+  function removeBackgroundPixels(id, tolerance, bgR, bgG, bgB) {
     var d = id.data;
-    var w = off.width;
-    var h = off.height;
+    var lumCutoff = Math.min(252, Math.max(168, 255 - tolerance * 1.08));
+    var colorTol = tolerance + 10;
+    var i;
+    var r; var g; var b; var lum; var sat; var isBg;
+
+    for (i = 0; i < d.length; i += 4) {
+      if (d[i + 3] < 8) {
+        d[i + 3] = 0;
+        continue;
+      }
+      r = d[i];
+      g = d[i + 1];
+      b = d[i + 2];
+      lum = 0.299 * r + 0.587 * g + 0.114 * b;
+      isBg = colorDist(r, g, b, bgR, bgG, bgB) <= colorTol;
+      if (!isBg && lum >= lumCutoff) isBg = true;
+      if (!isBg) {
+        sat = Math.max(r, g, b) - Math.min(r, g, b);
+        if (lum >= 208 && sat <= 32) isBg = true;
+      }
+      if (isBg) d[i + 3] = 0;
+    }
+
+    floodRemoveBackground(id, colorTol, bgR, bgG, bgB);
+    return lumCutoff;
+  }
+
+  function applyWhiteSilhouette(id, removeBackground, lumCutoff) {
+    var d = id.data;
+    var i;
+    var lum; var strength;
+    for (i = 0; i < d.length; i += 4) {
+      if (d[i + 3] < 8) {
+        d[i + 3] = 0;
+        continue;
+      }
+      lum = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
+      if (removeBackground) {
+        strength = (lumCutoff - lum) / lumCutoff;
+        if (strength < 0.08) {
+          d[i + 3] = 0;
+          continue;
+        }
+      }
+      d[i] = 255;
+      d[i + 1] = 255;
+      d[i + 2] = 255;
+      d[i + 3] = 255;
+    }
+  }
+
+  function floodRemoveBackground(id, tolerance, bgR, bgG, bgB) {
+    var d = id.data;
+    var w = id.width;
+    var h = id.height;
+    var visited = new Uint8Array(w * h);
+    var queue = [];
 
     function pxIdx(x, y) { return (y * w + x) * 4; }
     function pxAt(x, y) {
@@ -2132,39 +2498,13 @@
       return [d[i], d[i + 1], d[i + 2], d[i + 3]];
     }
 
-    var stepX = Math.max(1, Math.floor(w / 24));
-    var stepY = Math.max(1, Math.floor(h / 24));
-    var samples = [];
-    var sx;
-    for (sx = 0; sx < w; sx += stepX) {
-      samples.push(pxAt(sx, 0));
-      samples.push(pxAt(sx, h - 1));
-    }
-    var sy;
-    for (sy = 0; sy < h; sy += stepY) {
-      samples.push(pxAt(0, sy));
-      samples.push(pxAt(w - 1, sy));
-    }
-    var opaque = samples.filter(function (c) { return c[3] > 10; });
-    if (!opaque.length) {
-      cb(img);
-      return;
-    }
-    var bgR = 0; var bgG = 0; var bgB = 0;
-    opaque.forEach(function (c) { bgR += c[0]; bgG += c[1]; bgB += c[2]; });
-    bgR = Math.round(bgR / opaque.length);
-    bgG = Math.round(bgG / opaque.length);
-    bgB = Math.round(bgB / opaque.length);
-
-    var tolerance = 44;
-    var visited = new Uint8Array(w * h);
-    var queue = [];
-
     function matchesBg(x, y) {
       var c = pxAt(x, y);
-      if (c[3] < 10) return true;
+      if (c[3] < 12) return true;
       if (colorDist(c[0], c[1], c[2], bgR, bgG, bgB) <= tolerance) return true;
-      return c[0] > 235 && c[1] > 235 && c[2] > 235;
+      var lum = (c[0] + c[1] + c[2]) / 3;
+      if (lum >= 248 - tolerance * 0.35) return true;
+      return false;
     }
 
     function seed(x, y) {
@@ -2177,6 +2517,7 @@
       queue.push([x, y]);
     }
 
+    var sx; var sy;
     for (sx = 0; sx < w; sx++) {
       seed(sx, 0);
       seed(sx, h - 1);
@@ -2193,29 +2534,332 @@
       seed(p[0], p[1] + 1);
       seed(p[0], p[1] - 1);
     }
+  }
 
+  function processImageForSticker(img, opts) {
+    opts = opts || {};
+    var removeBackground = opts.removeBackground !== false;
+    var tolerance = opts.tolerance != null ? opts.tolerance : bgTolerance;
+    var off = document.createElement('canvas');
+    off.width = img.naturalWidth || img.width;
+    off.height = img.naturalHeight || img.height;
+    if (!off.width || !off.height) return off;
+    var oc = off.getContext('2d', { willReadFrequently: true });
+    oc.drawImage(img, 0, 0);
+    var id;
+    try {
+      id = oc.getImageData(0, 0, off.width, off.height);
+    } catch (err) {
+      return off;
+    }
+
+    var lumCutoff = 240;
+    if (removeBackground) {
+      var bg = detectBackgroundColor(id.data, off.width, off.height);
+      lumCutoff = removeBackgroundPixels(id, tolerance, bg.r, bg.g, bg.b);
+    }
+
+    applyWhiteSilhouette(id, removeBackground, lumCutoff);
     oc.putImageData(id, 0, 0);
+    off.__alphaStats = countImageAlphaStats(id.data);
+    return off;
+  }
+
+  function buildBackgroundRemovedCanvas(img, tolerance) {
+    return processImageForSticker(img, { removeBackground: true, tolerance: tolerance });
+  }
+
+  function removeBackgroundFromImage(img, cb, tolerance) {
+    var off = buildBackgroundRemovedCanvas(img, tolerance);
     var out = new Image();
     out.onload = function () { cb(out); };
     out.src = off.toDataURL('image/png');
   }
 
-  function loadImageFile(file) {
+  var importDialogState = {
+    file: null,
+    isSvg: false,
+    sourceImg: null,
+    previewTimer: 0,
+    processedCanvas: null,
+    confirming: false,
+  };
+
+  function setImportConfirmBusy(busy) {
+    ['st-import-confirm', 'st-import-vector', 'st-import-confirm-svg'].forEach(function (id) {
+      var btn = document.getElementById(id);
+      if (btn) btn.disabled = !!busy;
+    });
+  }
+
+  function updateImportActionRows(isRaster, isSvg) {
+    var rasterActions = document.getElementById('st-import-actions-raster');
+    var defaultActions = document.getElementById('st-import-actions-default');
+    if (rasterActions) rasterActions.hidden = !isRaster;
+    if (defaultActions) defaultActions.hidden = isRaster || !isSvg;
+  }
+
+  function closeImportDialog() {
+    var dialog = document.getElementById('st-import-dialog');
+    if (dialog && dialog.open) dialog.close();
+    importDialogState.file = null;
+    importDialogState.isSvg = false;
+    importDialogState.sourceImg = null;
+    importDialogState.processedCanvas = null;
+    importDialogState.confirming = false;
+    clearTimeout(importDialogState.previewTimer);
+    setImportConfirmBusy(false);
+    var uploadEl = document.getElementById('st-upload');
+    if (uploadEl) uploadEl.value = '';
+  }
+
+  function drawImportPreviewCanvas(source) {
+    var canvas = document.getElementById('st-import-preview');
+    if (!canvas || !source) return;
+    var iw = source.naturalWidth || source.width;
+    var ih = source.naturalHeight || source.height;
+    if (!iw || !ih) return;
+    var maxW = 360;
+    var maxH = 260;
+    var scale = Math.min(maxW / iw, maxH / ih, 1);
+    var dw = Math.max(1, Math.round(iw * scale));
+    var dh = Math.max(1, Math.round(ih * scale));
+    canvas.width = dw;
+    canvas.height = dh;
+    var pctx = canvas.getContext('2d');
+    pctx.clearRect(0, 0, dw, dh);
+    pctx.drawImage(source, 0, 0, dw, dh);
+  }
+
+  function refreshImportPreview() {
+    var source = importDialogState.sourceImg;
+    if (!source) return;
+    var isSvg = importDialogState.isSvg;
+    var tolEl = document.getElementById('st-import-tolerance');
+
+    if (isSvg) {
+      importDialogState.processedCanvas = null;
+      drawImportPreviewCanvas(source);
+      updateImportStats(null, false);
+      return;
+    }
+
+    var tolerance = tolEl ? parseFloat(tolEl.value) : bgTolerance;
+    importDialogState.processedCanvas = processImageForSticker(source, {
+      removeBackground: true,
+      tolerance: tolerance,
+    });
+    drawImportPreviewCanvas(importDialogState.processedCanvas);
+    updateImportStats(importDialogState.processedCanvas.__alphaStats, true);
+  }
+
+  function scheduleImportPreview() {
+    clearTimeout(importDialogState.previewTimer);
+    importDialogState.previewTimer = setTimeout(refreshImportPreview, 80);
+  }
+
+  function imageFromCanvas(canvas, cb) {
+    var out = new Image();
+    out.onerror = function () { cb(null); };
+    out.onload = function () { cb(out); };
+    out.src = canvas.toDataURL('image/png');
+  }
+
+  function confirmImportDialog() {
+    if (importDialogState.confirming) return;
+
+    var file = importDialogState.file;
+    var source = importDialogState.sourceImg;
+    if (!file || !source) {
+      closeImportDialog();
+      return;
+    }
+
+    var isSvg = importDialogState.isSvg;
+    var tolEl = document.getElementById('st-import-tolerance');
+    removeBg = true;
+    if (tolEl) bgTolerance = parseFloat(tolEl.value);
+
+    importDialogState.confirming = true;
+    setImportConfirmBusy(true);
+
+    function finish(imgEl, stickerProcessed) {
+      if (!imgEl) {
+        importDialogState.confirming = false;
+        setImportConfirmBusy(false);
+        window.alert('Файлът не може да се обработи. Опитай отново или с друг формат.');
+        return;
+      }
+      addLayer(makeImageLayer(imgEl, file.name, isSvg, { stickerProcessed: !!stickerProcessed }));
+      closeImportDialog();
+      scheduleDraftSave();
+    }
+
+    if (isSvg) {
+      finish(source, false);
+      return;
+    }
+
+    clearTimeout(importDialogState.previewTimer);
+    refreshImportPreview();
+
+    if (importDialogState.processedCanvas) {
+      imageFromCanvas(importDialogState.processedCanvas, function (out) {
+        finish(out, true);
+      });
+      return;
+    }
+
+    removeBackgroundFromImage(source, function (out) {
+      finish(out, true);
+    }, bgTolerance);
+  }
+
+  function confirmImportDialogVector() {
+    if (importDialogState.confirming) return;
+    if (!window.ST_VECTOR || !ST_VECTOR.ready()) {
+      window.alert('Vector библиотеките не са заредени. Презареди страницата.');
+      return;
+    }
+
+    var file = importDialogState.file;
+    var source = importDialogState.sourceImg;
+    if (!file || !source || importDialogState.isSvg) {
+      closeImportDialog();
+      return;
+    }
+
+    var tolEl = document.getElementById('st-import-tolerance');
+    removeBg = true;
+    if (tolEl) bgTolerance = parseFloat(tolEl.value);
+
+    importDialogState.confirming = true;
+    setImportConfirmBusy(true);
+
+    clearTimeout(importDialogState.previewTimer);
+    refreshImportPreview();
+
+    var vectorData = importDialogState.processedCanvas
+      ? vectorDataFromProcessedCanvas(importDialogState.processedCanvas)
+      : null;
+
+    if (!vectorData) {
+      importDialogState.confirming = false;
+      setImportConfirmBusy(false);
+      window.alert('Trace не успя — опитай с по-контрастно изображение или промени чувствителността.');
+      return;
+    }
+
+    addLayer(makeVectorLayer(file.name, vectorData));
+    closeImportDialog();
+    scheduleDraftSave();
+  }
+
+  function openImportDialog(file) {
+    var dialog = document.getElementById('st-import-dialog');
+    if (!dialog) {
+      loadImageFileDirect(file);
+      return;
+    }
+
+    var isSvg = /\.svg$/i.test(file.name) || file.type === 'image/svg+xml';
+    var isRaster = isRasterImageFile(file);
+    var reader = new FileReader();
+    reader.onload = function () {
+      var raw = new Image();
+      raw.onload = function () {
+        importDialogState.file = file;
+        importDialogState.isSvg = isSvg;
+        importDialogState.sourceImg = raw;
+        importDialogState.processedCanvas = null;
+
+        var nameEl = document.getElementById('st-import-filename');
+        var pngOpts = document.getElementById('st-import-png-options');
+        var svgNote = document.getElementById('st-import-svg-note');
+        var tolEl = document.getElementById('st-import-tolerance');
+        var tolVal = document.getElementById('st-import-tolerance-val');
+
+        importDialogState.confirming = false;
+        setImportConfirmBusy(false);
+
+        if (nameEl) nameEl.textContent = file.name;
+        if (pngOpts) pngOpts.hidden = !isRaster;
+        if (svgNote) svgNote.hidden = !isSvg;
+        updateImportActionRows(isRaster, isSvg);
+        if (tolEl) {
+          tolEl.value = String(bgTolerance);
+          if (tolVal) tolVal.textContent = String(bgTolerance);
+        }
+
+        refreshImportPreview();
+        if (typeof dialog.showModal === 'function') dialog.showModal();
+      };
+      raw.onerror = function () {
+        window.alert('Файлът не може да се зареди. Опитай друг PNG или SVG.');
+      };
+      raw.src = reader.result;
+    };
+    reader.onerror = function () {
+      window.alert('Файлът не може да се прочете.');
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function loadImageFileDirect(file) {
     var isSvg = /\.svg$/i.test(file.name) || file.type === 'image/svg+xml';
     var reader = new FileReader();
     reader.onload = function () {
       var raw = new Image();
       raw.onload = function () {
-        function done(imgEl) { addLayer(makeImageLayer(imgEl, file.name, isSvg)); }
-        if (!isSvg && removeBg && /\.png$/i.test(file.name)) {
-          removeBackgroundFromImage(raw, done);
-        } else {
-          done(raw);
+        function finish(imgEl) {
+          addLayer(makeImageLayer(imgEl, file.name, isSvg, { stickerProcessed: isRasterImageFile(file) }));
         }
+        var processed = processImageForSticker(raw, {
+          removeBackground: isRasterImageFile(file),
+          tolerance: bgTolerance,
+        });
+        var out = new Image();
+        out.onload = function () { finish(out); };
+        out.src = processed.toDataURL('image/png');
       };
       raw.src = reader.result;
     };
     reader.readAsDataURL(file);
+  }
+
+  function loadImageFile(file) {
+    openImportDialog(file);
+  }
+
+  function initImportDialog() {
+    var dialog = document.getElementById('st-import-dialog');
+    if (!dialog) return;
+
+    on('st-import-cancel', 'click', closeImportDialog);
+    on('st-import-cancel-svg', 'click', closeImportDialog);
+    on('st-import-close-x', 'click', closeImportDialog);
+    on('st-import-confirm', 'click', confirmImportDialog);
+    on('st-import-confirm-svg', 'click', confirmImportDialog);
+    on('st-import-vector', 'click', confirmImportDialogVector);
+
+    dialog.addEventListener('cancel', function (e) {
+      e.preventDefault();
+      closeImportDialog();
+    });
+
+    dialog.addEventListener('click', function (e) {
+      if (e.target === dialog) closeImportDialog();
+    });
+
+    var tolEl = document.getElementById('st-import-tolerance');
+    var tolVal = document.getElementById('st-import-tolerance-val');
+
+    if (tolEl) {
+      tolEl.addEventListener('input', function () {
+        if (tolVal) tolVal.textContent = tolEl.value;
+        scheduleImportPreview();
+      });
+    }
   }
 
   function buildMsg() {
@@ -2233,6 +2877,8 @@
         var txt = getLayerText(layer).replace(/\n/g, ' / ');
         var alignLabel = layer.textAlign === 'left' ? ' · ляво' : layer.textAlign === 'right' ? ' · дясно' : '';
         lines.push('  ' + (i + 1) + '. Текст: "' + txt + '" · ' + layer.font + alignLabel);
+      } else if (layer.type === 'vector') {
+        lines.push('  ' + (i + 1) + '. Вектор: ' + layer.fileName);
       } else {
         lines.push('  ' + (i + 1) + '. Файл: ' + layer.fileName + (layer.isSvg ? ' (SVG)' : ' (PNG)'));
       }
@@ -2471,7 +3117,9 @@
       return;
     }
     layers.slice().reverse().forEach(function (layer) {
-      var name = layer.type === 'text' ? textLayerDisplayName(layer) : layer.fileName;
+      var name = layer.type === 'text'
+        ? textLayerDisplayName(layer)
+        : (layer.fileName || layer.name || 'слой');
       if (name.length > 20) name = name.slice(0, 18) + '…';
       var item = document.createElement('div');
       item.className = 'cfg-layer-item'
@@ -2530,6 +3178,7 @@
     }
     if (sel && sel.type === 'text') hint.textContent = '↻ горе = завърти · ↗ ъгъл = мащаб · ⊕ долу = мести (или влачи текста)';
     else if (sel && sel.type === 'image') hint.textContent = '↻ горе = завърти · ↗ ъгъл = мащаб · ⊕ долу = мести (или влачи изображението)';
+    else if (sel && sel.type === 'vector') hint.textContent = '↻ горе = завърти · ↗ ъгъл = мащаб · ⊕ долу = мести (векторен слой)';
     else hint.textContent = layers.length ? 'Кликни слой за избор' : 'Добави поне един слой';
   }
 
@@ -2539,10 +3188,14 @@
     if (fitBtn) fitBtn.disabled = !layer;
     var textEdit = document.getElementById('st-edit-text');
     var imageEdit = document.getElementById('st-edit-image');
+    var vectorEdit = document.getElementById('st-edit-vector');
+    var traceBtn = document.getElementById('st-trace-layer');
     var textEl = document.getElementById('st-text');
     var fontEl = document.getElementById('st-font');
     var spacEl = document.getElementById('st-spacing');
     var fileNameEl = document.getElementById('st-file-name');
+    var fileTypeEl = document.getElementById('st-file-type-hint');
+    var vectorNameEl = document.getElementById('st-vector-name');
 
     var isText = layer && layer.type === 'text';
     if (textEdit) {
@@ -2550,6 +3203,7 @@
       textEdit.style.pointerEvents = isText ? '' : 'none';
     }
     if (imageEdit) imageEdit.hidden = !layer || layer.type !== 'image';
+    if (vectorEdit) vectorEdit.hidden = !layer || layer.type !== 'vector';
 
     if (isText) {
       if (textEl) textEl.value = getLayerText(layer);
@@ -2558,8 +3212,24 @@
         spacEl.value = layer.letterSpacing;
         document.getElementById('st-spacing-val').textContent = layer.letterSpacing;
       }
+      if (traceBtn) traceBtn.hidden = true;
     } else if (layer && layer.type === 'image') {
       if (fileNameEl) fileNameEl.textContent = layer.fileName;
+      if (fileTypeEl) {
+        fileTypeEl.textContent = layer.isSvg
+          ? 'Векторен SVG — подходящ за рязане на плотер.'
+          : 'PNG растер — trace → вектор за плотер (бутон по-долу).';
+      }
+      if (traceBtn) {
+        traceBtn.hidden = !!layer.isSvg;
+        traceBtn.disabled = !!layer.isSvg;
+      }
+    } else if (layer && layer.type === 'vector') {
+      if (vectorNameEl) vectorNameEl.textContent = layer.fileName || layer.name;
+      if (traceBtn) traceBtn.hidden = true;
+    } else {
+      if (fileTypeEl) fileTypeEl.textContent = '';
+      if (traceBtn) traceBtn.hidden = true;
     }
 
     updateLayerHint();
@@ -2870,7 +3540,7 @@
       clearSnapGuides();
       var dist = Math.hypot(px - box.cx, py - box.cy);
       var ratio = dist / ptr.startDist;
-      if (layer.type === 'image') {
+      if (layer.type === 'image' || layer.type === 'vector') {
         layer.size = Math.max(0.1, ptr.startScale * ratio);
       } else {
         layer.size = Math.round(Math.max(TEXT_SIZE_MIN, Math.min(TEXT_SIZE_MAX, ptr.startScale * ratio)));
@@ -3013,9 +3683,8 @@
     e.target.value = '';
   });
 
-  document.getElementById('st-remove-bg').addEventListener('change', function (e) {
-    removeBg = e.target.checked;
-  });
+  initImportDialog();
+  on('st-trace-layer', 'click', traceSelectedImageLayer);
 
   var textInput = document.getElementById('st-text');
   if (textInput) {
@@ -3101,17 +3770,99 @@
     });
   });
 
+  function vectorDataFromProcessedCanvas(canvas) {
+    if (!window.ST_VECTOR || !ST_VECTOR.ready() || !canvas) return null;
+    var traced = ST_VECTOR.traceCanvas(canvas);
+    if (!traced.paths || !traced.paths.length) return null;
+    return traced;
+  }
+
+  function replaceLayerWithVector(layerId, vectorData) {
+    var layer = getLayerById(layerId);
+    if (!layer || !vectorData || !vectorData.paths || !vectorData.paths.length) return false;
+    var idx = -1;
+    var i;
+    for (i = 0; i < layers.length; i++) {
+      if (layers[i].id === layerId) { idx = i; break; }
+    }
+    if (idx < 0) return false;
+    var fileName = layer.fileName || layer.name || 'vector.svg';
+    var newLayer = makeVectorLayer(fileName, vectorData, {
+      size: layer.size,
+      x: layer.x,
+      y: layer.y,
+      rotation: layer.rotation,
+    });
+    layers[idx] = newLayer;
+    selectedLayerIds = [newLayer.id];
+    selectedLayerId = newLayer.id;
+    renderLayersPanel();
+    syncControlsToSelectedLayer();
+    updateAlignButtons();
+    drawPreview();
+    updateLinks();
+    saveHistory();
+    return true;
+  }
+
+  function traceSelectedImageLayer() {
+    var layer = getSelectedLayer();
+    if (!layer || layer.type !== 'image' || layer.isSvg) {
+      window.alert('Избери растерен PNG/JPG слой за векторизация.');
+      return;
+    }
+    if (!window.ST_VECTOR || !ST_VECTOR.ready()) {
+      window.alert('Vector библиотеките не са заредени. Презареди страницата.');
+      return;
+    }
+    var btn = document.getElementById('st-trace-layer');
+    if (btn) btn.disabled = true;
+    var off = document.createElement('canvas');
+    if (layer.stickerProcessed && layer.imgEl && layer.imgEl.naturalWidth) {
+      off.width = layer.imgEl.naturalWidth;
+      off.height = layer.imgEl.naturalHeight;
+      off.getContext('2d').drawImage(layer.imgEl, 0, 0);
+    } else if (layer.imgEl && layer.imgEl.naturalWidth) {
+      var processed = processImageForSticker(layer.imgEl, { removeBackground: true, tolerance: bgTolerance });
+      off.width = processed.width;
+      off.height = processed.height;
+      off.getContext('2d').drawImage(processed, 0, 0);
+    } else {
+      if (btn) btn.disabled = false;
+      window.alert('Изображението не е готово за trace.');
+      return;
+    }
+    var vectorData = vectorDataFromProcessedCanvas(off);
+    if (btn) btn.disabled = false;
+    if (!vectorData) {
+      window.alert('Trace не успя — опитай с по-просто лого или по-висока чувствителност при import.');
+      return;
+    }
+    replaceLayerWithVector(layer.id, vectorData);
+  }
+
   function downloadPlotterSvg() {
     if (!layers.length) return;
-    try {
+    var btns = ['st-download-svg', 'st-download-svg-basic'];
+    btns.forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) el.disabled = true;
+    });
+    buildExportSvgAsync(function (svg, err) {
+      btns.forEach(function (id) {
+        var el = document.getElementById(id);
+        if (el) el.disabled = false;
+      });
+      if (err || !svg) {
+        console.error('SVG export failed', err);
+        window.alert('SVG експортът не успя. Опитай отново или опрости дизайна.');
+        return;
+      }
       var w = stickerSize.widthCm;
       var h = stickerSize.heightCm;
       var name = 'savovpro-sticker-' + String(w).replace('.', '-') + 'x' + String(h).replace('.', '-') + 'cm.svg';
-      downloadBlob(name, 'image/svg+xml;charset=utf-8', buildExportSvg());
-    } catch (err) {
-      console.error('SVG export failed', err);
-      window.alert('SVG експортът не успя. Ако има качени изображения, опитай с PNG/SVG файл от компютъра.');
-    }
+      downloadBlob(name, 'image/svg+xml;charset=utf-8', svg);
+    });
   }
 
   document.getElementById('st-fit-layer').addEventListener('click', function () {

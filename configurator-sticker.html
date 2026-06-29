@@ -123,7 +123,7 @@
                     <button type="button" id="st-add-text" class="cfg-layer-add-btn">+ Текст</button>
                     <label class="cfg-layer-add-btn cfg-layer-add-btn--file">
                       + SVG / PNG
-                      <input type="file" id="st-upload" accept=".svg,.png,image/svg+xml,image/png" hidden />
+                      <input type="file" id="st-upload" accept=".svg,.png,.jpg,.jpeg,.webp,image/svg+xml,image/png,image/jpeg,image/webp" hidden />
                     </label>
                   </div>
                   <div class="st-fit-basic-row st-basic-only">
@@ -206,10 +206,13 @@
 
                   <div id="st-edit-image" hidden>
                     <p class="st-file-name" id="st-file-name"></p>
-                    <label class="st-bg-toggle" data-st-mode="advanced">
-                      <input type="checkbox" id="st-remove-bg" checked />
-                      Премахни фона автоматично <span class="cfg-label-note">(PNG)</span>
-                    </label>
+                    <p class="cfg-hint st-file-type-hint" id="st-file-type-hint"></p>
+                    <button type="button" class="btn btn-outline st-trace-btn" id="st-trace-layer" hidden data-st-mode="advanced">Преобразувай в вектор (SVG paths)</button>
+                  </div>
+
+                  <div id="st-edit-vector" hidden>
+                    <p class="st-file-name" id="st-vector-name"></p>
+                    <p class="cfg-hint">Векторен слой — готов за рязане на плотер (SVG paths).</p>
                   </div>
 
                   <p class="st-canvas-edit-hint" data-st-mode="advanced">Местене, мащаб и завъртане — от маркерите на canvas</p>
@@ -250,7 +253,7 @@
 
             <div class="st-plotter-dl-row st-basic-only">
               <button type="button" class="btn btn-outline" id="st-download-svg-basic">SVG за плотер</button>
-              <p class="cfg-hint st-plotter-dl-hint">Точен размер · бяло върху прозрачно · контур за рязане</p>
+              <p class="cfg-hint st-plotter-dl-hint">Точен размер · текст и PNG → SVG paths · контур за рязане</p>
             </div>
 
             <div class="cfg-cta">
@@ -271,6 +274,49 @@
       <p class="footer-copy">© <span id="year"></span> SAVOV PRO Ltd. Всички права запазени.</p>
     </div>
   </footer>
+
+  <dialog class="st-import-dialog" id="st-import-dialog" aria-labelledby="st-import-title">
+    <div class="st-import-dialog__panel">
+      <header class="st-import-dialog__head">
+        <div>
+          <h2 class="st-import-dialog__title" id="st-import-title">Импорт на файл</h2>
+          <p class="st-import-dialog__file" id="st-import-filename"></p>
+        </div>
+        <button type="button" class="st-import-dialog__close" id="st-import-close-x" aria-label="Затвори">×</button>
+      </header>
+
+      <div class="st-import-preview-wrap" aria-label="Преглед преди импорт">
+        <canvas id="st-import-preview" width="300" height="220"></canvas>
+      </div>
+      <p class="st-import-preview-hint">Превюто показва бял силует върху прозрачно — точно както ще изглежда на стикера.</p>
+
+      <div class="st-import-options" id="st-import-png-options" hidden>
+        <div class="st-import-tolerance" id="st-import-tolerance-row">
+          <label class="cfg-label" for="st-import-tolerance">Чувствителност на премахване на фон</label>
+          <div class="cfg-range-row">
+            <input class="cfg-range" id="st-import-tolerance" type="range" min="12" max="100" value="52" step="2" />
+            <span class="cfg-range-val" id="st-import-tolerance-val">52</span>
+          </div>
+          <p class="cfg-hint st-import-tolerance-hint">По-висока стойност маха повече светлина (бял/сив фон). Намали, ако изяжда детайли от логото.</p>
+          <p class="cfg-hint st-import-stats" id="st-import-stats" hidden></p>
+        </div>
+      </div>
+
+      <p class="st-import-svg-note" id="st-import-svg-note" hidden>
+        SVG е векторен файл — подходящ за рязане на плотер. Фонът не се обработва автоматично.
+      </p>
+
+      <div class="st-import-actions st-import-actions--raster" id="st-import-actions-raster" hidden>
+        <button type="button" class="btn btn-outline" id="st-import-cancel">Отказ</button>
+        <button type="button" class="btn btn-outline" id="st-import-vector">Добави векторен слой</button>
+        <button type="button" class="btn btn-primary" id="st-import-confirm">Добави растерен слой</button>
+      </div>
+      <div class="st-import-actions" id="st-import-actions-default" hidden>
+        <button type="button" class="btn btn-outline" id="st-import-cancel-svg">Отказ</button>
+        <button type="button" class="btn btn-primary" id="st-import-confirm-svg">Добави слой</button>
+      </div>
+    </div>
+  </dialog>
 
   <dialog class="st-shortcuts-dialog" id="st-shortcuts-dialog" aria-labelledby="st-shortcuts-title">
     <div class="st-shortcuts-dialog__panel">

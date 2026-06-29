@@ -18,6 +18,16 @@
     return;
   }
 
+  function loadScript(src, next) {
+    var s = document.createElement('script');
+    s.src = src;
+    s.onload = next;
+    s.onerror = function () {
+      window.location.replace('configurator.html');
+    };
+    document.body.appendChild(s);
+  }
+
   var catalog = document.createElement('script');
   catalog.src = meta.catalog;
   catalog.onload = function () {
@@ -25,14 +35,15 @@
       window.location.replace('configurator.html');
       return;
     }
-    var clipart = document.createElement('script');
-    clipart.src = 'assets/js/configurator/clipart.js';
-    clipart.onload = function () {
-      var core = document.createElement('script');
-      core.src = 'assets/js/configurator/sticker-core.js?v=20250623';
-      document.body.appendChild(core);
-    };
-    document.body.appendChild(clipart);
+    loadScript('assets/js/configurator/clipart.js', function () {
+      loadScript('assets/js/vendor/opentype.min.js', function () {
+        loadScript('assets/js/vendor/imagetracer.js', function () {
+          loadScript('assets/js/configurator/sticker-vector.js?v=20250629', function () {
+            loadScript('assets/js/configurator/sticker-core.js?v=20250629', function () {});
+          });
+        });
+      });
+    });
   };
   catalog.onerror = function () {
     window.location.replace('configurator.html');
