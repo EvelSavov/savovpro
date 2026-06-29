@@ -3843,18 +3843,45 @@
     replaceLayerWithVector(layer.id, vectorData);
   }
 
-  function downloadPlotterSvg() {
-    if (!layers.length) return;
-    var btns = ['st-download-svg', 'st-download-svg-basic'];
-    btns.forEach(function (id) {
+  var SVG_EXPORT_BTN_IDS = ['st-download-svg', 'st-download-svg-basic'];
+  var svgExportBusy = false;
+
+  function setSvgExportLoading(loading) {
+    SVG_EXPORT_BTN_IDS.forEach(function (id) {
       var el = document.getElementById(id);
-      if (el) el.disabled = true;
+      if (!el) return;
+      el.disabled = loading;
+      el.classList.toggle('is-exporting', loading);
+      el.setAttribute('aria-busy', String(loading));
+      if (loading) {
+        if (!el.dataset.origLabel) {
+          el.dataset.origLabel = (el.textContent || '').trim() || el.getAttribute('title') || 'SVG';
+        }
+        if (el.classList.contains('cfg-icon-btn')) {
+          el.setAttribute('title', 'Генерира SVG…');
+          el.setAttribute('aria-label', 'Генерира SVG…');
+        } else {
+          el.textContent = 'Генерира SVG…';
+        }
+      } else {
+        el.removeAttribute('aria-busy');
+        if (el.classList.contains('cfg-icon-btn')) {
+          el.setAttribute('title', 'SVG за плотер (точен размер)');
+          el.setAttribute('aria-label', 'SVG за плотер');
+        } else if (el.dataset.origLabel) {
+          el.textContent = el.dataset.origLabel;
+        }
+      }
     });
+  }
+
+  function downloadPlotterSvg() {
+    if (!layers.length || svgExportBusy) return;
+    svgExportBusy = true;
+    setSvgExportLoading(true);
     buildExportSvgAsync(function (svg, err) {
-      btns.forEach(function (id) {
-        var el = document.getElementById(id);
-        if (el) el.disabled = false;
-      });
+      svgExportBusy = false;
+      setSvgExportLoading(false);
       if (err || !svg) {
         console.error('SVG export failed', err);
         window.alert('SVG експортът не успя. Опитай отново или опрости дизайна.');

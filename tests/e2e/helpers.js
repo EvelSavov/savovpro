@@ -5,6 +5,7 @@ const path = require('path');
 const FIXTURES = path.join(__dirname, '..', 'fixtures');
 const SAMPLE_LOGO = path.join(FIXTURES, 'sample-logo.png');
 const STICKER_DRAFT_KEY = 'savovpro-sticker-draft-v1';
+const ENGRAVE_DRAFT_KEY = 'savovpro-engrave-draft-v1';
 const STICKER_ONBOARDING_KEY = 'savovpro-sticker-onboarding-v1';
 
 function sampleLogoPath() {
@@ -27,6 +28,21 @@ async function clearStickerDraft(page) {
   await page.addInitScript((key) => {
     localStorage.removeItem(key);
   }, STICKER_DRAFT_KEY);
+}
+
+/** @param {import('@playwright/test').Page} page */
+async function clearEngraveDraft(page) {
+  await page.addInitScript((key) => {
+    localStorage.removeItem(key);
+  }, ENGRAVE_DRAFT_KEY);
+}
+
+/** One-time clear — does not run again on reload (use in draft-restore tests). */
+/** @param {import('@playwright/test').Page} page */
+async function clearEngraveDraftOnce(page) {
+  await page.evaluate((key) => {
+    localStorage.removeItem(key);
+  }, ENGRAVE_DRAFT_KEY);
 }
 
 /** @param {import('@playwright/test').Page} page */
@@ -102,6 +118,8 @@ module.exports = {
   sampleLogoPng,
   dismissStickerOnboarding,
   clearStickerDraft,
+  clearEngraveDraft,
+  clearEngraveDraftOnce,
   waitEngraveReady,
   waitStickerReady,
   switchStickerAdvanced,
@@ -110,4 +128,5 @@ module.exports = {
   importStickerVector,
   readDownloadText,
   STICKER_DRAFT_KEY,
+  ENGRAVE_DRAFT_KEY,
 };

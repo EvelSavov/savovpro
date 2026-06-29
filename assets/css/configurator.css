@@ -1520,6 +1520,25 @@
   background: rgba(255, 90, 90, 0.08);
 }
 
+.cfg-icon-btn.is-exporting,
+.btn.is-exporting {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+.cfg-icon-btn.is-exporting::after {
+  content: '';
+  display: inline-block;
+  width: 0.75rem;
+  height: 0.75rem;
+  margin-left: 0.35rem;
+  border: 2px solid rgba(201, 162, 39, 0.35);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: kc-spin 0.7s linear infinite;
+  vertical-align: middle;
+}
+
 .st-import-dialog {
   width: min(94vw, 440px);
   max-height: 90vh;

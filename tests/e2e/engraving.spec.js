@@ -4,10 +4,14 @@ const {
   waitEngraveReady,
   openEngraveClipart,
   sampleLogoPath,
+  clearEngraveDraft,
+  clearEngraveDraftOnce,
+  ENGRAVE_DRAFT_KEY,
 } = require('./helpers');
 
 test.describe('Keychain engrave configurator', () => {
   test.beforeEach(async ({ page }) => {
+    await clearEngraveDraft(page);
     await page.goto('/configurator-product.html?cat=keychains');
     await waitEngraveReady(page);
   });
@@ -49,8 +53,51 @@ test.describe('Keychain engrave configurator', () => {
   });
 });
 
+test.describe('Engrave draft restore', () => {
+  test('restores design after refresh', async ({ page }) => {
+    await page.goto('/configurator-product.html?cat=keychains');
+    await clearEngraveDraftOnce(page);
+    await page.reload();
+    await waitEngraveReady(page);
+
+    const unique = 'ENGRAVE-' + Date.now();
+    await page.locator('#kc-line1').fill(unique);
+    await page.waitForTimeout(1200);
+
+    const saved = await page.evaluate((key) => localStorage.getItem(key), ENGRAVE_DRAFT_KEY);
+    expect(saved).toBeTruthy();
+    expect(saved).toContain(unique);
+
+    await page.reload();
+    await waitEngraveReady(page);
+    await expect(page.locator('#kc-draft-notice')).toBeVisible();
+    await expect(page.locator('#kc-line1')).toHaveValue(unique);
+  });
+
+  test('start over clears draft after confirm', async ({ page }) => {
+    await page.goto('/configurator-product.html?cat=keychains');
+    await clearEngraveDraftOnce(page);
+    await page.reload();
+    await waitEngraveReady(page);
+
+    await page.locator('#kc-line1').fill('TO-CLEAR');
+    await page.waitForTimeout(1200);
+
+    page.once('dialog', (dialog) => dialog.accept());
+    await page.locator('#kc-start-over').click();
+    await expect(page.locator('#kc-line1')).toHaveValue('ИМЕ');
+    await page.waitForTimeout(1200);
+
+    const saved = await page.evaluate((key) => localStorage.getItem(key), ENGRAVE_DRAFT_KEY);
+    expect(saved).toBeTruthy();
+    expect(saved).toContain('ИМЕ');
+    expect(saved).not.toContain('TO-CLEAR');
+  });
+});
+
 test.describe('Freshener engrave configurator', () => {
   test('hides double-sided engraving section', async ({ page }) => {
+    await clearEngraveDraft(page);
     await page.goto('/configurator-product.html?cat=fresheners');
     await waitEngraveReady(page);
     await expect(page.locator('#acc-engrave')).toBeHidden();

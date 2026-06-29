@@ -49,6 +49,7 @@
           updatePriceDisplay();
           draw();
           updateLinks();
+          scheduleDraftSave();
         });
         grid.appendChild(btn);
       });
@@ -204,6 +205,310 @@
     var EXTRA_DOUBLE_DIFF = 5;
     var sideStorage = [null, null];  /* stores snapshotLayers() per side */
 
+    var DRAFT_KEY = 'savovpro-engrave-draft-v1';
+    var DRAFT_SAVE_MS = 700;
+    var draftSaveTimer = 0;
+    var ICONIFY_CDN = 'https://api.iconify.design';
+
+    function iconSvgUrl(iconId, colorHex) {
+      var parts = iconId.split(':');
+      var url = ICONIFY_CDN + '/' + parts[0] + '/' + parts[1] + '.svg';
+      if (colorHex) url += '?color=%23' + colorHex;
+      return url;
+    }
+
+    function serializeLayerForDraft(layer) {
+      if (layer.type === 'text') {
+        return {
+          id: layer.id,
+          type: 'text',
+          name: layer.name,
+          line1: layer.line1,
+          line2: layer.line2,
+          font: layer.font,
+          size: layer.size,
+          letterSpacing: layer.letterSpacing,
+          x: layer.x,
+          y: layer.y,
+          rotation: layer.rotation,
+          color: layer.color,
+          visible: layer.visible,
+        };
+      }
+      if (layer.type === 'icon') {
+        return {
+          id: layer.id,
+          type: 'icon',
+          name: layer.name,
+          iconId: layer.iconId,
+          size: layer.size,
+          x: layer.x,
+          y: layer.y,
+          rotation: layer.rotation,
+          color: layer.color,
+          visible: layer.visible,
+        };
+      }
+      if (layer.type === 'image') {
+        return {
+          id: layer.id,
+          type: 'image',
+          name: layer.name,
+          size: layer.size,
+          x: layer.x,
+          y: layer.y,
+          rotation: layer.rotation,
+          visible: layer.visible,
+          dataUrl: layer.imgEl && layer.imgEl.src ? layer.imgEl.src : null,
+        };
+      }
+      return null;
+    }
+
+    function serializeSideLayers(sideLayers) {
+      if (!sideLayers || !sideLayers.length) return null;
+      return sideLayers.map(serializeLayerForDraft).filter(Boolean);
+    }
+
+    function buildDraftPayload() {
+      var sidesCopy = sideStorage.slice();
+      if (state.sides === 2 && !state.sameDesign) {
+        sidesCopy[state.activeSide] = snapshotLayers();
+      }
+      return {
+        v: 1,
+        catId: CFG.id,
+        savedAt: Date.now(),
+        model: state.model,
+        sides: state.sides,
+        sameDesign: state.sameDesign,
+        activeSide: state.activeSide,
+        nextLayerId: nextLayerId,
+        selectedLayerId: selectedLayerId,
+        layers: layers.map(serializeLayerForDraft).filter(Boolean),
+        sideStorage: sidesCopy.map(serializeSideLayers),
+      };
+    }
+
+    function scheduleDraftSave() {
+      if (draftSaveTimer) clearTimeout(draftSaveTimer);
+      draftSaveTimer = setTimeout(function () {
+        draftSaveTimer = 0;
+        try {
+          localStorage.setItem(DRAFT_KEY, JSON.stringify(buildDraftPayload()));
+        } catch (e) { /* quota / private mode */ }
+      }, DRAFT_SAVE_MS);
+    }
+
+    function restoreTextLayerFromDraft(data) {
+      return {
+        id: data.id,
+        type: 'text',
+        name: data.name || data.line1 || 'Текст',
+        line1: data.line1 != null ? data.line1 : '',
+        line2: data.line2 || '',
+        font: data.font || 'Montserrat',
+        size: data.size != null ? data.size : 18,
+        letterSpacing: data.letterSpacing || 0,
+        x: data.x || 0,
+        y: data.y || 0,
+        rotation: data.rotation || 0,
+        color: data.color || DEFAULT_COLOR,
+        visible: data.visible !== false,
+      };
+    }
+
+    function loadImageLayerFromDraft(data) {
+      return new Promise(function (resolve) {
+        if (!data.dataUrl) {
+          resolve(null);
+          return;
+        }
+        var img = new Image();
+        img.onload = function () {
+          resolve({
+            id: data.id,
+            type: 'image',
+            name: data.name || 'Лого',
+            imgEl: img,
+            size: data.size != null ? data.size : 1,
+            x: data.x || 0,
+            y: data.y || 0,
+            rotation: data.rotation || 0,
+            color: DEFAULT_COLOR,
+            visible: data.visible !== false,
+          });
+        };
+        img.onerror = function () { resolve(null); };
+        img.src = data.dataUrl;
+      });
+    }
+
+    function loadIconLayerFromDraft(data) {
+      return new Promise(function (resolve) {
+        if (!data.iconId) {
+          resolve(null);
+          return;
+        }
+        var colorHex = (data.color || DEFAULT_COLOR).replace('#', '');
+        var img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = function () {
+          resolve({
+            id: data.id,
+            type: 'icon',
+            name: data.name || (data.iconId.split(':')[1] || data.iconId).replace(/-/g, ' '),
+            iconId: data.iconId,
+            iconImg: img,
+            size: data.size != null ? data.size : 60,
+            x: data.x || 0,
+            y: data.y || 0,
+            rotation: data.rotation || 0,
+            color: data.color || DEFAULT_COLOR,
+            visible: data.visible !== false,
+          });
+        };
+        img.onerror = function () {
+          if (img.src.indexOf('?') !== -1) {
+            img.src = iconSvgUrl(data.iconId);
+          } else {
+            resolve(null);
+          }
+        };
+        img.src = iconSvgUrl(data.iconId, colorHex);
+      });
+    }
+
+    function restoreLayersFromDraftData(layerDataList) {
+      if (!layerDataList || !layerDataList.length) return Promise.resolve([]);
+      return Promise.all(layerDataList.map(function (data) {
+        if (data.type === 'text') return Promise.resolve(restoreTextLayerFromDraft(data));
+        if (data.type === 'icon') return loadIconLayerFromDraft(data);
+        if (data.type === 'image') return loadImageLayerFromDraft(data);
+        return Promise.resolve(null);
+      })).then(function (restored) {
+        return restored.filter(Boolean);
+      });
+    }
+
+    function applyDraftMeta(draft) {
+      if (draft.model && MODELS[draft.model]) state.model = draft.model;
+      if (draft.sides != null) state.sides = draft.sides;
+      if (draft.sameDesign != null) state.sameDesign = draft.sameDesign;
+      if (draft.activeSide != null) state.activeSide = draft.activeSide;
+      if (draft.nextLayerId != null) nextLayerId = draft.nextLayerId;
+      selectedLayerId = draft.selectedLayerId != null ? draft.selectedLayerId : selectedLayerId;
+
+      document.querySelectorAll('.cfg-model-btn').forEach(function (b) {
+        b.classList.toggle('is-active', b.dataset.model === state.model);
+      });
+      updateSidesUI();
+      updatePriceDisplay();
+    }
+
+    function hideDraftNotice() {
+      var el = document.getElementById('kc-draft-notice');
+      if (!el) return;
+      el.hidden = true;
+      clearTimeout(hideDraftNotice._timer);
+    }
+
+    function showDraftRestoredNotice() {
+      var el = document.getElementById('kc-draft-notice');
+      if (!el) return;
+      el.hidden = false;
+      clearTimeout(hideDraftNotice._timer);
+      hideDraftNotice._timer = setTimeout(hideDraftNotice, 4500);
+    }
+
+    function clearDraftStorage() {
+      try { localStorage.removeItem(DRAFT_KEY); } catch (e) { /* ignore */ }
+    }
+
+    function resetToDefaultDesign() {
+      layers = [];
+      selectedLayerId = null;
+      nextLayerId = 1;
+      state.model = CFG.defaultModel;
+      state.sides = 1;
+      state.sameDesign = true;
+      state.activeSide = 0;
+      sideStorage = [null, null];
+      history = [];
+      historyIdx = -1;
+
+      document.querySelectorAll('.cfg-model-btn').forEach(function (b) {
+        b.classList.toggle('is-active', b.dataset.model === state.model);
+      });
+
+      hideDraftNotice();
+      layers = [makeTextLayer({ line1: 'ИМЕ' })];
+      selectedLayerId = layers[0].id;
+      renderLayersPanel();
+      syncControlsToSelectedLayer();
+      updateSidesUI();
+      updateLinks();
+      saveHistory();
+      draw();
+    }
+
+    function startOver() {
+      if (!window.confirm('Да изтрием ли текущия дизайн и да започнем отначало?')) return;
+      clearDraftStorage();
+      resetToDefaultDesign();
+    }
+
+    function initStartOverButton() {
+      var btn = document.getElementById('kc-start-over');
+      if (btn) btn.addEventListener('click', startOver);
+    }
+
+    function restoreDraftFromStorage() {
+      var raw;
+      try {
+        raw = localStorage.getItem(DRAFT_KEY);
+      } catch (e) {
+        return Promise.resolve(false);
+      }
+      if (!raw) return Promise.resolve(false);
+
+      var draft;
+      try {
+        draft = JSON.parse(raw);
+      } catch (e) {
+        return Promise.resolve(false);
+      }
+      if (!draft || draft.catId !== CFG.id || !draft.layers || !draft.layers.length) {
+        return Promise.resolve(false);
+      }
+
+      return restoreLayersFromDraftData(draft.layers).then(function (restoredLayers) {
+        if (!restoredLayers.length) return false;
+        layers = restoredLayers;
+
+        var sidePromise = Promise.resolve();
+        if (draft.sideStorage && draft.sideStorage.length) {
+          sidePromise = Promise.all(draft.sideStorage.map(function (sideData) {
+            if (!sideData) return Promise.resolve(null);
+            return restoreLayersFromDraftData(sideData);
+          })).then(function (sides) {
+            sideStorage[0] = sides[0] && sides[0].length ? sides[0] : null;
+            sideStorage[1] = sides[1] && sides[1].length ? sides[1] : null;
+          });
+        }
+
+        return sidePromise.then(function () {
+          applyDraftMeta(draft);
+          renderLayersPanel();
+          syncControlsToSelectedLayer();
+          draw();
+          updateLinks();
+          showDraftRestoredNotice();
+          return true;
+        });
+      });
+    }
+
     function getPrice() {
       var m = MODELS[state.model];
       if (!m) return 0;
@@ -276,6 +581,7 @@
       syncControlsToSelectedLayer();
       updateSidesUI();
       draw();
+      scheduleDraftSave();
     }
 
     /* ── Undo / Redo ── */
@@ -289,6 +595,7 @@
       history.push(snap);
       if (history.length > MAX_HIST) history.shift(); else historyIdx++;
       updateUndoRedoBtns();
+      scheduleDraftSave();
     }
 
     function applySnapshot(snap) {
@@ -470,10 +777,17 @@
             if (dims) elementBoxes[layer.id] = { cx: lx, cy: ly, w: dims.w, h: dims.h, rotation: layer.rotation };
           });
 
-          /* 4. Clip to mask */
+          /* 4. Clip to mask or rectangular engraving zone */
           if (maskImg) {
             lc.globalCompositeOperation = 'destination-in';
             lc.drawImage(maskImg, ix, iy, iw, ih);
+            lc.globalCompositeOperation = 'source-over';
+          } else if (m.textMaxW) {
+            var clipW = iw * m.textMaxW;
+            var clipH = ih * (m.clipH != null ? m.clipH : m.textMaxW * 0.55);
+            lc.globalCompositeOperation = 'destination-in';
+            lc.fillStyle = '#000';
+            lc.fillRect(centerX - clipW / 2, centerY - clipH / 2, clipW, clipH);
             lc.globalCompositeOperation = 'source-over';
           }
 
@@ -811,6 +1125,7 @@
       layer.name  = this.value || 'Текст';
       updateCharCount('kc-line1', this.value);
       renderLayersPanel(); draw(); updateLinks();
+      scheduleDraftSave();
     });
     document.getElementById('kc-line1').addEventListener('change', function () {
       var layer = getSelectedLayer();
@@ -823,6 +1138,7 @@
       layer.line2 = this.value;
       updateCharCount('kc-line2', this.value);
       draw(); updateLinks();
+      scheduleDraftSave();
     });
     document.getElementById('kc-line2').addEventListener('change', function () {
       var layer = getSelectedLayer();
@@ -933,6 +1249,7 @@
           renderLayersPanel(); syncControlsToSelectedLayer();
         }
         updateSidesUI(); draw(); updateLinks();
+        scheduleDraftSave();
       });
     });
 
@@ -949,6 +1266,7 @@
           state.activeSide = 0;
         }
         updateSidesUI(); draw(); updateLinks();
+        scheduleDraftSave();
       });
     });
 
@@ -1227,14 +1545,6 @@
       var searchBtn   = document.getElementById('kc-clipart-search-btn');
       var activeXhr   = null;
 
-      /* Build the SVG url for a given icon + optional hex color (no #) */
-      function iconSvgUrl(iconId, colorHex) {
-        var parts = iconId.split(':');
-        var url = ICONIFY + '/' + parts[0] + '/' + parts[1] + '.svg';
-        if (colorHex) url += '?color=%23' + colorHex;
-        return url;
-      }
-
       /* Load an Iconify icon and add as a new icon layer */
       function addIconLayerFromId(iconId) {
         var sel = getSelectedLayer();
@@ -1413,20 +1723,26 @@
 
     applyCategoryUI();
     renderModelGrid();
+    initStartOverButton();
 
-    /* ── Initial setup: create first text layer ── */
-    layers = [makeTextLayer({ line1: 'ИМЕ' })];
-    selectedLayerId = layers[0].id;
-    renderLayersPanel();
-    syncControlsToSelectedLayer();
-    updateSidesUI();
-    updateLinks();
-
-    /* ── Initial render after fonts load ── */
-    if (document.fonts && document.fonts.ready) {
-      document.fonts.ready.then(function () { draw(); saveHistory(); });
-    } else {
-      setTimeout(function () { draw(); saveHistory(); }, 600);
+    function finishInit() {
+      renderLayersPanel();
+      syncControlsToSelectedLayer();
+      updateSidesUI();
+      updateLinks();
+      if (document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(function () { draw(); saveHistory(); });
+      } else {
+        setTimeout(function () { draw(); saveHistory(); }, 600);
+      }
     }
+
+    restoreDraftFromStorage().then(function (restored) {
+      if (!restored) {
+        layers = [makeTextLayer({ line1: 'ИМЕ' })];
+        selectedLayerId = layers[0].id;
+      }
+      finishInit();
+    });
 
   })();
