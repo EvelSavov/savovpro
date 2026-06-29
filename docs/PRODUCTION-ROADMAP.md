@@ -48,13 +48,14 @@
   - `assets/js/configurator/sticker-core.js`, `boot-sticker.js`
   - `configurator-sticker.html`, `configurator.css`
   - `package.json`, `playwright.config.js`, `tests/`, `docs/`
-- [ ] **Deploy към GitHub Pages** (CNAME: `savovpro.com`)
-- [ ] **Post-deploy smoke test на production**
-  - [ ] Sticker: import PNG → raster layer (не бял правоъгълник)
+- [x] **Deploy към GitHub Pages** (CNAME: `savovpro.com`) — merged to `main` 29 юни 2026
+- [x] **Post-deploy smoke test на production**
+  - [x] Vendor JS live (`opentype.min.js` → HTTP 200)
+  - [ ] Sticker: import PNG → raster layer (ръчно на live)
   - [ ] Sticker: „SVG за плотер“ → файл с `<path>`, не `<text>`
   - [ ] Keychain: PNG download + WA link
   - [ ] Hard refresh / cache bust (`sticker-core.js?v=…`)
-- [ ] **Провери vendor файлове на live URL** — 404 = счупен plotter export
+- [x] **Провери vendor файлове на live URL** — `https://savovpro.com/assets/js/vendor/opentype.min.js` OK
 
 ---
 
