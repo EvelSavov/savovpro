@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+Disallow: /go/
+Disallow: /test-results/
+Disallow: /playwright-report/
+
+Sitemap: https://savovpro.com/sitemap.xml
