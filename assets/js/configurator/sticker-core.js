@@ -27,7 +27,7 @@
     ghostLeft: 0,
   };
   var removeBg = CFG.defaults.removeBg !== false;
-  var bgTolerance = 52;
+  var bgTolerance = 40;
 
   var stickerSize = { widthCm: CFG.defaults.widthCm, heightCm: CFG.defaults.heightCm };
   var VIEW_ZOOM_MIN = 0.4;
@@ -42,12 +42,38 @@
 
   var TEXT_SIZE_MIN = 6;
   var TEXT_SIZE_MAX = 200;
+  var TEXT_LAYOUT_FILL_RATIO = 0.98;
+
+  function getTextLayoutArea(rect) {
+    return {
+      maxW: rect.w * TEXT_LAYOUT_FILL_RATIO,
+      maxH: rect.h * TEXT_LAYOUT_FILL_RATIO,
+    };
+  }
+
+  function normalizeTextLayoutArea(areaOrMaxW, maxH) {
+    if (areaOrMaxW && typeof areaOrMaxW === 'object' && areaOrMaxW.maxW != null) {
+      return {
+        maxW: areaOrMaxW.maxW,
+        maxH: areaOrMaxW.maxH != null ? areaOrMaxW.maxH : areaOrMaxW.maxW,
+      };
+    }
+    return {
+      maxW: areaOrMaxW,
+      maxH: maxH != null ? maxH : areaOrMaxW,
+    };
+  }
+
+  function getTextSizeMax(rect) {
+    return Math.max(TEXT_SIZE_MAX, Math.ceil(Math.max(rect.w, rect.h) * 1.2));
+  }
   var ROT_MIN = -360;
   var ROT_MAX = 360;
   var HANDLE_KNOB_PX = 11;
   var HANDLE_HIT_PX = 16;
   var HANDLE_STEM_PX = 26;
   var TEXT_COLOR = '#ffffff';
+  var SVG_EXPORT_FILL = '#C9A227';
   var COLOR_OK = { stroke: 'rgba(201,162,39,0.9)', strokeSoft: 'rgba(201,162,39,0.7)', fill: '#C9A227' };
   var COLOR_WARN = { stroke: 'rgba(255,90,90,0.95)', strokeSoft: 'rgba(255,90,90,0.8)', fill: '#ff5a5a' };
   var COLOR_SNAP = 'rgba(255, 120, 200, 0.95)';
@@ -62,6 +88,7 @@
   var ONBOARDING_KEY = 'savovpro-sticker-onboarding-v1';
   var DRAFT_SAVE_MS = 700;
   var draftSaveTimer = 0;
+  var draftSessionDirty = false;
   var snapEnabled = true;
   var uiMode = 'basic';
   var selectionHover = false;
@@ -383,7 +410,7 @@
     var label = defaultTextLayerLabel(num);
     var txt = opts.text !== undefined ? opts.text
       : opts.line1 !== undefined ? (opts.line2 ? opts.line1 + '\n' + opts.line2 : opts.line1)
-      : label;
+      : (CFG.defaults.defaultText || 'SAVOV PRO\nMade for you');
     return {
       id: nextLayerId++,
       type: 'text',
@@ -397,6 +424,70 @@
       rotation: opts.rotation || 0,
       visible: true,
     };
+  }
+
+  function isIconifyId(id) {
+    return !!id && /^[a-z0-9-]+:[a-z0-9-]+$/i.test(id);
+  }
+
+  function iconifySvgUrl(iconId) {
+    if (!isIconifyId(iconId)) return null;
+    var parts = iconId.split(':');
+    return 'https://api.iconify.design/' + encodeURIComponent(parts[0]) + '/' + encodeURIComponent(parts[1]) + '.svg';
+  }
+
+  function tintMonochromeImage(lc, img, x, y, uW, uH, color) {
+    lc.drawImage(img, x, y, uW, uH);
+    lc.globalCompositeOperation = 'source-in';
+    lc.fillStyle = color;
+    lc.fillRect(x, y, uW, uH);
+  }
+
+  function fetchIconifyVectorData(iconId) {
+    var url = iconifySvgUrl(iconId);
+    if (!url || !window.ST_VECTOR || !ST_VECTOR.parseSvgPaths) {
+      return Promise.reject(new Error('vector unavailable'));
+    }
+    return fetch(url).then(function (res) {
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return res.text();
+    }).then(function (svgText) {
+      var vd = ST_VECTOR.parseSvgPaths(svgText);
+      if (!vd || !vd.paths || !vd.paths.length) throw new Error('no paths');
+      return vd;
+    });
+  }
+
+  function buildVectorLayerFromDraft(data, vd) {
+    return {
+      id: data.id,
+      type: 'vector',
+      name: data.name || (data.fileName || 'icon').split(':').pop().replace(/-/g, ' '),
+      fileName: data.fileName || 'icon.svg',
+      paths: vd.paths.slice(),
+      viewW: vd.viewW,
+      viewH: vd.viewH,
+      offsetX: vd.offsetX || 0,
+      offsetY: vd.offsetY || 0,
+      contentW: vd.contentW || vd.viewW,
+      contentH: vd.contentH || vd.viewH,
+      pathCount: vd.pathCount || vd.paths.length,
+      size: data.size != null ? data.size : 1,
+      x: data.x || 0,
+      y: data.y || 0,
+      rotation: data.rotation || 0,
+      visible: data.visible !== false,
+    };
+  }
+
+  function addClipartIconLayer(iconId) {
+    fetchIconifyVectorData(iconId).then(function (vd) {
+      var namePart = iconId.split(':')[1] || iconId;
+      addLayer(makeVectorLayer(iconId, vd, { name: namePart.replace(/-/g, ' ') }));
+    }).catch(function (err) {
+      console.warn('Clipart vector load failed:', iconId, err);
+      window.alert('Иконата не може да се зареди. Провери интернет връзката и опитай отново.');
+    });
   }
 
   function makeImageLayer(imgEl, fileName, isSvg, opts) {
@@ -418,14 +509,21 @@
 
   function makeVectorLayer(fileName, vectorData, opts) {
     opts = opts || {};
+    var contentW = vectorData.contentW || vectorData.viewW || 1;
+    var contentH = vectorData.contentH || vectorData.viewH || 1;
     return {
       id: nextLayerId++,
       type: 'vector',
       name: opts.name || fileName || 'Вектор',
       fileName: fileName || 'vector.svg',
       paths: (vectorData.paths || []).slice(),
-      viewW: vectorData.viewW || 1,
-      viewH: vectorData.viewH || 1,
+      viewW: vectorData.viewW || contentW,
+      viewH: vectorData.viewH || contentH,
+      offsetX: vectorData.offsetX || 0,
+      offsetY: vectorData.offsetY || 0,
+      contentW: contentW,
+      contentH: contentH,
+      pathCount: vectorData.pathCount || (vectorData.paths || []).length,
       size: opts.size !== undefined ? opts.size : 1,
       x: opts.x || 0, y: opts.y || 0,
       rotation: opts.rotation || 0,
@@ -463,14 +561,15 @@
     if (maxId >= nextLayerId) nextLayerId = maxId + 1;
   }
 
-  function saveHistory() {
+  function saveHistory(markDraft) {
     var snap = { layers: snapshotLayers(), sel: selectedLayerId, sels: selectedLayerIds.slice() };
     history = history.slice(0, historyIdx + 1);
     history.push(snap);
     if (history.length > MAX_HIST) history.shift();
     historyIdx = history.length - 1;
     updateUndoRedoBtns();
-    scheduleDraftSave();
+    if (markDraft !== false) markDraftDirty();
+    else scheduleDraftSave();
   }
 
   function serializeLayerForDraft(layer) {
@@ -515,6 +614,11 @@
         paths: layer.paths,
         viewW: layer.viewW,
         viewH: layer.viewH,
+        offsetX: layer.offsetX || 0,
+        offsetY: layer.offsetY || 0,
+        contentW: layer.contentW || layer.viewW,
+        contentH: layer.contentH || layer.viewH,
+        pathCount: layer.pathCount || (layer.paths || []).length,
         size: layer.size,
         x: layer.x,
         y: layer.y,
@@ -528,6 +632,7 @@
   function buildDraftPayload() {
     return {
       v: 1,
+      touched: true,
       savedAt: Date.now(),
       stickerSize: { widthCm: stickerSize.widthCm, heightCm: stickerSize.heightCm },
       view: { scale: view.scale, panX: view.panX, panY: view.panY },
@@ -542,10 +647,81 @@
     };
   }
 
+  function normalizeDraftLayerForCompare(layer) {
+    if (!layer) return null;
+    if (layer.type === 'text') {
+      return {
+        type: 'text',
+        text: String(layer.text != null ? layer.text : '').trim(),
+        font: layer.font || CFG.defaults.font || 'Montserrat',
+        textAlign: layer.textAlign || 'center',
+        letterSpacing: layer.letterSpacing || 0,
+      };
+    }
+    if (layer.type === 'vector') {
+      return {
+        type: 'vector',
+        fileName: layer.fileName || layer.name || '',
+        pathCount: layer.pathCount || (layer.paths || []).length,
+      };
+    }
+    if (layer.type === 'image') {
+      return {
+        type: 'image',
+        fileName: layer.fileName || layer.name || '',
+        isSvg: !!layer.isSvg,
+      };
+    }
+    return { type: layer.type || 'unknown' };
+  }
+
+  function draftContentSignature(payload) {
+    payload = payload || buildDraftPayload();
+    var size = payload.stickerSize || {};
+    return JSON.stringify({
+      w: Number(size.widthCm) || 0,
+      h: Number(size.heightCm) || 0,
+      ui: payload.uiMode || 'basic',
+      layers: (payload.layers || []).map(normalizeDraftLayerForCompare).filter(Boolean),
+    });
+  }
+
+  function defaultDraftContentSignature() {
+    return draftContentSignature({
+      stickerSize: {
+        widthCm: CFG.defaults.widthCm,
+        heightCm: CFG.defaults.heightCm,
+      },
+      uiMode: 'basic',
+      layers: [{
+        type: 'text',
+        text: CFG.defaults.defaultText || 'SAVOV PRO\nMade for you',
+        font: CFG.defaults.font || 'Montserrat',
+        textAlign: 'center',
+        letterSpacing: 0,
+      }],
+    });
+  }
+
+  function isMeaningfulStoredDraft(draft) {
+    if (!draft || !draft.layers || !draft.layers.length) return false;
+    if (draft.touched) return true;
+    return draftContentSignature(draft) !== defaultDraftContentSignature();
+  }
+
+  function markDraftDirty() {
+    draftSessionDirty = true;
+    scheduleDraftSave();
+  }
+
   function scheduleDraftSave() {
     if (draftSaveTimer) clearTimeout(draftSaveTimer);
     draftSaveTimer = setTimeout(function () {
       draftSaveTimer = 0;
+      if (!draftSessionDirty) {
+        clearDraftStorage();
+        return;
+      }
       try {
         localStorage.setItem(DRAFT_KEY, JSON.stringify(buildDraftPayload()));
       } catch (e) { /* quota / private mode */ }
@@ -579,6 +755,11 @@
       paths: data.paths.slice(),
       viewW: data.viewW || 1,
       viewH: data.viewH || 1,
+      offsetX: data.offsetX || 0,
+      offsetY: data.offsetY || 0,
+      contentW: data.contentW || data.viewW || 1,
+      contentH: data.contentH || data.viewH || 1,
+      pathCount: data.pathCount || (data.paths || []).length,
       size: data.size != null ? data.size : 1,
       x: data.x || 0,
       y: data.y || 0,
@@ -589,11 +770,34 @@
 
   function loadImageLayerFromDraft(data) {
     return new Promise(function (resolve) {
+      if (isIconifyId(data.fileName)) {
+        fetchIconifyVectorData(data.fileName).then(function (vd) {
+          resolve(buildVectorLayerFromDraft(data, vd));
+        }).catch(function () {
+          if (!data.dataUrl) {
+            resolve(null);
+            return;
+          }
+          loadRasterImageLayerFromDraft(data).then(resolve);
+        });
+        return;
+      }
+      if (!data.dataUrl) {
+        resolve(null);
+        return;
+      }
+      loadRasterImageLayerFromDraft(data).then(resolve);
+    });
+  }
+
+  function loadRasterImageLayerFromDraft(data) {
+    return new Promise(function (resolve) {
       if (!data.dataUrl) {
         resolve(null);
         return;
       }
       var img = new Image();
+      if (data.dataUrl.indexOf('api.iconify.design') !== -1) img.crossOrigin = 'anonymous';
       img.onload = function () {
         resolve({
           id: data.id,
@@ -639,6 +843,7 @@
     var hEl = document.getElementById('st-height');
     if (wEl) wEl.value = String(stickerSize.widthCm);
     if (hEl) hEl.value = String(stickerSize.heightCm);
+    syncSizeInputsToState();
     updateSnapToggleUi();
     setUiMode(uiMode, { skipSave: true });
     updateZoomUI();
@@ -665,6 +870,94 @@
     try { localStorage.removeItem(DRAFT_KEY); } catch (e) { /* ignore */ }
   }
 
+  function parseDraftFromStorage() {
+    var raw;
+    try {
+      raw = localStorage.getItem(DRAFT_KEY);
+    } catch (e) {
+      return null;
+    }
+    if (!raw) return null;
+    try {
+      var draft = JSON.parse(raw);
+      if (!draft || !draft.layers || !draft.layers.length) return null;
+      return draft;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function hasDraftInStorage() {
+    var draft = parseDraftFromStorage();
+    if (!draft) return false;
+    return isMeaningfulStoredDraft(draft);
+  }
+
+  function renderDraftResumeSummary() {
+    var summaryEl = document.getElementById('st-draft-resume-summary');
+    var draft = parseDraftFromStorage();
+    if (!summaryEl || !draft) return;
+    var lines = [];
+    var w = draft.stickerSize && draft.stickerSize.widthCm;
+    var h = draft.stickerSize && draft.stickerSize.heightCm;
+    if (w && h) lines.push('<div><strong>Размер:</strong> ' + w + ' × ' + h + ' cm</div>');
+    lines.push('<div><strong>Слоеве:</strong> ' + draft.layers.length + '</div>');
+    if (draft.savedAt) {
+      var when = new Date(draft.savedAt);
+      if (!isNaN(when.getTime())) {
+        lines.push('<div><strong>Запазен:</strong> ' + when.toLocaleString('bg-BG') + '</div>');
+      }
+    }
+    summaryEl.innerHTML = lines.join('');
+  }
+
+  function closeDraftResumeDialog() {
+    var dialog = document.getElementById('st-draft-resume-dialog');
+    if (dialog && dialog.open) dialog.close();
+  }
+
+  function openDraftResumeDialog() {
+    var dialog = document.getElementById('st-draft-resume-dialog');
+    if (!dialog) return;
+    renderDraftResumeSummary();
+    if (typeof dialog.showModal === 'function') dialog.showModal();
+  }
+
+  function bootFreshSession() {
+    openSetupWizard();
+  }
+
+  function continueWithSavedDraft() {
+    closeDraftResumeDialog();
+    restoreDraftFromStorage().then(function (restored) {
+      if (restored) {
+        draftSessionDirty = true;
+        finishInitAfterLayers();
+      } else {
+        bootFreshSession();
+      }
+    });
+  }
+
+  function startNewFromDraftPrompt() {
+    closeDraftResumeDialog();
+    clearDraftStorage();
+    draftSessionDirty = false;
+    hideDraftNotice();
+    resetDesignShellForWizard();
+    openSetupWizard();
+  }
+
+  function initDraftResumeDialog() {
+    var dialog = document.getElementById('st-draft-resume-dialog');
+    if (!dialog) return;
+    on('st-draft-resume-continue', 'click', continueWithSavedDraft);
+    on('st-draft-resume-new', 'click', startNewFromDraftPrompt);
+    dialog.addEventListener('cancel', function (e) {
+      e.preventDefault();
+    });
+  }
+
   function resetToDefaultDesign() {
     layers = [];
     selectedLayerIds = [];
@@ -676,7 +969,7 @@
     view.panX = 0;
     view.panY = 0;
     removeBg = CFG.defaults.removeBg !== false;
-    bgTolerance = 52;
+    bgTolerance = 40;
     snapEnabled = true;
     history = [];
     historyIdx = -1;
@@ -685,13 +978,14 @@
     var hEl = document.getElementById('st-height');
     if (wEl) wEl.value = String(stickerSize.widthCm);
     if (hEl) hEl.value = String(stickerSize.heightCm);
+    syncSizeInputsToState();
 
     updateSnapToggleUi();
     updateZoomUI();
     updateQuickSizeButtons();
     hideDraftNotice();
     addLayer(makeTextLayer(), true);
-    saveHistory();
+    saveHistory(false);
     updateAlignButtons();
     updatePriceDisplay();
     updateLinks();
@@ -701,7 +995,9 @@
   function startOver() {
     if (!window.confirm('Да изтрием ли текущия дизайн и да започнем отначало?')) return;
     clearDraftStorage();
-    resetToDefaultDesign();
+    draftSessionDirty = false;
+    resetDesignShellForWizard();
+    openSetupWizard();
   }
 
   function initStartOverButton() {
@@ -710,21 +1006,8 @@
   }
 
   function restoreDraftFromStorage() {
-    var raw;
-    try {
-      raw = localStorage.getItem(DRAFT_KEY);
-    } catch (e) {
-      return Promise.resolve(false);
-    }
-    if (!raw) return Promise.resolve(false);
-
-    var draft;
-    try {
-      draft = JSON.parse(raw);
-    } catch (e) {
-      return Promise.resolve(false);
-    }
-    if (!draft || !draft.layers || !draft.layers.length) return Promise.resolve(false);
+    var draft = parseDraftFromStorage();
+    if (!draft) return Promise.resolve(false);
 
     return Promise.all(draft.layers.map(function (data) {
       if (data.type === 'text') return Promise.resolve(restoreTextLayerFromDraft(data));
@@ -741,7 +1024,6 @@
       updateAlignButtons();
       drawPreview();
       updateLinks();
-      showDraftRestoredNotice();
       return true;
     });
   }
@@ -774,7 +1056,7 @@
     }
     if (!opts.skipSave) {
       try { localStorage.setItem(UI_MODE_KEY, uiMode); } catch (e) { /* ignore */ }
-      scheduleDraftSave();
+      markDraftDirty();
     }
   }
 
@@ -804,11 +1086,648 @@
     });
   }
 
+  var setupWizardState = {
+    stepIndex: 0,
+    widthCm: 20,
+    heightCm: 10,
+    contentType: 'text',
+    text: '',
+    svgFileName: '',
+    svgVectorData: null,
+  };
+
+  function markSetupWizardDone() {
+    try { localStorage.setItem(ONBOARDING_KEY, '1'); } catch (e) { /* ignore */ }
+    var card = document.getElementById('st-onboarding');
+    if (card) card.classList.add('is-dismissed');
+  }
+
+  function resetDesignShellForWizard() {
+    draftSessionDirty = false;
+    layers = [];
+    selectedLayerIds = [];
+    selectedLayerId = null;
+    nextLayerId = 1;
+    history = [];
+    historyIdx = -1;
+    hideDraftNotice();
+    hideWizardFollowup();
+    renderLayersPanel();
+    syncControlsToSelectedLayer();
+    drawPreview();
+  }
+
+  function hideWizardFollowup() {
+    var el = document.getElementById('st-wizard-followup');
+    if (!el) return;
+    el.hidden = true;
+    el.textContent = '';
+    clearTimeout(hideWizardFollowup._timer);
+  }
+
+  function showWizardFollowup(message) {
+    var el = document.getElementById('st-wizard-followup');
+    if (!el) return;
+    el.textContent = message;
+    el.hidden = false;
+    clearTimeout(hideWizardFollowup._timer);
+    hideWizardFollowup._timer = setTimeout(hideWizardFollowup, 8000);
+  }
+
+  function wizardStepIds() {
+    var steps = ['intro', 'size', 'content'];
+    if (setupWizardState.contentType === 'text' || setupWizardState.contentType === 'both') {
+      steps.push('text');
+    }
+    if (setupWizardState.contentType === 'svg' || setupWizardState.contentType === 'both') {
+      steps.push('svg');
+    }
+    steps.push('done');
+    return steps;
+  }
+
+  function wizardCurrentStepId() {
+    var steps = wizardStepIds();
+    return steps[setupWizardState.stepIndex] || 'done';
+  }
+
+  function syncSetupWizardFromInputs() {
+    var wEl = document.getElementById('st-wizard-width');
+    var hEl = document.getElementById('st-wizard-height');
+    var textEl = document.getElementById('st-wizard-text');
+    if (wEl) setupWizardState.widthCm = parseFloat(wEl.value) || CFG.defaults.widthCm;
+    if (hEl) setupWizardState.heightCm = parseFloat(hEl.value) || CFG.defaults.heightCm;
+    if (textEl) setupWizardState.text = textEl.value;
+  }
+
+  function syncSetupWizardToInputs() {
+    var wEl = document.getElementById('st-wizard-width');
+    var hEl = document.getElementById('st-wizard-height');
+    var textEl = document.getElementById('st-wizard-text');
+    if (wEl) wEl.value = String(setupWizardState.widthCm);
+    if (hEl) hEl.value = String(setupWizardState.heightCm);
+    if (textEl && !textEl.value && setupWizardState.text) textEl.value = setupWizardState.text;
+    updateWizardQuickSizeButtons();
+    updateWizardSvgUploadUi();
+    applyWizardTextFontPreview();
+  }
+
+  function clearWizardSvgUploadState() {
+    setupWizardState.svgFileName = '';
+    setupWizardState.svgVectorData = null;
+    var fileEl = document.getElementById('st-wizard-svg-file');
+    if (fileEl) fileEl.value = '';
+    updateWizardSvgUploadUi();
+  }
+
+  function updateWizardSvgUploadUi() {
+    var nameEl = document.getElementById('st-wizard-svg-name');
+    if (!nameEl) return;
+    if (setupWizardState.svgFileName && setupWizardState.svgVectorData) {
+      nameEl.textContent = setupWizardState.svgFileName;
+      nameEl.classList.add('is-ready');
+      nameEl.classList.remove('is-error');
+      return;
+    }
+    nameEl.textContent = 'Няма избран файл';
+    nameEl.classList.remove('is-ready', 'is-error');
+  }
+
+  function parseWizardSvgFile(file, callback) {
+    if (!isSvgUploadFile(file)) {
+      callback(new Error(SVG_UPLOAD_ONLY_MSG));
+      return;
+    }
+    readFileAsText(file, function (err, text) {
+      if (err || !text) {
+        callback(new Error('Файлът не може да се прочете.'));
+        return;
+      }
+      if (window.ST_VECTOR && ST_VECTOR.prepareSvgImport) {
+        var svgImport = ST_VECTOR.prepareSvgImport(text);
+        if (svgImport.rasterOnly) {
+          callback(new Error('Този SVG съдържа само вградена снимка, без path контури. Експортирай отново като векторен SVG.'));
+          return;
+        }
+        var vd = svgImport.vectorData;
+        if (vd && vd.paths && vd.paths.length) {
+          callback(null, { fileName: file.name, vectorData: vd });
+          return;
+        }
+      } else {
+        var legacyVd = (window.ST_VECTOR && ST_VECTOR.parseSvgPaths)
+          ? ST_VECTOR.parseSvgPaths(text)
+          : null;
+        if (legacyVd && legacyVd.paths && legacyVd.paths.length) {
+          callback(null, { fileName: file.name, vectorData: legacyVd });
+          return;
+        }
+      }
+      callback(new Error('SVG файлът няма path елементи. Нужен е векторен SVG с контури.'));
+    });
+  }
+
+  function handleWizardSvgFile(file) {
+    if (!file) return;
+    var nameEl = document.getElementById('st-wizard-svg-name');
+    parseWizardSvgFile(file, function (err, result) {
+      if (err) {
+        setupWizardState.svgFileName = '';
+        setupWizardState.svgVectorData = null;
+        if (nameEl) {
+          nameEl.textContent = err.message || 'Грешка при файла';
+          nameEl.classList.add('is-error');
+          nameEl.classList.remove('is-ready');
+        }
+        return;
+      }
+      setupWizardState.svgFileName = result.fileName;
+      setupWizardState.svgVectorData = result.vectorData;
+      updateWizardSvgUploadUi();
+    });
+  }
+
+  function updateWizardQuickSizeButtons() {
+    var wrap = document.getElementById('st-wizard-quick-sizes');
+    if (!wrap) return;
+    wrap.querySelectorAll('.st-pill-btn').forEach(function (btn) {
+      var w = parseFloat(btn.dataset.w);
+      var h = parseFloat(btn.dataset.h);
+      btn.classList.toggle('is-active', w === setupWizardState.widthCm && h === setupWizardState.heightCm);
+    });
+  }
+
+  function renderWizardQuickSizes() {
+    var wrap = document.getElementById('st-wizard-quick-sizes');
+    if (!wrap) return;
+    wrap.innerHTML = '';
+    (CFG.quickSizes || []).forEach(function (sz) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'st-pill-btn';
+      btn.dataset.w = String(sz.w);
+      btn.dataset.h = String(sz.h);
+      btn.textContent = sz.label + ' cm';
+      btn.addEventListener('click', function () {
+        setupWizardState.widthCm = sz.w;
+        setupWizardState.heightCm = sz.h;
+        syncSetupWizardToInputs();
+      });
+      wrap.appendChild(btn);
+    });
+    updateWizardQuickSizeButtons();
+  }
+
+  function applyWizardTextFontPreview() {
+    var textEl = document.getElementById('st-wizard-text');
+    if (!textEl) return;
+    var fontId = CFG.defaults.font || 'Montserrat';
+    var family = stickerCanvasFamily(fontId);
+    textEl.style.fontFamily = '"' + family + '", sans-serif';
+    textEl.style.fontWeight = '700';
+    if (!document.fonts || !document.fonts.load) return;
+    textEl.classList.add('is-font-loading');
+    loadCanvasFontFamily(fontId, [22, 28, 36, 48]).then(function () {
+      textEl.classList.remove('is-font-loading');
+    }).catch(function () {
+      textEl.classList.remove('is-font-loading');
+    });
+  }
+
+  function updateWizardContentChoices() {
+    document.querySelectorAll('[data-wizard-content]').forEach(function (btn) {
+      var active = btn.getAttribute('data-wizard-content') === setupWizardState.contentType;
+      btn.classList.toggle('is-active', active);
+      btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+  }
+
+  function renderWizardSummary() {
+    var summaryEl = document.getElementById('st-wizard-summary');
+    var svgReminder = document.getElementById('st-wizard-svg-reminder');
+    if (!summaryEl) return;
+    var lines = [];
+    lines.push('<div><strong>Размер:</strong> ' + setupWizardState.widthCm + ' × ' + setupWizardState.heightCm + ' cm</div>');
+    if (setupWizardState.contentType === 'text') {
+      lines.push('<div><strong>Съдържание:</strong> само текст</div>');
+    } else if (setupWizardState.contentType === 'svg') {
+      lines.push('<div><strong>Съдържание:</strong> само SVG лого</div>');
+    } else {
+      lines.push('<div><strong>Съдържание:</strong> текст + SVG лого</div>');
+    }
+    if (setupWizardState.contentType === 'text' || setupWizardState.contentType === 'both') {
+      var previewText = (setupWizardState.text || CFG.defaults.defaultText || '').replace(/\n/g, '<br>');
+      lines.push('<div><strong>Текст:</strong> ' + previewText + '</div>');
+    }
+    if (setupWizardState.contentType === 'svg' || setupWizardState.contentType === 'both') {
+      if (setupWizardState.svgFileName && setupWizardState.svgVectorData) {
+        lines.push('<div><strong>Лого:</strong> ' + setupWizardState.svgFileName + '</div>');
+      } else {
+        lines.push('<div><strong>Лого:</strong> не е качено</div>');
+      }
+    }
+    summaryEl.innerHTML = lines.join('');
+    if (svgReminder) {
+      svgReminder.hidden = !(
+        (setupWizardState.contentType === 'svg' || setupWizardState.contentType === 'both') &&
+        !setupWizardState.svgVectorData
+      );
+    }
+  }
+
+  function updateSetupWizardUi() {
+    var steps = wizardStepIds();
+    var currentId = wizardCurrentStepId();
+    var stepLabel = document.getElementById('st-wizard-step-label');
+    var progress = document.getElementById('st-wizard-progress');
+    var backBtn = document.getElementById('st-wizard-back');
+    var nextBtn = document.getElementById('st-wizard-next');
+    var doneBtn = document.getElementById('st-wizard-done');
+    var foot = document.getElementById('st-wizard-foot');
+
+    ['intro', 'size', 'content', 'text', 'svg', 'done'].forEach(function (id) {
+      var panel = document.getElementById('st-wizard-step-' + id);
+      if (!panel) return;
+      var active = id === currentId;
+      panel.hidden = !active;
+      panel.classList.toggle('is-active', active);
+    });
+
+    if (stepLabel) {
+      stepLabel.textContent = 'Стъпка ' + (setupWizardState.stepIndex + 1) + ' от ' + steps.length;
+    }
+
+    if (progress) {
+      if (progress.childElementCount !== steps.length) {
+        progress.innerHTML = '';
+        for (var di = 0; di < steps.length; di += 1) {
+          var newDot = document.createElement('span');
+          newDot.className = 'st-wizard-progress__dot';
+          progress.appendChild(newDot);
+        }
+      }
+      var dots = progress.querySelectorAll('.st-wizard-progress__dot');
+      dots.forEach(function (dot, idx) {
+        dot.classList.toggle('is-active', idx === setupWizardState.stepIndex);
+        dot.classList.toggle('is-done', idx < setupWizardState.stepIndex);
+      });
+    }
+
+    if (backBtn) backBtn.hidden = setupWizardState.stepIndex <= 0;
+    if (nextBtn) {
+      nextBtn.hidden = currentId === 'done';
+      nextBtn.textContent = currentId === 'intro' ? 'Започни' : 'Напред';
+    }
+    if (doneBtn) doneBtn.hidden = currentId !== 'done';
+    if (foot) foot.classList.toggle('is-first-step', setupWizardState.stepIndex <= 0);
+
+    if (currentId === 'text') applyWizardTextFontPreview();
+    if (currentId === 'svg') updateWizardSvgUploadUi();
+    if (currentId === 'done') renderWizardSummary();
+  }
+
+  function readDefaultSetupWizardState() {
+    return {
+      stepIndex: 0,
+      widthCm: stickerSize.widthCm || CFG.defaults.widthCm || 20,
+      heightCm: stickerSize.heightCm || CFG.defaults.heightCm || 10,
+      contentType: 'text',
+      text: CFG.defaults.defaultText || 'SAVOV PRO\nMade for you',
+      svgFileName: '',
+      svgVectorData: null,
+    };
+  }
+
+  function closeSetupWizard() {
+    var dialog = document.getElementById('st-setup-wizard');
+    if (dialog && dialog.open) dialog.close();
+  }
+
+  function openSetupWizard() {
+    var dialog = document.getElementById('st-setup-wizard');
+    if (!dialog) return;
+    setupWizardState = readDefaultSetupWizardState();
+    renderWizardQuickSizes();
+    syncSetupWizardToInputs();
+    updateWizardContentChoices();
+    updateSetupWizardUi();
+    if (typeof dialog.showModal === 'function') dialog.showModal();
+  }
+
+  function wizardGoNext() {
+    syncSetupWizardFromInputs();
+    var steps = wizardStepIds();
+    if (wizardCurrentStepId() === 'done') {
+      finishSetupWizard();
+      return;
+    }
+    if (setupWizardState.stepIndex < steps.length - 1) {
+      setupWizardState.stepIndex += 1;
+      if (wizardCurrentStepId() === 'text') {
+        var textEl = document.getElementById('st-wizard-text');
+        if (textEl && !textEl.value) textEl.value = setupWizardState.text || CFG.defaults.defaultText || '';
+      }
+      updateSetupWizardUi();
+    }
+  }
+
+  function wizardGoBack() {
+    syncSetupWizardFromInputs();
+    if (setupWizardState.stepIndex > 0) {
+      setupWizardState.stepIndex -= 1;
+      updateSetupWizardUi();
+    }
+  }
+
+  function wizardProducedNonDefaultDesign() {
+    syncSetupWizardFromInputs();
+    if (setupWizardState.widthCm !== CFG.defaults.widthCm ||
+        setupWizardState.heightCm !== CFG.defaults.heightCm) {
+      return true;
+    }
+    if (setupWizardState.contentType !== 'text') return true;
+    if (setupWizardState.svgVectorData && setupWizardState.svgVectorData.paths &&
+        setupWizardState.svgVectorData.paths.length) {
+      return true;
+    }
+    var text = (setupWizardState.text || '').trim();
+    var defaultText = (CFG.defaults.defaultText || 'SAVOV PRO\nMade for you').trim();
+    return text !== defaultText;
+  }
+
+  function skipSetupWizard() {
+    closeSetupWizard();
+    markSetupWizardDone();
+    draftSessionDirty = false;
+    if (!layers.length) resetToDefaultDesign();
+    else {
+      saveHistory(false);
+      updateAlignButtons();
+      updatePriceDisplay();
+      updateLinks();
+      drawPreview();
+    }
+  }
+
+  function finishSetupWizard() {
+    syncSetupWizardFromInputs();
+    closeSetupWizard();
+    markSetupWizardDone();
+    hideWizardFollowup();
+
+    layers = [];
+    selectedLayerIds = [];
+    selectedLayerId = null;
+    nextLayerId = 1;
+    history = [];
+    historyIdx = -1;
+
+    applyStickerSize(setupWizardState.widthCm, setupWizardState.heightCm, { skipHistory: true });
+
+    if (setupWizardState.contentType === 'text' || setupWizardState.contentType === 'both') {
+      var textValue = setupWizardState.text.trim() || CFG.defaults.defaultText || 'SAVOV PRO\nMade for you';
+      addLayer(makeTextLayer({
+        text: textValue,
+        font: CFG.defaults.font || 'Montserrat',
+      }), true);
+      var textLayer = getSelectedLayer();
+      if (textLayer) fitLayerToSticker(textLayer);
+    }
+
+    if (setupWizardState.svgVectorData && setupWizardState.svgVectorData.paths && setupWizardState.svgVectorData.paths.length) {
+      addLayer(makeVectorLayer(
+        setupWizardState.svgFileName || 'logo.svg',
+        setupWizardState.svgVectorData
+      ), true);
+      var vectorLayer = getSelectedLayer();
+      if (vectorLayer) fitLayerToSticker(vectorLayer);
+    } else if (setupWizardState.contentType === 'svg') {
+      renderLayersPanel();
+      syncControlsToSelectedLayer();
+    }
+
+    saveHistory(false);
+    if (wizardProducedNonDefaultDesign()) markDraftDirty();
+    updateAlignButtons();
+    updatePriceDisplay();
+    updateLinks();
+
+    preloadStickerFonts().then(function () {
+      drawPreview();
+    });
+
+    if (
+      (setupWizardState.contentType === 'svg' || setupWizardState.contentType === 'both') &&
+      !setupWizardState.svgVectorData
+    ) {
+      showWizardFollowup('Сега качи SVG файла от + SVG в секция Слоеве.');
+      var accLayers = document.getElementById('acc-layers');
+      if (accLayers && !accLayers.classList.contains('is-open')) {
+        accLayers.classList.add('is-open');
+        var head = accLayers.querySelector('.cfg-acc-head');
+        if (head) head.setAttribute('aria-expanded', 'true');
+      }
+    }
+  }
+
+  function initSetupWizard() {
+    var dialog = document.getElementById('st-setup-wizard');
+    if (!dialog) return;
+
+    renderWizardQuickSizes();
+
+    document.querySelectorAll('[data-wizard-content]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var nextType = btn.getAttribute('data-wizard-content') || 'text';
+        if (nextType !== 'svg' && nextType !== 'both') {
+          clearWizardSvgUploadState();
+        }
+        setupWizardState.contentType = nextType;
+        var steps = wizardStepIds();
+        if (setupWizardState.stepIndex >= steps.length) {
+          setupWizardState.stepIndex = Math.max(0, steps.length - 1);
+        }
+        updateWizardContentChoices();
+        updateSetupWizardUi();
+      });
+    });
+
+    ['st-wizard-width', 'st-wizard-height'].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      el.addEventListener('input', function () {
+        var val = parseFloat(el.value);
+        if (id === 'st-wizard-width') setupWizardState.widthCm = val || setupWizardState.widthCm;
+        else setupWizardState.heightCm = val || setupWizardState.heightCm;
+        updateWizardQuickSizeButtons();
+      });
+    });
+
+    on('st-wizard-svg-pick', 'click', function () {
+      var fileEl = document.getElementById('st-wizard-svg-file');
+      if (fileEl) fileEl.click();
+    });
+    on('st-wizard-svg-file', 'change', function (e) {
+      var file = e.target.files && e.target.files[0];
+      if (file) handleWizardSvgFile(file);
+      e.target.value = '';
+    });
+
+    on('st-wizard-next', 'click', wizardGoNext);
+    on('st-wizard-back', 'click', wizardGoBack);
+    on('st-wizard-done', 'click', finishSetupWizard);
+    on('st-wizard-skip-top', 'click', skipSetupWizard);
+
+    dialog.addEventListener('cancel', function (e) {
+      e.preventDefault();
+    });
+  }
+
+  function finishInitAfterLayers() {
+    saveHistory(false);
+    updateAlignButtons();
+    updatePriceDisplay();
+    updateLinks();
+    preloadStickerFonts().then(function () {
+      drawPreview();
+    });
+  }
+
+  function stickerCanvasFamily(catalogFontId) {
+    return 'SAVOV ' + (catalogFontId || CFG.defaults.font || 'Montserrat');
+  }
+
+  function canvasFontSpec(catalogFontId, sizePx) {
+    return '700 ' + Math.max(7, Math.ceil(sizePx)) + 'px "' + stickerCanvasFamily(catalogFontId) + '"';
+  }
+
+  function isCanvasFontReady(catalogFontId, sizePx) {
+    if (!document.fonts || !document.fonts.check) return true;
+    return document.fonts.check(canvasFontSpec(catalogFontId, sizePx));
+  }
+
+  function loadCanvasFontFamily(catalogFontId, sizesPx) {
+    if (!document.fonts || !document.fonts.load) return Promise.resolve();
+    var loads = [];
+    sizesPx.forEach(function (sz) {
+      loads.push(document.fonts.load(canvasFontSpec(catalogFontId, sz)).catch(function () { return null; }));
+    });
+    return Promise.all(loads);
+  }
+
   function preloadStickerFonts() {
-    if (!document.fonts || !document.fonts.load || !CFG.fonts) return Promise.resolve();
-    return Promise.all(CFG.fonts.map(function (f) {
-      return document.fonts.load('700 24px "' + f.id + '"').catch(function () { return null; });
-    })).catch(function () { return null; });
+    if (!CFG.fonts) return Promise.resolve();
+    var ids = CFG.fonts.map(function (f) { return f.id; });
+    var loads = [];
+    if (document.fonts && document.fonts.load) {
+      loads = loads.concat(ids.map(function (id) {
+        return loadCanvasFontFamily(id, [22, 48, 64]);
+      }));
+    }
+    if (window.ST_VECTOR && ST_VECTOR.preloadFonts) {
+      loads.push(ST_VECTOR.preloadFonts(ids).catch(function () { return null; }));
+    }
+    if (!loads.length) return Promise.resolve();
+    return Promise.all(loads).catch(function () { return null; });
+  }
+
+  function syncEditorToLayers() {
+    var textInput = document.getElementById('st-text');
+    var fontEl = document.getElementById('st-font');
+    var spacEl = document.getElementById('st-spacing');
+    var layer = getSelectedLayer();
+    if (!layer || layer.type !== 'text') return;
+    if (textInput) layer.text = textInput.value;
+    if (fontEl && fontEl.value) layer.font = fontEl.value;
+    if (spacEl) layer.letterSpacing = parseFloat(spacEl.value) || 0;
+    clearTextMetricsCache();
+  }
+
+  function ensureExportFontsReady() {
+    syncEditorToLayers();
+    clearTextMetricsCache();
+    var rect = getStickerRect();
+    var webLoads = [document.fonts ? document.fonts.ready : Promise.resolve()];
+    var fontNames = {};
+    var fontSizes = {};
+    layers.forEach(function (layer) {
+      if (!layer.visible || layer.type !== 'text' || !layer.font) return;
+      fontNames[layer.font] = true;
+      if (!fontSizes[layer.font]) fontSizes[layer.font] = {};
+      var baseSize = layer.size || TEXT_SIZE_MIN;
+      fontSizes[layer.font][Math.ceil(baseSize)] = true;
+      fontSizes[layer.font][48] = true;
+      var effective = getEffectiveTextFontSize(layer, rect) || baseSize;
+      fontSizes[layer.font][Math.ceil(effective)] = true;
+    });
+    Object.keys(fontSizes).forEach(function (family) {
+      webLoads.push(loadCanvasFontFamily(family, Object.keys(fontSizes[family]).map(Number)));
+    });
+    if (window.ST_VECTOR && ST_VECTOR.preloadFonts) {
+      var opentypeNames = Object.keys(fontNames);
+      if (ST_VECTOR.GLYPH_FALLBACK_CHAIN) {
+        ST_VECTOR.GLYPH_FALLBACK_CHAIN.forEach(function (name) { opentypeNames.push(name); });
+      }
+      webLoads.push(ST_VECTOR.preloadFonts(opentypeNames).catch(function () { return null; }));
+    }
+    return Promise.all(webLoads).then(function () {
+      return new Promise(function (resolve) {
+        requestAnimationFrame(function () { requestAnimationFrame(resolve); });
+      });
+    });
+  }
+
+  function buildPreviewPngDataUrlAsync() {
+    return ensureExportFontsReady().then(function () {
+      var off = document.createElement('canvas');
+      off.width = CW;
+      off.height = CH;
+      drawExport(off.getContext('2d'), CW, CH);
+      return off.toDataURL('image/png');
+    });
+  }
+
+  function injectSvgPreviewBackground(svgString) {
+    var view = svgString.match(/viewBox="\s*0\s+0\s+([\d.]+)\s+([\d.]+)\s*"/);
+    var w = view ? view[1] : '100%';
+    var h = view ? view[2] : '100%';
+    var bg = '<rect x="0" y="0" width="' + w + '" height="' + h + '" fill="#1a1a1a" data-preview-bg="true"/>';
+    var marker = '<g id="cut-contour"';
+    if (svgString.indexOf(marker) !== -1) {
+      return svgString.replace(marker, bg + marker);
+    }
+    var openTag = svgString.match(/<svg[\s\S]*?>/);
+    if (!openTag) return svgString;
+    return svgString.replace(openTag[0], openTag[0] + bg);
+  }
+
+  function buildSvgPreviewDataUrlAsync(svgString) {
+    var rect = getStickerRect();
+    var previewSvg = injectSvgPreviewBackground(svgString);
+    return new Promise(function (resolve, reject) {
+      var img = new Image();
+      var blob = new Blob([previewSvg], { type: 'image/svg+xml;charset=utf-8' });
+      var url = URL.createObjectURL(blob);
+      img.onload = function () {
+        URL.revokeObjectURL(url);
+        var off = document.createElement('canvas');
+        off.width = CW;
+        off.height = CH;
+        var targetCtx = off.getContext('2d');
+        drawCheckerOn(targetCtx, CW, CH);
+        targetCtx.strokeStyle = 'rgba(201,162,39,0.85)';
+        targetCtx.setLineDash([6, 4]);
+        targetCtx.strokeRect(rect.x, rect.y, rect.w, rect.h);
+        targetCtx.setLineDash([]);
+        targetCtx.drawImage(img, rect.x, rect.y, rect.w, rect.h);
+        resolve(off.toDataURL('image/png'));
+      };
+      img.onerror = function () {
+        URL.revokeObjectURL(url);
+        reject(new Error('SVG preview render failed'));
+      };
+      img.src = url;
+    });
   }
 
   function initShortcutsDialog() {
@@ -829,9 +1748,336 @@
       var btn = document.getElementById(id);
       if (btn) btn.addEventListener('click', closeDialog);
     });
-    dialog.addEventListener('click', function (e) {
-      if (e.target === dialog) closeDialog();
+    dialog.addEventListener('cancel', function (e) {
+      e.preventDefault();
     });
+
+    window.openStickerShortcutsDialog = openDialog;
+  }
+
+  function initQuickActionsDialog() {
+    var dialog = document.getElementById('st-quick-actions-dialog');
+    if (!dialog) return;
+
+    function openDialog() {
+      if (!isMobileShellLayout()) return;
+      syncQuickActionStates();
+      if (dialog.showModal) dialog.showModal();
+    }
+
+    function closeDialog() {
+      if (dialog.open) dialog.close();
+    }
+
+    function syncQuickActionStates() {
+      var undo = document.getElementById('st-undo');
+      var redo = document.getElementById('st-redo');
+      dialog.querySelectorAll('[data-st-quick="undo"]').forEach(function (btn) {
+        btn.disabled = !!(undo && undo.disabled);
+      });
+      dialog.querySelectorAll('[data-st-quick="redo"]').forEach(function (btn) {
+        btn.disabled = !!(redo && redo.disabled);
+      });
+    }
+
+    function clickIfReady(id) {
+      var el = document.getElementById(id);
+      if (el && !el.disabled) el.click();
+    }
+
+    function runQuickAction(action) {
+      closeDialog();
+      if (action === 'size') return clickIfReady('st-dim-btn');
+      if (action === 'fit') return clickIfReady('st-fit-layer');
+      if (action === 'snap') return clickIfReady('st-snap');
+      if (action === 'fullscreen') return clickIfReady('st-fullscreen');
+      if (action === 'png') return clickIfReady('st-download-order-png');
+      if (action === 'svg') return clickIfReady('st-download-svg-basic');
+      if (action === 'zoom-in') return clickIfReady('st-zoom-in');
+      if (action === 'zoom-out') return clickIfReady('st-zoom-out');
+      if (action === 'zoom-reset') return clickIfReady('st-zoom-reset');
+      if (action === 'undo') return clickIfReady('st-undo');
+      if (action === 'redo') return clickIfReady('st-redo');
+      if (action === 'edit-tab') return setMobileTab('edit');
+      if (action === 'order-tab') return setMobileTab('order');
+    }
+
+    ['st-mobile-quick-btn'].forEach(function (id) {
+      on(id, 'click', openDialog);
+    });
+    on('st-mobile-fit-btn', 'click', function () {
+      if (!isMobileShellLayout()) return;
+      clickIfReady('st-fit-layer');
+    });
+    ['st-quick-actions-close', 'st-quick-actions-close-x'].forEach(function (id) {
+      on(id, 'click', closeDialog);
+    });
+    dialog.addEventListener('cancel', function (e) {
+      e.preventDefault();
+    });
+    dialog.querySelectorAll('[data-st-quick]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        runQuickAction(btn.dataset.stQuick || '');
+      });
+    });
+    on('st-quick-open-shortcuts', 'click', function () {
+      closeDialog();
+      if (typeof window.openStickerShortcutsDialog === 'function') window.openStickerShortcutsDialog();
+    });
+  }
+
+  function isMobileLayout() {
+    return window.matchMedia('(max-width: 600px)').matches;
+  }
+
+  function isMobileShellLayout() {
+    return window.matchMedia('(max-width: 860px)').matches;
+  }
+
+  var MOBILE_TAB_KEY = 'savovpro-sticker-mobile-tab';
+  var mobileTab = 'design';
+
+  function updateDimLabel() {
+    var label = stickerSize.widthCm + ' × ' + stickerSize.heightCm + ' cm';
+    var dimEl = document.getElementById('st-dim-label');
+    if (dimEl) dimEl.textContent = label;
+    var accSummary = document.getElementById('st-size-acc-summary');
+    if (accSummary) accSummary.textContent = label;
+  }
+
+  function initMobileSizePanel() {
+    if (!isMobileLayout()) return;
+    var acc = document.getElementById('acc-size');
+    if (!acc) return;
+    acc.classList.remove('is-open');
+    var head = acc.querySelector('.cfg-acc-head');
+    if (head) head.setAttribute('aria-expanded', 'false');
+  }
+
+  function collapseMobileAccordions() {
+    if (!isMobileShellLayout()) return;
+    ['acc-layers', 'acc-edit', 'acc-clipart'].forEach(function (id) {
+      var acc = document.getElementById(id);
+      if (!acc) return;
+      acc.classList.remove('is-open');
+      var head = acc.querySelector('.cfg-acc-head');
+      if (head) head.setAttribute('aria-expanded', 'false');
+    });
+  }
+
+  function openMobileAccordion(id) {
+    var acc = document.getElementById(id);
+    if (!acc) return;
+    acc.classList.add('is-open');
+    var head = acc.querySelector('.cfg-acc-head');
+    if (head) head.setAttribute('aria-expanded', 'true');
+  }
+
+  function setMobileTab(tab, opts) {
+    opts = opts || {};
+    tab = tab === 'edit' || tab === 'order' ? tab : 'design';
+    mobileTab = tab;
+    var layout = document.getElementById('st-layout');
+    if (layout && isMobileShellLayout()) {
+      layout.classList.remove('st-mobile-tab-design', 'st-mobile-tab-edit', 'st-mobile-tab-order');
+      layout.classList.add('st-mobile-tab-' + tab);
+    }
+    document.querySelectorAll('.st-mobile-tab').forEach(function (btn) {
+      var active = btn.dataset.stTab === tab;
+      btn.classList.toggle('is-active', active);
+      btn.setAttribute('aria-selected', String(active));
+    });
+    if (tab === 'edit' && isMobileShellLayout()) {
+      collapseMobileAccordions();
+      openMobileAccordion('acc-edit');
+    }
+    if (!opts.skipSave) {
+      try { localStorage.setItem(MOBILE_TAB_KEY, tab); } catch (e) { /* ignore */ }
+    }
+    if (tab === 'design') {
+      requestAnimationFrame(function () { drawPreview(); });
+    }
+  }
+
+  function initControlsScrollChaining() {
+    if (isMobileShellLayout()) return;
+    var panel = document.querySelector('.cfg-layout.st-layout .cfg-controls');
+    if (!panel) return;
+
+    function scrollablesFromTarget(target) {
+      var list = [];
+      var node = target;
+      while (node && node !== panel.parentElement) {
+        if (node.scrollHeight > node.clientHeight + 1) {
+          var oy = window.getComputedStyle(node).overflowY;
+          if (oy === 'auto' || oy === 'scroll') list.push(node);
+        }
+        node = node.parentElement;
+      }
+      if (panel.scrollHeight > panel.clientHeight + 1) list.push(panel);
+      return list;
+    }
+
+    panel.addEventListener('wheel', function (e) {
+      if (!panel.contains(e.target)) return;
+      var chain = scrollablesFromTarget(e.target);
+      if (!chain.length) return;
+
+      var remaining = e.deltaY;
+      var consumed = false;
+      for (var j = 0; j < chain.length && remaining !== 0; j++) {
+        var box = chain[j];
+        var max = box.scrollHeight - box.clientHeight;
+        var next = box.scrollTop + remaining;
+        if (next < 0) {
+          box.scrollTop = 0;
+          remaining = next;
+          consumed = true;
+          continue;
+        }
+        if (next > max) {
+          box.scrollTop = max;
+          remaining = next - max;
+          consumed = true;
+          continue;
+        }
+        box.scrollTop = next;
+        remaining = 0;
+        consumed = true;
+      }
+      if (remaining !== 0) {
+        window.scrollBy(0, remaining);
+        consumed = true;
+      }
+      if (consumed) e.preventDefault();
+    }, { passive: false });
+  }
+
+  function initMobileShell() {
+    var tabs = document.getElementById('st-mobile-tabs');
+    if (!tabs) return;
+
+    try {
+      var savedTab = localStorage.getItem(MOBILE_TAB_KEY);
+      if (savedTab === 'edit' || savedTab === 'order' || savedTab === 'design') mobileTab = savedTab;
+    } catch (e) { /* ignore */ }
+
+    function applyShellState() {
+      if (!isMobileShellLayout()) {
+        var layout = document.getElementById('st-layout');
+        if (layout) {
+          layout.classList.remove('st-mobile-tab-design', 'st-mobile-tab-edit', 'st-mobile-tab-order');
+        }
+        var mobileQuick = document.getElementById('st-mobile-toolbar-quick');
+        if (mobileQuick) mobileQuick.hidden = true;
+        return;
+      }
+      var mobileQuickBar = document.getElementById('st-mobile-toolbar-quick');
+      if (mobileQuickBar) mobileQuickBar.hidden = false;
+      initMobileSizePanel();
+      setMobileTab(mobileTab, { skipSave: true });
+    }
+
+    var shellResizeTimer = 0;
+    function scheduleShellState() {
+      clearTimeout(shellResizeTimer);
+      shellResizeTimer = setTimeout(applyShellState, 120);
+    }
+
+    tabs.querySelectorAll('.st-mobile-tab').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        setMobileTab(btn.dataset.stTab || 'design');
+      });
+    });
+
+    on('btn-export-mobile', 'click', downloadPlotterSvg);
+
+    applyShellState();
+    window.addEventListener('resize', scheduleShellState);
+  }
+
+  function syncSizeInputsToState() {
+    var w = String(stickerSize.widthCm);
+    var h = String(stickerSize.heightCm);
+    ['st-width', 'st-size-dlg-width'].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) el.value = w;
+    });
+    ['st-height', 'st-size-dlg-height'].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) el.value = h;
+    });
+    updateDimLabel();
+  }
+
+  function applyStickerSize(w, h, options) {
+    options = options || {};
+    var lim = CFG.size;
+    if (w != null) stickerSize.widthCm = clampSize(w, lim.minW, lim.maxW);
+    else stickerSize.widthCm = clampSize(document.getElementById('st-width').value, lim.minW, lim.maxW);
+    if (h != null) stickerSize.heightCm = clampSize(h, lim.minH, lim.maxH);
+    else stickerSize.heightCm = clampSize(document.getElementById('st-height').value, lim.minH, lim.maxH);
+    syncSizeInputsToState();
+    if (options.skipRender) return;
+    drawPreview();
+    updatePriceDisplay();
+    updateLinks();
+    updateQuickSizeButtons();
+    if (options.skipHistory !== true) saveHistory();
+  }
+
+  function applyStickerSizeFromDialogInputs() {
+    var dlgW = document.getElementById('st-size-dlg-width');
+    var dlgH = document.getElementById('st-size-dlg-height');
+    var wMain = document.getElementById('st-width');
+    var hMain = document.getElementById('st-height');
+    if (dlgW && wMain) wMain.value = dlgW.value;
+    if (dlgH && hMain) hMain.value = dlgH.value;
+    applyStickerSize();
+  }
+
+  function initSizeDialog() {
+    var dialog = document.getElementById('st-size-dialog');
+    var openBtn = document.getElementById('st-dim-btn');
+    if (!dialog) return;
+
+    function openDialog() {
+      syncSizeInputsToState();
+      updateQuickSizeButtons();
+      if (dialog.showModal) dialog.showModal();
+    }
+
+    function closeDialog() {
+      if (dialog.open) dialog.close();
+    }
+
+    if (openBtn) openBtn.addEventListener('click', openDialog);
+    ['st-size-done', 'st-size-close-x'].forEach(function (id) {
+      var btn = document.getElementById(id);
+      if (btn) btn.addEventListener('click', closeDialog);
+    });
+    dialog.addEventListener('cancel', function (e) {
+      e.preventDefault();
+    });
+    ['st-size-dlg-width', 'st-size-dlg-height'].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      el.addEventListener('change', applyStickerSizeFromDialogInputs);
+    });
+
+    var accSize = document.getElementById('acc-size');
+    var accHead = accSize && accSize.querySelector('.cfg-acc-head');
+    if (accHead) {
+      accHead.addEventListener('click', function (e) {
+        if (!isMobileLayout()) return;
+        e.preventDefault();
+        e.stopPropagation();
+        openDialog();
+      }, true);
+    }
+
+    initMobileSizePanel();
+    window.addEventListener('resize', initMobileSizePanel);
   }
 
   function applySnapshot(snap) {
@@ -1147,6 +2393,9 @@
   }
 
   function getPrice() {
+    if (window.Pricing) {
+      return Pricing.calcSticker(stickerSize.widthCm, stickerSize.heightCm);
+    }
     var p = CFG.pricing;
     var area = stickerSize.widthCm * stickerSize.heightCm;
     return Math.max(p.minPrice, Math.round((p.setupFee + area * p.pricePerCm2) * 100) / 100);
@@ -1154,7 +2403,12 @@
 
   function updatePriceDisplay() {
     var el = document.getElementById('st-price-display');
-    if (el) el.textContent = getPrice() + ' ' + CFG.currency;
+    if (!el) return;
+    if (window.Pricing) {
+      el.textContent = Pricing.format(getPrice());
+    } else {
+      el.textContent = getPrice() + ' ' + CFG.currency;
+    }
   }
 
   function updateZoomUI() {
@@ -1301,14 +2555,18 @@
     ctx.translate(-CW / 2, -CH / 2);
   }
 
-  function drawChecker() {
+  function drawCheckerOn(targetCtx, w, h) {
     var s = 16;
-    for (var y = 0; y < CH; y += s) {
-      for (var x = 0; x < CW; x += s) {
-        ctx.fillStyle = ((x / s + y / s) % 2 === 0) ? '#1a1a1a' : '#222';
-        ctx.fillRect(x, y, s, s);
+    for (var y = 0; y < h; y += s) {
+      for (var x = 0; x < w; x += s) {
+        targetCtx.fillStyle = ((x / s + y / s) % 2 === 0) ? '#1a1a1a' : '#222';
+        targetCtx.fillRect(x, y, s, s);
       }
     }
+  }
+
+  function drawChecker() {
+    drawCheckerOn(ctx, CW, CH);
   }
 
   var drawRaf = 0;
@@ -1406,13 +2664,13 @@
 
   function getTextLayerMetrics(layer, rect, lc) {
     if (textMetricsCache[layer.id]) return textMetricsCache[layer.id];
-    return computeTextLayerMetrics(layer, rect.w * 0.92, lc || measureCtx);
+    return computeTextLayerMetrics(layer, getTextLayoutArea(rect), lc || measureCtx);
   }
 
   var measureCtx = document.createElement('canvas').getContext('2d');
 
   function measureLayerDims(layer, rect) {
-    if (layer.type === 'text') return drawTextLayer(measureCtx, layer, rect.w * 0.92);
+    if (layer.type === 'text') return drawTextLayer(measureCtx, layer, rect);
     if (layer.type === 'image') return drawImageLayer(measureCtx, layer, rect);
     if (layer.type === 'vector') return drawVectorLayer(measureCtx, layer, rect);
     return { w: 40, h: 40 };
@@ -1534,17 +2792,20 @@
   function fitLayerToSticker(layer) {
     if (!layer) return;
     var rect = getStickerRect();
-    var allowedW = rect.w * 0.92;
-    var allowedH = rect.h * 0.92;
+    var area = getTextLayoutArea(rect);
+    var allowedW = area.maxW;
+    var allowedH = area.maxH;
 
     if (layer.type === 'text') {
-      var lo = TEXT_SIZE_MIN; var hi = TEXT_SIZE_MAX; var best = TEXT_SIZE_MIN;
-      while (lo <= hi) {
-        var mid = Math.floor((lo + hi) / 2);
+      var lo = TEXT_SIZE_MIN;
+      var hi = getTextSizeMax(rect);
+      var best = lo;
+      for (var fitIter = 0; fitIter < 24; fitIter++) {
+        var mid = (lo + hi) / 2;
         layer.size = mid;
         var d = measureLayerDims(layer, rect);
-        if (d.w <= allowedW && d.h <= allowedH) { best = mid; lo = mid + 1; }
-        else hi = mid - 1;
+        if (d.w <= allowedW && d.h <= allowedH) { best = mid; lo = mid; }
+        else hi = mid;
       }
       layer.size = best;
     } else if (layer.type === 'image' || layer.type === 'vector') {
@@ -1562,111 +2823,130 @@
   }
 
   function updateQuickSizeButtons() {
-    var wrap = document.getElementById('st-quick-sizes');
-    if (!wrap) return;
-    wrap.querySelectorAll('.st-pill-btn').forEach(function (btn) {
-      var w = parseFloat(btn.dataset.w);
-      var h = parseFloat(btn.dataset.h);
-      btn.classList.toggle('is-active', w === stickerSize.widthCm && h === stickerSize.heightCm);
+    ['st-quick-sizes', 'st-size-dlg-quick-sizes'].forEach(function (wrapId) {
+      var wrap = document.getElementById(wrapId);
+      if (!wrap) return;
+      wrap.querySelectorAll('.st-pill-btn').forEach(function (btn) {
+        var w = parseFloat(btn.dataset.w);
+        var h = parseFloat(btn.dataset.h);
+        btn.classList.toggle('is-active', w === stickerSize.widthCm && h === stickerSize.heightCm);
+      });
     });
   }
 
-  function computeTextLayerMetrics(layer, maxW, lc) {
+  function computeTextLayerMetrics(layer, areaOrMaxW, lc, maxHOpt) {
+    var area = normalizeTextLayoutArea(areaOrMaxW, maxHOpt);
+    var maxW = area.maxW;
+    var maxH = area.maxH;
     var rawLines = getTextLines(layer);
     var lines = rawLines.length ? rawLines : [''];
     var sz = layer.size;
     var align = layer.textAlign || 'center';
-    var ff = '"' + layer.font + '", sans-serif';
+    var ff = '"' + stickerCanvasFamily(layer.font) + '", sans-serif';
     lc.letterSpacing = (layer.letterSpacing || 0) + 'px';
     lc.textAlign = align;
     lc.textBaseline = 'middle';
 
     function setFont(s) { lc.font = '700 ' + s + 'px ' + ff; }
 
-    var fontSize = sz;
-    var maxLineW = 0;
-
-    lines.forEach(function (line) {
-      setFont(fontSize);
-      var w = line ? lc.measureText(line).width : 0;
-      maxLineW = Math.max(maxLineW, w);
-      if (w > maxW - 8) fontSize = Math.min(fontSize, Math.max(7, sz * (maxW - 8) / w));
-    });
-
-    setFont(fontSize);
-    lc.textAlign = align;
-    lc.textBaseline = 'middle';
-
-    var lineStep = fontSize * 1.56;
-    var startY = lines.length === 1 ? 0 : -(lines.length - 1) * lineStep / 2;
-    var blockHalfW = maxLineW / 2;
-    var lineX = align === 'left' ? -blockHalfW : align === 'right' ? blockHalfW : 0;
-    var halfH = fontSize * 0.55;
-    var inkLeft = Infinity;
-    var inkRight = -Infinity;
-    var inkTop = Infinity;
-    var inkBottom = -Infinity;
-
-    lines.forEach(function (line, i) {
-      var y = startY + i * lineStep;
+    function layoutAtFontSize(fontSize) {
       setFont(fontSize);
       lc.textAlign = align;
       lc.textBaseline = 'middle';
-      var lineW = line ? lc.measureText(line).width : 0;
-      var left;
-      var right;
-      if (align === 'center') {
-        left = lineX - lineW / 2;
-        right = lineX + lineW / 2;
-      } else if (align === 'right') {
-        right = lineX;
-        left = lineX - lineW;
-      } else {
-        left = lineX;
-        right = lineX + lineW;
-      }
-      inkLeft = Math.min(inkLeft, left);
-      inkRight = Math.max(inkRight, right);
-      inkTop = Math.min(inkTop, y - halfH);
-      inkBottom = Math.max(inkBottom, y + halfH);
-    });
 
-    if (!isFinite(inkLeft)) {
-      inkLeft = -blockHalfW;
-      inkRight = blockHalfW;
-      inkTop = -halfH;
-      inkBottom = halfH;
+      var lineStep = fontSize * 1.56;
+      var startY = lines.length === 1 ? 0 : -(lines.length - 1) * lineStep / 2;
+      var maxLineW = 0;
+      lines.forEach(function (line) {
+        setFont(fontSize);
+        var w = line ? lc.measureText(line).width : 0;
+        maxLineW = Math.max(maxLineW, w);
+      });
+      var blockHalfW = maxLineW / 2;
+      var lineX = align === 'left' ? -blockHalfW : align === 'right' ? blockHalfW : 0;
+      var halfH = fontSize * 0.55;
+      var inkLeft = Infinity;
+      var inkRight = -Infinity;
+      var inkTop = Infinity;
+      var inkBottom = -Infinity;
+
+      lines.forEach(function (line, i) {
+        var y = startY + i * lineStep;
+        setFont(fontSize);
+        lc.textAlign = align;
+        lc.textBaseline = 'middle';
+        var lineW = line ? lc.measureText(line).width : 0;
+        var left;
+        var right;
+        if (align === 'center') {
+          left = lineX - lineW / 2;
+          right = lineX + lineW / 2;
+        } else if (align === 'right') {
+          right = lineX;
+          left = lineX - lineW;
+        } else {
+          left = lineX;
+          right = lineX + lineW;
+        }
+        inkLeft = Math.min(inkLeft, left);
+        inkRight = Math.max(inkRight, right);
+        inkTop = Math.min(inkTop, y - halfH);
+        inkBottom = Math.max(inkBottom, y + halfH);
+      });
+
+      if (!isFinite(inkLeft)) {
+        inkLeft = -blockHalfW;
+        inkRight = blockHalfW;
+        inkTop = -halfH;
+        inkBottom = halfH;
+      }
+
+      var unionLeft = inkLeft;
+      var unionRight = inkRight;
+      var unionTop = inkTop;
+      var unionBottom = inkBottom;
+      var blockH = Math.max(fontSize * 1.2, unionBottom - unionTop);
+      var pad = Math.max(2, Math.ceil(fontSize * 0.05));
+
+      return {
+        lines: lines,
+        align: align,
+        lineX: lineX,
+        fontSize: fontSize,
+        lineStep: lineStep,
+        startY: startY,
+        blockH: blockH,
+        maxLineW: maxLineW,
+        inkLeft: unionLeft,
+        inkRight: unionRight,
+        inkTop: unionTop,
+        inkBottom: unionBottom,
+        boundsLeft: unionLeft - pad,
+        boundsRight: unionRight + pad,
+        boundsTop: unionTop - pad,
+        boundsBottom: unionBottom + pad,
+        boundsW: unionRight - unionLeft + pad * 2,
+        boundsH: unionBottom - unionTop + pad * 2,
+      };
     }
 
-    var unionLeft = inkLeft;
-    var unionRight = inkRight;
-    var unionTop = inkTop;
-    var unionBottom = inkBottom;
+    var fontSize = sz;
+    lines.forEach(function (line) {
+      setFont(fontSize);
+      var w = line ? lc.measureText(line).width : 0;
+      if (w > maxW - 8 && isCanvasFontReady(layer.font, sz)) {
+        fontSize = Math.min(fontSize, Math.max(7, sz * (maxW - 8) / w));
+      }
+    });
 
-    var blockH = Math.max(fontSize * 1.2, unionBottom - unionTop);
-    var pad = Math.max(2, Math.ceil(fontSize * 0.05));
+    var metrics = layoutAtFontSize(fontSize);
+    if (maxH < Infinity && metrics.boundsH > maxH && fontSize > TEXT_SIZE_MIN) {
+      fontSize = Math.max(TEXT_SIZE_MIN, fontSize * (maxH / metrics.boundsH));
+      metrics = layoutAtFontSize(fontSize);
+    }
+
     lc.letterSpacing = '0px';
-
-    return {
-      lines: lines,
-      align: align,
-      lineX: lineX,
-      fontSize: fontSize,
-      lineStep: lineStep,
-      startY: startY,
-      blockH: blockH,
-      maxLineW: maxLineW,
-      inkLeft: unionLeft,
-      inkRight: unionRight,
-      inkTop: unionTop,
-      inkBottom: unionBottom,
-      boundsLeft: unionLeft - pad,
-      boundsRight: unionRight + pad,
-      boundsTop: unionTop - pad,
-      boundsBottom: unionBottom + pad,
-      boundsW: unionRight - unionLeft + pad * 2,
-      boundsH: unionBottom - unionTop + pad * 2,
-    };
+    return metrics;
   }
 
   function getLayerInkBox(layer, rect) {
@@ -1691,19 +2971,26 @@
     return getLayerContentBox(layer, rect);
   }
 
-  function drawTextLayer(lc, layer, maxW) {
-    var m = computeTextLayerMetrics(layer, maxW, lc);
+  function drawTextLayer(lc, layer, rectOrArea) {
+    var area = rectOrArea && rectOrArea.w != null && rectOrArea.h != null
+      ? getTextLayoutArea(rectOrArea)
+      : normalizeTextLayoutArea(rectOrArea);
+    var m = computeTextLayerMetrics(layer, area, measureCtx);
     cacheTextMetrics(layer.id, m);
-    var ff = '"' + layer.font + '", sans-serif';
-    lc.fillStyle = TEXT_COLOR;
-    lc.textAlign = m.align;
-    lc.textBaseline = 'middle';
-    lc.font = '700 ' + m.fontSize + 'px ' + ff;
-    if (layer.letterSpacing) lc.letterSpacing = (layer.letterSpacing || 0) + 'px';
-    m.lines.forEach(function (line, i) {
-      if (line) lc.fillText(line, m.lineX, m.startY + i * m.lineStep);
-    });
-    lc.letterSpacing = '0px';
+    var drawnWithPaths = window.ST_VECTOR && ST_VECTOR.drawTextPathsOnCanvas
+      && ST_VECTOR.drawTextPathsOnCanvas(lc, layer, m, TEXT_COLOR);
+    if (!drawnWithPaths) {
+      var ff = '"' + stickerCanvasFamily(layer.font) + '", sans-serif';
+      lc.fillStyle = TEXT_COLOR;
+      lc.textAlign = m.align;
+      lc.textBaseline = 'middle';
+      lc.font = '700 ' + m.fontSize + 'px ' + ff;
+      if (layer.letterSpacing) lc.letterSpacing = (layer.letterSpacing || 0) + 'px';
+      m.lines.forEach(function (line, i) {
+        if (line) lc.fillText(line, m.lineX, m.startY + i * m.lineStep);
+      });
+      lc.letterSpacing = '0px';
+    }
     return {
       w: m.boundsW,
       h: m.boundsH,
@@ -1717,30 +3004,40 @@
   }
 
   function getVectorLayerPxSize(layer, rect) {
-    if (!layer.viewW || !layer.viewH) return { uW: 40, uH: 40 };
+    var refW = layer.contentW || layer.viewW;
+    var refH = layer.contentH || layer.viewH;
+    if (!refW || !refH) return { uW: 40, uH: 40 };
     var fitW = rect.w * 0.45;
     var fitH = rect.h * 0.45;
-    var fitScale = Math.min(fitW / layer.viewW, fitH / layer.viewH);
+    var fitScale = Math.min(fitW / refW, fitH / refH);
     return {
-      uW: layer.viewW * fitScale * layer.size,
-      uH: layer.viewH * fitScale * layer.size,
+      uW: refW * fitScale * layer.size,
+      uH: refH * fitScale * layer.size,
     };
   }
 
   function drawVectorLayer(lc, layer, rect) {
-    if (!layer.paths || !layer.paths.length || !layer.viewW || !layer.viewH) {
+    if (!layer.paths || !layer.paths.length) {
+      return { w: 40, h: 40, localLeft: -20, localTop: -20 };
+    }
+    var refW = layer.contentW || layer.viewW;
+    var refH = layer.contentH || layer.viewH;
+    if (!refW || !refH) {
       return { w: 40, h: 40, localLeft: -20, localTop: -20 };
     }
     var px = getVectorLayerPxSize(layer, rect);
     var uW = px.uW;
     var uH = px.uH;
+    var offsetX = layer.offsetX || 0;
+    var offsetY = layer.offsetY || 0;
     lc.save();
     lc.translate(-uW / 2, -uH / 2);
-    lc.scale(uW / layer.viewW, uH / layer.viewH);
+    lc.scale(uW / refW, uH / refH);
+    if (offsetX || offsetY) lc.translate(-offsetX, -offsetY);
     lc.fillStyle = TEXT_COLOR;
     layer.paths.forEach(function (d) {
       try {
-        lc.fill(new Path2D(d));
+        lc.fill(new Path2D(d), 'evenodd');
       } catch (e) { /* skip invalid path */ }
     });
     lc.restore();
@@ -1758,11 +3055,10 @@
     var x = -uW / 2;
     var y = -uH / 2;
     lc.save();
-    lc.drawImage(img, x, y, uW, uH);
     if (layer.isSvg) {
-      lc.globalCompositeOperation = 'source-in';
-      lc.fillStyle = TEXT_COLOR;
-      lc.fillRect(x, y, uW, uH);
+      tintMonochromeImage(lc, img, x, y, uW, uH, TEXT_COLOR);
+    } else {
+      lc.drawImage(img, x, y, uW, uH);
     }
     lc.restore();
     return { w: uW, h: uH, localLeft: -uW / 2, localTop: -uH / 2 };
@@ -1960,7 +3256,7 @@
       ctx.rotate(layer.rotation * Math.PI / 180);
       var dims;
       if (layer.type === 'text') {
-        dims = drawTextLayer(ctx, layer, rect.w * 0.92);
+        dims = drawTextLayer(ctx, layer, rect);
       } else if (layer.type === 'image') {
         dims = drawImageLayer(ctx, layer, rect);
       } else if (layer.type === 'vector') {
@@ -2026,23 +3322,18 @@
       ctx.font = '500 13px Montserrat, sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText('Добави текст или SVG/PNG', CW / 2, CH / 2);
+      ctx.fillText('Добави текст или SVG', CW / 2, CH / 2);
     }
 
     var dimEl = document.getElementById('st-dim-label');
-    if (dimEl) dimEl.textContent = stickerSize.widthCm + ' × ' + stickerSize.heightCm + ' cm';
+    if (dimEl) updateDimLabel();
+    updateLayerSizeLabel(rect);
   }
 
   function drawExport(targetCtx, w, h) {
     var rect = getStickerRect();
     targetCtx.clearRect(0, 0, w, h);
-    var s = 16;
-    for (var y = 0; y < h; y += s) {
-      for (var x = 0; x < w; x += s) {
-        targetCtx.fillStyle = ((x / s + y / s) % 2 === 0) ? '#1a1a1a' : '#222';
-        targetCtx.fillRect(x, y, s, s);
-      }
-    }
+    drawCheckerOn(targetCtx, w, h);
     targetCtx.strokeStyle = 'rgba(201,162,39,0.85)';
     targetCtx.setLineDash([6, 4]);
     targetCtx.strokeRect(rect.x, rect.y, rect.w, rect.h);
@@ -2054,7 +3345,7 @@
       targetCtx.save();
       targetCtx.translate(lx, ly);
       targetCtx.rotate(layer.rotation * Math.PI / 180);
-      if (layer.type === 'text') drawTextLayer(targetCtx, layer, rect.w * 0.92);
+      if (layer.type === 'text') drawTextLayer(targetCtx, layer, rect);
       else if (layer.type === 'image') drawImageLayer(targetCtx, layer, rect);
       else if (layer.type === 'vector') drawVectorLayer(targetCtx, layer, rect);
       targetCtx.restore();
@@ -2080,8 +3371,11 @@
     };
   }
 
-  function getTextBlockSize(layer, maxW) {
-    var m = computeTextLayerMetrics(layer, maxW, measureCtx);
+  function getTextBlockSize(layer, rectOrArea) {
+    var area = rectOrArea && rectOrArea.w != null && rectOrArea.h != null
+      ? getTextLayoutArea(rectOrArea)
+      : normalizeTextLayoutArea(rectOrArea);
+    var m = computeTextLayerMetrics(layer, area, measureCtx);
     return {
       fontSize: m.fontSize,
       lineStep: m.lineStep,
@@ -2091,8 +3385,8 @@
     };
   }
 
-  function getEffectiveTextFontSize(layer, maxW) {
-    return getTextBlockSize(layer, maxW).fontSize;
+  function getEffectiveTextFontSize(layer, rectOrArea) {
+    return getTextBlockSize(layer, rectOrArea).fontSize;
   }
 
   function getImageLayerPxSize(layer, rect) {
@@ -2121,10 +3415,7 @@
       off.width = Math.max(1, Math.ceil(uW));
       off.height = Math.max(1, Math.ceil(uH));
       var oc = off.getContext('2d');
-      oc.drawImage(layer.imgEl, 0, 0, off.width, off.height);
-      oc.globalCompositeOperation = 'source-in';
-      oc.fillStyle = '#ffffff';
-      oc.fillRect(0, 0, off.width, off.height);
+      tintMonochromeImage(oc, layer.imgEl, 0, 0, off.width, off.height, SVG_EXPORT_FILL);
       return off.toDataURL('image/png');
     } catch (e) {
       return null;
@@ -2154,6 +3445,9 @@
     layers.forEach(function (layer) {
       if (layer.visible && layer.type === 'text' && layer.font) fontsNeeded[layer.font] = true;
     });
+    if (window.ST_VECTOR && ST_VECTOR.GLYPH_FALLBACK_CHAIN) {
+      ST_VECTOR.GLYPH_FALLBACK_CHAIN.forEach(function (name) { fontsNeeded[name] = true; });
+    }
 
     ST_VECTOR.preloadFonts(Object.keys(fontsNeeded)).then(function () {
       var parts = [];
@@ -2162,7 +3456,7 @@
       parts.push(' width="' + widthCm + 'cm" height="' + heightCm + 'cm"');
       parts.push(' viewBox="0 0 ' + widthMm + ' ' + heightMm + '">');
       parts.push('<title>SAVOV PRO — Sticker ' + widthCm + '×' + heightCm + ' cm</title>');
-      parts.push('<desc>Plotter export. Physical size: ' + widthCm + ' × ' + heightCm + ' cm. White (#FFFFFF) vector paths on transparent.</desc>');
+      parts.push('<desc>Plotter export. Physical size: ' + widthCm + ' × ' + heightCm + ' cm. Gold (' + SVG_EXPORT_FILL + ') vector paths on transparent.</desc>');
       parts.push('<g id="cut-contour" data-role="cut">');
       parts.push('<rect x="0" y="0" width="' + widthMm + '" height="' + heightMm + '" fill="none" stroke="#000000" stroke-width="0.1"/>');
       parts.push('</g>');
@@ -2180,13 +3474,15 @@
 
         if (layer.type === 'text') {
           return ST_VECTOR.loadFont(layer.font || CFG.defaults.font).then(function (font) {
-            var metrics = computeTextLayerMetrics(layer, rect.w * 0.92, measureCtx);
+            var metrics = computeTextLayerMetrics(layer, getTextLayoutArea(rect), measureCtx);
             var pathStrings = ST_VECTOR.buildTextPathStrings(font, layer, metrics);
             if (!pathStrings.length) return '';
+            var scaleX = pxToMm(1, rect.w, widthMm);
+            var scaleY = pxToMm(1, rect.h, heightMm);
             var inner = pathStrings.map(function (d) {
-              return '<path fill="#FFFFFF" d="' + escXml(d) + '"/>';
+              return '<path fill="' + SVG_EXPORT_FILL + '" d="' + escXml(d) + '"/>';
             }).join('\n');
-            return wrap(inner);
+            return wrap('<g transform="scale(' + mm(scaleX) + ' ' + mm(scaleY) + ')">' + inner + '</g>');
           });
         }
 
@@ -2194,11 +3490,23 @@
           var vpx = getVectorLayerPxSize(layer, rect);
           var vwMm = mm(pxToMm(vpx.uW, rect.w, widthMm));
           var vhMm = mm(pxToMm(vpx.uH, rect.h, heightMm));
-          return Promise.resolve(wrap(ST_VECTOR.pathsGroupSvg(layer.paths, layer.viewW, layer.viewH, vwMm, vhMm, escXml)));
+          return Promise.resolve(wrap(ST_VECTOR.pathsGroupSvg(
+            layer.paths,
+            layer.viewW,
+            layer.viewH,
+            vwMm,
+            vhMm,
+            escXml,
+            layer.offsetX,
+            layer.offsetY,
+            layer.contentW,
+            layer.contentH,
+            SVG_EXPORT_FILL
+          )));
         }
 
         if (layer.type === 'image') {
-          if (layer.stickerProcessed && layer.imgEl && layer.imgEl.naturalWidth) {
+          if (layer.stickerProcessed && layer.imgEl && layer.imgEl.naturalWidth && !isIconifyId(layer.fileName)) {
             var off = document.createElement('canvas');
             off.width = layer.imgEl.naturalWidth;
             off.height = layer.imgEl.naturalHeight;
@@ -2208,7 +3516,19 @@
               var tpx = getImageLayerPxSize(layer, rect);
               var twMm = mm(pxToMm(tpx.uW, rect.w, widthMm));
               var thMm = mm(pxToMm(tpx.uH, rect.h, heightMm));
-              return Promise.resolve(wrap(ST_VECTOR.pathsGroupSvg(traced.paths, traced.viewW, traced.viewH, twMm, thMm, escXml)));
+              return Promise.resolve(wrap(ST_VECTOR.pathsGroupSvg(
+                traced.paths,
+                traced.viewW,
+                traced.viewH,
+                twMm,
+                thMm,
+                escXml,
+                traced.offsetX,
+                traced.offsetY,
+                traced.contentW,
+                traced.contentH,
+                SVG_EXPORT_FILL
+              )));
             }
           }
           var ipx = getImageLayerPxSize(layer, rect);
@@ -2250,7 +3570,7 @@
     parts.push(' width="' + widthCm + 'cm" height="' + heightCm + 'cm"');
     parts.push(' viewBox="0 0 ' + widthMm + ' ' + heightMm + '">');
     parts.push('<title>SAVOV PRO — Sticker ' + widthCm + '×' + heightCm + ' cm</title>');
-    parts.push('<desc>Plotter export. Physical size: ' + widthCm + ' × ' + heightCm + ' cm. White (#FFFFFF) art on transparent. Cut contour in group cut-contour.</desc>');
+    parts.push('<desc>Plotter export. Physical size: ' + widthCm + ' × ' + heightCm + ' cm. Gold (' + SVG_EXPORT_FILL + ') art on transparent. Cut contour in group cut-contour.</desc>');
 
     layers.forEach(function (layer) {
       if (layer.visible && layer.type === 'text' && layer.font) fontsUsed[layer.font] = true;
@@ -2274,8 +3594,7 @@
       var rot = layer.rotation || 0;
 
       if (layer.type === 'text') {
-        var maxW = rect.w * 0.92;
-        var block = getTextBlockSize(layer, maxW);
+        var block = getTextBlockSize(layer, rect);
         var fontSizeMm = mm(pxToMm(block.fontSize, rect.h, heightMm));
         var lineStepMm = mm(pxToMm(block.lineStep, rect.h, heightMm));
         var spacingMm = mm(pxToMm(layer.letterSpacing || 0, rect.w, widthMm));
@@ -2285,10 +3604,10 @@
         var svgLines = block.lines.length ? block.lines : [''];
         parts.push('<g transform="translate(' + c.x + ' ' + c.y + ') rotate(' + rot + ')">');
         if (svgLines.length === 1) {
-          parts.push('<text fill="#FFFFFF" font-family="' + escXml(layer.font) + ', sans-serif" font-size="' + fontSizeMm + '" font-weight="700" text-anchor="' + textAnchor + '" dominant-baseline="middle" letter-spacing="' + spacingMm + '" x="' + axMm + '">' + escXml(svgLines[0] || '') + '</text>');
+          parts.push('<text fill="' + SVG_EXPORT_FILL + '" font-family="' + escXml(layer.font) + ', sans-serif" font-size="' + fontSizeMm + '" font-weight="700" text-anchor="' + textAnchor + '" dominant-baseline="middle" letter-spacing="' + spacingMm + '" x="' + axMm + '">' + escXml(svgLines[0] || '') + '</text>');
         } else {
           var startDyMm = mm(pxToMm(-(svgLines.length - 1) * block.lineStep / 2, rect.h, heightMm));
-          parts.push('<text fill="#FFFFFF" font-family="' + escXml(layer.font) + ', sans-serif" font-size="' + fontSizeMm + '" font-weight="700" text-anchor="' + textAnchor + '" dominant-baseline="middle" letter-spacing="' + spacingMm + '" x="' + axMm + '" y="0">');
+          parts.push('<text fill="' + SVG_EXPORT_FILL + '" font-family="' + escXml(layer.font) + ', sans-serif" font-size="' + fontSizeMm + '" font-weight="700" text-anchor="' + textAnchor + '" dominant-baseline="middle" letter-spacing="' + spacingMm + '" x="' + axMm + '" y="0">');
           svgLines.forEach(function (line, i) {
             if (i === 0) {
               parts.push('<tspan x="' + axMm + '" dy="' + startDyMm + '">' + escXml(line) + '</tspan>');
@@ -2317,7 +3636,7 @@
         parts.push('<g transform="translate(' + c.x + ' ' + c.y + ') rotate(' + rot + ')">');
         parts.push('<g transform="translate(' + (-vwMm / 2) + ' ' + (-vhMm / 2) + ') scale(' + sx + ' ' + sy + ')">');
         layer.paths.forEach(function (d) {
-          parts.push('<path fill="#FFFFFF" d="' + escXml(d) + '"/>');
+          parts.push('<path fill="' + SVG_EXPORT_FILL + '" d="' + escXml(d) + '"/>');
         });
         parts.push('</g></g>');
       }
@@ -2400,6 +3719,11 @@
     };
   }
 
+  function isSvgUploadFile(file) {
+    if (!file) return false;
+    return /\.svg$/i.test(file.name) || file.type === 'image/svg+xml';
+  }
+
   function isRasterImageFile(file) {
     if (!file) return false;
     if (/\.svg$/i.test(file.name) || file.type === 'image/svg+xml') return false;
@@ -2432,10 +3756,111 @@
       : 'Фонът почти не е премахнат — увеличи чувствителността или ползвай по-контрастно изображение.';
   }
 
-  function removeBackgroundPixels(id, tolerance, bgR, bgG, bgB) {
+  function analyzeImageForImport(id, bg) {
     var d = id.data;
+    var bgLum = 0.299 * bg.r + 0.587 * bg.g + 0.114 * bg.b;
+    var darkOnLight = bgLum >= 165;
+    var lightOnDark = bgLum <= 95;
+    var contentLums = [];
+    var i;
+    var r; var g; var b; var lum;
+    var sampleTol = 22;
+    var maxSat = 0;
+
+    for (i = 0; i < d.length; i += 4) {
+      if (d[i + 3] < 8) continue;
+      r = d[i];
+      g = d[i + 1];
+      b = d[i + 2];
+      lum = 0.299 * r + 0.587 * g + 0.114 * b;
+      var sat = Math.max(r, g, b) - Math.min(r, g, b);
+      if (sat > maxSat) maxSat = sat;
+      if (colorDist(r, g, b, bg.r, bg.g, bg.b) > sampleTol) contentLums.push(lum);
+    }
+
+    contentLums.sort(function (a, b) { return a - b; });
+    var contentLum = contentLums.length
+      ? contentLums[Math.floor(contentLums.length * 0.45)]
+      : (darkOnLight ? 40 : 220);
+    var gap = Math.abs(bgLum - contentLum);
+    var suggestedTolerance = 40;
+
+    if (darkOnLight) {
+      suggestedTolerance = Math.round(Math.min(56, Math.max(24, gap * 0.28)));
+      if (gap >= 120) suggestedTolerance = Math.min(suggestedTolerance, 44);
+    } else if (lightOnDark) {
+      suggestedTolerance = Math.round(Math.min(64, Math.max(28, gap * 0.32)));
+    } else {
+      suggestedTolerance = Math.round(Math.min(72, Math.max(32, gap * 0.3)));
+    }
+
+    suggestedTolerance = Math.round(suggestedTolerance / 2) * 2;
+
+    var colorful = maxSat >= 36;
+    var suggestedSpeckle = colorful ? 6 : (gap >= 100 ? 3 : 4);
+
+    return {
+      darkOnLight: darkOnLight,
+      lightOnDark: lightOnDark,
+      colorful: colorful,
+      bgLum: bgLum,
+      contentLum: contentLum,
+      contrastGap: gap,
+      suggestedTolerance: suggestedTolerance,
+      suggestedSmooth: gap >= 100 ? 5 : 6,
+      suggestedSpeckle: suggestedSpeckle,
+    };
+  }
+
+  function suggestImportSettingsFromImage(img) {
+    if (!img) return null;
+    var off = document.createElement('canvas');
+    off.width = img.naturalWidth || img.width;
+    off.height = img.naturalHeight || img.height;
+    if (!off.width || !off.height) return null;
+    var ctx = off.getContext('2d', { willReadFrequently: true });
+    ctx.drawImage(img, 0, 0);
+    var id;
+    try {
+      id = ctx.getImageData(0, 0, off.width, off.height);
+    } catch (err) {
+      return null;
+    }
+    var bg = detectBackgroundColor(id.data, off.width, off.height);
+    return analyzeImageForImport(id, bg);
+  }
+
+  function applySuggestedImportSettings(analysis) {
+    if (!analysis) return;
+    var tolEl = document.getElementById('st-import-tolerance');
+    var tolVal = document.getElementById('st-import-tolerance-val');
+    var smoothEl = document.getElementById('st-import-smooth');
+    var smoothVal = document.getElementById('st-import-smooth-val');
+    var speckleEl = document.getElementById('st-import-speckle');
+    var speckleVal = document.getElementById('st-import-speckle-val');
+
+    if (tolEl && analysis.suggestedTolerance != null) {
+      tolEl.value = String(analysis.suggestedTolerance);
+      bgTolerance = analysis.suggestedTolerance;
+      if (tolVal) tolVal.textContent = String(analysis.suggestedTolerance);
+    }
+    if (smoothEl && analysis.suggestedSmooth != null) {
+      smoothEl.value = String(analysis.suggestedSmooth);
+      if (smoothVal) smoothVal.textContent = String(analysis.suggestedSmooth);
+    }
+    if (speckleEl && analysis.suggestedSpeckle != null) {
+      speckleEl.value = String(analysis.suggestedSpeckle);
+      if (speckleVal) speckleVal.textContent = String(analysis.suggestedSpeckle);
+    }
+  }
+
+  function removeBackgroundPixels(id, tolerance, bgR, bgG, bgB, analysis) {
+    analysis = analysis || {};
+    var d = id.data;
+    var colorTol = tolerance + 8;
+    var darkOnLight = !!analysis.darkOnLight;
+    var lightOnDark = !!analysis.lightOnDark;
     var lumCutoff = Math.min(252, Math.max(168, 255 - tolerance * 1.08));
-    var colorTol = tolerance + 10;
     var i;
     var r; var g; var b; var lum; var sat; var isBg;
 
@@ -2448,35 +3873,31 @@
       g = d[i + 1];
       b = d[i + 2];
       lum = 0.299 * r + 0.587 * g + 0.114 * b;
+      sat = Math.max(r, g, b) - Math.min(r, g, b);
       isBg = colorDist(r, g, b, bgR, bgG, bgB) <= colorTol;
-      if (!isBg && lum >= lumCutoff) isBg = true;
-      if (!isBg) {
-        sat = Math.max(r, g, b) - Math.min(r, g, b);
-        if (lum >= 208 && sat <= 32) isBg = true;
+
+      if (darkOnLight) {
+        if (!isBg && lum >= 246 && sat <= 24) isBg = true;
+      } else if (lightOnDark) {
+        if (!isBg && lum <= Math.max(18, 42 - tolerance * 0.12)) isBg = true;
+      } else {
+        if (!isBg && lum >= lumCutoff) isBg = true;
+        if (!isBg && lum >= 208 && sat <= 32) isBg = true;
       }
+
       if (isBg) d[i + 3] = 0;
     }
 
-    floodRemoveBackground(id, colorTol, bgR, bgG, bgB);
-    return lumCutoff;
+    floodRemoveBackground(id, colorTol, bgR, bgG, bgB, analysis);
   }
 
-  function applyWhiteSilhouette(id, removeBackground, lumCutoff) {
+  function applyWhiteSilhouette(id) {
     var d = id.data;
     var i;
-    var lum; var strength;
     for (i = 0; i < d.length; i += 4) {
       if (d[i + 3] < 8) {
         d[i + 3] = 0;
         continue;
-      }
-      lum = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
-      if (removeBackground) {
-        strength = (lumCutoff - lum) / lumCutoff;
-        if (strength < 0.08) {
-          d[i + 3] = 0;
-          continue;
-        }
       }
       d[i] = 255;
       d[i + 1] = 255;
@@ -2485,7 +3906,10 @@
     }
   }
 
-  function floodRemoveBackground(id, tolerance, bgR, bgG, bgB) {
+  function floodRemoveBackground(id, tolerance, bgR, bgG, bgB, analysis) {
+    analysis = analysis || {};
+    var darkOnLight = !!analysis.darkOnLight;
+    var lightOnDark = !!analysis.lightOnDark;
     var d = id.data;
     var w = id.width;
     var h = id.height;
@@ -2502,9 +3926,13 @@
       var c = pxAt(x, y);
       if (c[3] < 12) return true;
       if (colorDist(c[0], c[1], c[2], bgR, bgG, bgB) <= tolerance) return true;
-      var lum = (c[0] + c[1] + c[2]) / 3;
-      if (lum >= 248 - tolerance * 0.35) return true;
-      return false;
+      if (darkOnLight) return false;
+      if (lightOnDark) {
+        var lum = (c[0] + c[1] + c[2]) / 3;
+        return lum <= 28;
+      }
+      var lumMixed = (c[0] + c[1] + c[2]) / 3;
+      return lumMixed >= 248 - tolerance * 0.35;
     }
 
     function seed(x, y) {
@@ -2536,6 +3964,274 @@
     }
   }
 
+  function pixelLum(r, g, b) {
+    return 0.299 * r + 0.587 * g + 0.114 * b;
+  }
+
+  function computeOtsuThreshold(lums) {
+    if (!lums.length) return 128;
+    var hist = new Array(256);
+    var t;
+    for (t = 0; t < 256; t++) hist[t] = 0;
+    var total = lums.length;
+    var sum = 0;
+    var i;
+    for (i = 0; i < lums.length; i++) {
+      var bin = Math.min(255, Math.max(0, Math.round(lums[i])));
+      hist[bin]++;
+      sum += bin;
+    }
+    var sumB = 0;
+    var wB = 0;
+    var maxVar = 0;
+    var threshold = 128;
+    for (t = 0; t < 256; t++) {
+      wB += hist[t];
+      if (!wB) continue;
+      var wF = total - wB;
+      if (!wF) break;
+      sumB += t * hist[t];
+      var mB = sumB / wB;
+      var mF = (sum - sumB) / wF;
+      var varBetween = wB * wF * (mB - mF) * (mB - mF);
+      if (varBetween > maxVar) {
+        maxVar = varBetween;
+        threshold = t;
+      }
+    }
+    return threshold;
+  }
+
+  function minDetailAreaFromSpeckle(speckle, w, h) {
+    speckle = Math.max(1, Math.min(10, speckle || 4));
+    var area = Math.max(1, w * h);
+    var base = area * 0.000015;
+    var mult = 0.35 + (speckle - 1) * 2.1 / 9;
+    return Math.max(12, Math.round(base * mult));
+  }
+
+  function boxBlurLums(lums, w, h, fg) {
+    var out = new Float32Array(w * h);
+    var x; var y; var idx; var n; var s; var dx; var dy;
+    for (y = 0; y < h; y++) {
+      for (x = 0; x < w; x++) {
+        idx = y * w + x;
+        if (!fg[idx]) {
+          out[idx] = 255;
+          continue;
+        }
+        n = 0;
+        s = 0;
+        for (dy = -1; dy <= 1; dy++) {
+          for (dx = -1; dx <= 1; dx++) {
+            var nx = x + dx;
+            var ny = y + dy;
+            if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
+            var ni = ny * w + nx;
+            if (!fg[ni]) continue;
+            s += lums[ni];
+            n++;
+          }
+        }
+        out[idx] = n ? s / n : lums[idx];
+      }
+    }
+    return out;
+  }
+
+  function removeSmallMaskComponents(mask, w, h, minArea) {
+    var labels = new Int32Array(w * h);
+    var areas = [0];
+    var label = 0;
+    var stack = [];
+
+    function flood(startIdx) {
+      label++;
+      areas[label] = 0;
+      stack.push(startIdx);
+      while (stack.length) {
+        var idx = stack.pop();
+        if (idx < 0 || idx >= w * h) continue;
+        if (!mask[idx] || labels[idx]) continue;
+        labels[idx] = label;
+        areas[label]++;
+        var x = idx % w;
+        var y = (idx / w) | 0;
+        if (x > 0) stack.push(idx - 1);
+        if (x < w - 1) stack.push(idx + 1);
+        if (y > 0) stack.push(idx - w);
+        if (y < h - 1) stack.push(idx + w);
+      }
+    }
+
+    var i;
+    for (i = 0; i < w * h; i++) {
+      if (mask[i] && !labels[i]) flood(i);
+    }
+    for (i = 0; i < w * h; i++) {
+      if (labels[i] && areas[labels[i]] < minArea) mask[i] = 0;
+    }
+  }
+
+  function morphOpenMask(mask, w, h) {
+    var eroded = new Uint8Array(w * h);
+    var opened = new Uint8Array(w * h);
+    var x; var y; var idx; var dx; var dy; var ok;
+    for (y = 0; y < h; y++) {
+      for (x = 0; x < w; x++) {
+        idx = y * w + x;
+        if (!mask[idx]) continue;
+        ok = true;
+        for (dy = -1; dy <= 1 && ok; dy++) {
+          for (dx = -1; dx <= 1 && ok; dx++) {
+            var nx = x + dx;
+            var ny = y + dy;
+            if (nx < 0 || ny < 0 || nx >= w || ny >= h || !mask[ny * w + nx]) ok = false;
+          }
+        }
+        if (ok) eroded[idx] = 1;
+      }
+    }
+    for (y = 0; y < h; y++) {
+      for (x = 0; x < w; x++) {
+        idx = y * w + x;
+        if (!eroded[idx]) continue;
+        for (dy = -1; dy <= 1; dy++) {
+          for (dx = -1; dx <= 1; dx++) {
+            var nx = x + dx;
+            var ny = y + dy;
+            if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
+            opened[ny * w + nx] = 1;
+          }
+        }
+      }
+    }
+    for (idx = 0; idx < w * h; idx++) mask[idx] = opened[idx];
+  }
+
+  function binarizeForTrace(id, analysis, opts) {
+    analysis = analysis || {};
+    opts = opts || {};
+    var d = id.data;
+    var w = id.width;
+    var h = id.height;
+    var darkOnLight = analysis.darkOnLight !== false;
+    var lightOnDark = !!analysis.lightOnDark;
+    var fg = new Uint8Array(w * h);
+    var lums = new Float32Array(w * h);
+    var lumsList = [];
+    var maxSat = 0;
+    var i; var pi; var r; var g; var b; var lum; var sat;
+
+    for (i = 0; i < d.length; i += 4) {
+      pi = i >> 2;
+      if (d[i + 3] < 8) continue;
+      r = d[i];
+      g = d[i + 1];
+      b = d[i + 2];
+      lum = pixelLum(r, g, b);
+      sat = Math.max(r, g, b) - Math.min(r, g, b);
+      if (sat > maxSat) maxSat = sat;
+      fg[pi] = 1;
+      lums[pi] = lum;
+      lumsList.push(lum);
+    }
+
+    var colorful = maxSat >= 36 && lumsList.length > 64;
+    var workLums = colorful ? boxBlurLums(lums, w, h, fg) : lums;
+    if (colorful) {
+      lumsList = [];
+      for (i = 0; i < w * h; i++) {
+        if (fg[i]) lumsList.push(workLums[i]);
+      }
+    }
+
+    var threshold = computeOtsuThreshold(lumsList);
+    if (analysis.contentLum != null && analysis.bgLum != null) {
+      var mid = (analysis.bgLum + analysis.contentLum) * 0.5;
+      threshold = darkOnLight
+        ? Math.min(threshold, mid + 12)
+        : Math.max(threshold, mid - 12);
+    }
+
+    var shape = new Uint8Array(w * h);
+    for (i = 0; i < d.length; i += 4) {
+      pi = i >> 2;
+      if (!fg[pi]) continue;
+      lum = workLums[pi];
+      var isShape = lightOnDark ? lum >= threshold : lum <= threshold;
+      shape[pi] = isShape ? 1 : 0;
+    }
+
+    var minArea = opts.minDetailArea != null
+      ? opts.minDetailArea
+      : minDetailAreaFromSpeckle(opts.speckle || 4, w, h);
+    if (colorful && opts.morphOpen !== false) morphOpenMask(shape, w, h);
+    removeSmallMaskComponents(shape, w, h, minArea);
+
+    for (i = 0; i < d.length; i += 4) {
+      pi = i >> 2;
+      if (shape[pi]) {
+        d[i] = 255;
+        d[i + 1] = 255;
+        d[i + 2] = 255;
+        d[i + 3] = 255;
+      } else {
+        d[i] = 0;
+        d[i + 1] = 0;
+        d[i + 2] = 0;
+        d[i + 3] = 0;
+      }
+    }
+
+    return { threshold: threshold, colorful: colorful, minArea: minArea };
+  }
+
+  function getImportMinDetailArea(w, h) {
+    var speckleEl = document.getElementById('st-import-speckle');
+    var speckle = speckleEl ? parseInt(speckleEl.value, 10) : 4;
+    return minDetailAreaFromSpeckle(speckle, w || 1, h || 1);
+  }
+
+  function processImageForTrace(img, opts) {
+    opts = opts || {};
+    var tolerance = opts.tolerance != null ? opts.tolerance : bgTolerance;
+    var off = document.createElement('canvas');
+    off.width = img.naturalWidth || img.width;
+    off.height = img.naturalHeight || img.height;
+    if (!off.width || !off.height) return off;
+    var oc = off.getContext('2d', { willReadFrequently: true });
+    oc.clearRect(0, 0, off.width, off.height);
+    oc.drawImage(img, 0, 0);
+    var id;
+    try {
+      id = oc.getImageData(0, 0, off.width, off.height);
+    } catch (err) {
+      return off;
+    }
+
+    var analysis = opts.analysis || null;
+    var bg = detectBackgroundColor(id.data, off.width, off.height);
+    if (!analysis) analysis = analyzeImageForImport(id, bg);
+    removeBackgroundPixels(id, tolerance, bg.r, bg.g, bg.b, analysis);
+
+    var speckleEl = document.getElementById('st-import-speckle');
+    var speckle = opts.speckle != null ? opts.speckle : (speckleEl ? parseInt(speckleEl.value, 10) : 4);
+    var binMeta = binarizeForTrace(id, analysis, {
+      speckle: speckle,
+      minDetailArea: opts.minDetailArea != null
+        ? opts.minDetailArea
+        : minDetailAreaFromSpeckle(speckle, off.width, off.height),
+      morphOpen: opts.morphOpen !== false,
+    });
+
+    oc.putImageData(id, 0, 0);
+    off.__alphaStats = countImageAlphaStats(id.data);
+    off.__traceMeta = binMeta;
+    off.__importAnalysis = analysis;
+    return off;
+  }
+
   function processImageForSticker(img, opts) {
     opts = opts || {};
     var removeBackground = opts.removeBackground !== false;
@@ -2545,6 +4241,7 @@
     off.height = img.naturalHeight || img.height;
     if (!off.width || !off.height) return off;
     var oc = off.getContext('2d', { willReadFrequently: true });
+    oc.clearRect(0, 0, off.width, off.height);
     oc.drawImage(img, 0, 0);
     var id;
     try {
@@ -2553,13 +4250,14 @@
       return off;
     }
 
-    var lumCutoff = 240;
+    var analysis = opts.analysis || null;
     if (removeBackground) {
       var bg = detectBackgroundColor(id.data, off.width, off.height);
-      lumCutoff = removeBackgroundPixels(id, tolerance, bg.r, bg.g, bg.b);
+      if (!analysis) analysis = analyzeImageForImport(id, bg);
+      removeBackgroundPixels(id, tolerance, bg.r, bg.g, bg.b, analysis);
     }
 
-    applyWhiteSilhouette(id, removeBackground, lumCutoff);
+    applyWhiteSilhouette(id);
     oc.putImageData(id, 0, 0);
     off.__alphaStats = countImageAlphaStats(id.data);
     return off;
@@ -2579,41 +4277,185 @@
   var importDialogState = {
     file: null,
     isSvg: false,
+    svgText: null,
+    vectorData: null,
+    svgRasterOnly: false,
     sourceImg: null,
     previewTimer: 0,
+    contourTimer: 0,
     processedCanvas: null,
+    tracePreviewData: null,
+    tracePreviewGen: 0,
+    tracePreviewBusy: false,
     confirming: false,
+    importAnalysis: null,
   };
 
-  function setImportConfirmBusy(busy) {
-    ['st-import-confirm', 'st-import-vector', 'st-import-confirm-svg'].forEach(function (id) {
-      var btn = document.getElementById(id);
-      if (btn) btn.disabled = !!busy;
-    });
+  function getImportTraceOptions() {
+    if (window.ST_TRACE && ST_TRACE.traceOptionsFromSliders) {
+      return ST_TRACE.traceOptionsFromSliders(
+        document.getElementById('st-import-smooth'),
+        document.getElementById('st-import-speckle')
+      );
+    }
+    var analysis = importDialogState.importAnalysis;
+    return {
+      smoothness: analysis && analysis.suggestedSmooth ? analysis.suggestedSmooth : 6,
+      speckle: analysis && analysis.suggestedSpeckle ? analysis.suggestedSpeckle : 4,
+      pathPrecision: 6,
+      opttolerance: 0.35,
+      filterSpeckle: 4,
+      turdsize: 4,
+    };
   }
 
-  function updateImportActionRows(isRaster, isSvg) {
-    var rasterActions = document.getElementById('st-import-actions-raster');
+  function setImportConfirmBusy(busy) {
+    var confirmSvg = document.getElementById('st-import-confirm-svg');
+    if (confirmSvg) confirmSvg.disabled = !!busy;
+    updateImportActionRows();
+  }
+
+  function updateImportActionRows() {
     var defaultActions = document.getElementById('st-import-actions-default');
-    if (rasterActions) rasterActions.hidden = !isRaster;
-    if (defaultActions) defaultActions.hidden = isRaster || !isSvg;
+    if (defaultActions) defaultActions.hidden = false;
+
+    var hasPaths = !!(importDialogState.vectorData && importDialogState.vectorData.paths && importDialogState.vectorData.paths.length);
+    var confirmSvg = document.getElementById('st-import-confirm-svg');
+    if (confirmSvg) {
+      confirmSvg.disabled = importDialogState.confirming || !hasPaths;
+      if (importDialogState.svgRasterOnly && !hasPaths) {
+        confirmSvg.textContent = 'Само вградена снимка — нужен е векторен SVG';
+      } else {
+        confirmSvg.textContent = hasPaths ? 'Добави векторен слой' : 'Няма path елементи';
+      }
+    }
+  }
+
+  function readFileAsText(file, cb) {
+    var reader = new FileReader();
+    reader.onload = function () { cb(null, reader.result); };
+    reader.onerror = function () { cb(new Error('read')); };
+    reader.readAsText(file);
+  }
+
+  function drawVectorPreviewOnCanvas(vectorData) {
+    var canvas = document.getElementById('st-import-preview');
+    if (!canvas || !vectorData || !vectorData.paths || !vectorData.paths.length) return false;
+    var refW = vectorData.contentW || vectorData.viewW || 100;
+    var refH = vectorData.contentH || vectorData.viewH || 100;
+    if (!refW || !refH) {
+      refW = 100;
+      refH = 100;
+    }
+    var maxW = 360;
+    var maxH = 260;
+    var scale = Math.min(maxW / refW, maxH / refH, 1);
+    var dw = Math.max(1, Math.round(refW * scale));
+    var dh = Math.max(1, Math.round(refH * scale));
+    canvas.width = dw;
+    canvas.height = dh;
+    var ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, dw, dh);
+    ctx.save();
+    ctx.scale(dw / refW, dh / refH);
+    if (vectorData.offsetX || vectorData.offsetY) {
+      ctx.translate(-(vectorData.offsetX || 0), -(vectorData.offsetY || 0));
+    }
+    ctx.fillStyle = '#ffffff';
+    vectorData.paths.forEach(function (d) {
+      try {
+        ctx.fill(new Path2D(d), 'evenodd');
+      } catch (e) { /* skip invalid path */ }
+    });
+    ctx.restore();
+    return true;
+  }
+
+  function drawVectorDataOnCanvas(vectorData, canvas, maxDim) {
+    if (!canvas || !vectorData || !vectorData.paths || !vectorData.paths.length) return false;
+    var refW = vectorData.contentW || vectorData.viewW || 100;
+    var refH = vectorData.contentH || vectorData.viewH || 100;
+    maxDim = maxDim || 900;
+    var scale = Math.min(1, maxDim / Math.max(refW, refH));
+    var cw = Math.max(1, Math.round(refW * scale));
+    var ch = Math.max(1, Math.round(refH * scale));
+    canvas.width = cw;
+    canvas.height = ch;
+    var ctx = canvas.getContext('2d');
+    ctx.save();
+    ctx.scale(cw / refW, ch / refH);
+    if (vectorData.offsetX || vectorData.offsetY) {
+      ctx.translate(-(vectorData.offsetX || 0), -(vectorData.offsetY || 0));
+    }
+    ctx.fillStyle = '#ffffff';
+    vectorData.paths.forEach(function (d) {
+      try {
+        ctx.fill(new Path2D(d), 'evenodd');
+      } catch (e) { /* skip */ }
+    });
+    ctx.restore();
+    return true;
+  }
+
+  function rasterizeSvgTextToCanvas(svgText, cb) {
+    if (window.ST_VECTOR && ST_VECTOR.parseSvgPaths) {
+      var parsed = ST_VECTOR.parseSvgPaths(svgText);
+      if (parsed.paths && parsed.paths.length) {
+        var off = document.createElement('canvas');
+        if (drawVectorDataOnCanvas(parsed, off, 900)) {
+          cb(off);
+          return;
+        }
+      }
+    }
+
+    var blob = new Blob([svgText], { type: 'image/svg+xml;charset=utf-8' });
+    var url = URL.createObjectURL(blob);
+    var img = new Image();
+    img.onload = function () {
+      URL.revokeObjectURL(url);
+      var w = img.naturalWidth || 512;
+      var h = img.naturalHeight || 512;
+      var off = document.createElement('canvas');
+      off.width = w;
+      off.height = h;
+      off.getContext('2d').drawImage(img, 0, 0, w, h);
+      cb(off);
+    };
+    img.onerror = function () {
+      URL.revokeObjectURL(url);
+      cb(null);
+    };
+    img.src = url;
+  }
+
+  function resetImportDialogState() {
+    importDialogState.file = null;
+    importDialogState.isSvg = false;
+    importDialogState.svgText = null;
+    importDialogState.vectorData = null;
+    importDialogState.svgRasterOnly = false;
+    importDialogState.sourceImg = null;
+    importDialogState.processedCanvas = null;
+    importDialogState.tracePreviewData = null;
+    importDialogState.tracePreviewGen = 0;
+    importDialogState.tracePreviewBusy = false;
+    importDialogState.confirming = false;
+    importDialogState.importAnalysis = null;
+    clearTimeout(importDialogState.previewTimer);
+    clearTimeout(importDialogState.contourTimer);
+    setImportConfirmBusy(false);
   }
 
   function closeImportDialog() {
     var dialog = document.getElementById('st-import-dialog');
     if (dialog && dialog.open) dialog.close();
-    importDialogState.file = null;
-    importDialogState.isSvg = false;
-    importDialogState.sourceImg = null;
-    importDialogState.processedCanvas = null;
-    importDialogState.confirming = false;
-    clearTimeout(importDialogState.previewTimer);
-    setImportConfirmBusy(false);
+    resetImportDialogState();
     var uploadEl = document.getElementById('st-upload');
     if (uploadEl) uploadEl.value = '';
   }
 
-  function drawImportPreviewCanvas(source) {
+  function drawImportPreviewCanvas(source, contourData) {
     var canvas = document.getElementById('st-import-preview');
     if (!canvas || !source) return;
     var iw = source.naturalWidth || source.width;
@@ -2627,30 +4469,145 @@
     canvas.width = dw;
     canvas.height = dh;
     var pctx = canvas.getContext('2d');
-    pctx.clearRect(0, 0, dw, dh);
-    pctx.drawImage(source, 0, 0, dw, dh);
+    pctx.fillStyle = '#ffffff';
+    pctx.fillRect(0, 0, dw, dh);
+
+    var tmp = document.createElement('canvas');
+    tmp.width = iw;
+    tmp.height = ih;
+    var tctx = tmp.getContext('2d', { willReadFrequently: true });
+    tctx.drawImage(source, 0, 0);
+    var id;
+    try {
+      id = tctx.getImageData(0, 0, iw, ih);
+    } catch (err) {
+      pctx.drawImage(source, 0, 0, dw, dh);
+      return;
+    }
+    var d = id.data;
+    var i;
+    for (i = 0; i < d.length; i += 4) {
+      if (d[i + 3] > 128) {
+        d[i] = 0;
+        d[i + 1] = 0;
+        d[i + 2] = 0;
+        d[i + 3] = 255;
+      } else {
+        d[i] = 255;
+        d[i + 1] = 255;
+        d[i + 2] = 255;
+        d[i + 3] = 255;
+      }
+    }
+    tctx.putImageData(id, 0, 0);
+    pctx.drawImage(tmp, 0, 0, dw, dh);
+
+    if (contourData && contourData.paths && contourData.paths.length && window.ST_TRACE) {
+      var refW = contourData.viewW || iw;
+      var refH = contourData.viewH || ih;
+      ST_TRACE.drawContourOverlay(pctx, contourData, refW, refH, dw, dh);
+    }
   }
 
   function refreshImportPreview() {
     var source = importDialogState.sourceImg;
-    if (!source) return;
-    var isSvg = importDialogState.isSvg;
-    var tolEl = document.getElementById('st-import-tolerance');
+    var previewHint = document.getElementById('st-import-preview-hint');
+    if (!source && !importDialogState.isSvg) return;
 
-    if (isSvg) {
+    if (importDialogState.isSvg) {
       importDialogState.processedCanvas = null;
-      drawImportPreviewCanvas(source);
+      if (importDialogState.vectorData && drawVectorPreviewOnCanvas(importDialogState.vectorData)) {
+        if (previewHint) {
+          previewHint.textContent = importDialogState.svgRasterOnly
+            ? 'SVG с вградено изображение — векторният слой не е възможен. Ползвай „Добави като изображение“.'
+            : 'Превю на векторните контури (бяло върху прозрачно).';
+        }
+        updateImportStats(null, false);
+        return;
+      }
+      if (importDialogState.svgText) {
+        rasterizeSvgTextToCanvas(importDialogState.svgText, function (canvas) {
+          if (canvas) drawImportPreviewCanvas(canvas);
+          if (previewHint) {
+            previewHint.textContent = canvas
+              ? 'SVG превю — ако липсват path елементи, ползвай „Добави като изображение“.'
+              : 'Неуспешен преглед на SVG.';
+          }
+        });
+      }
       updateImportStats(null, false);
       return;
     }
 
+    var tolEl = document.getElementById('st-import-tolerance');
     var tolerance = tolEl ? parseFloat(tolEl.value) : bgTolerance;
-    importDialogState.processedCanvas = processImageForSticker(source, {
-      removeBackground: true,
+    importDialogState.processedCanvas = processImageForTrace(source, {
       tolerance: tolerance,
+      analysis: importDialogState.importAnalysis,
     });
-    drawImportPreviewCanvas(importDialogState.processedCanvas);
+    importDialogState.tracePreviewData = null;
+    drawImportPreviewCanvas(importDialogState.processedCanvas, null);
     updateImportStats(importDialogState.processedCanvas.__alphaStats, true);
+    if (previewHint) {
+      var meta = importDialogState.processedCanvas.__traceMeta;
+      if (importDialogState.tracePreviewBusy) {
+        previewHint.textContent = 'Trace на контура… (VTracer + Potrace в worker)';
+      } else if (meta && meta.colorful) {
+        previewHint.textContent = 'Цветната снимка е сведена до черно-бяло; зеленият контур = trace.';
+      } else {
+        previewHint.textContent = 'Черно-бяло превю + зелен контур преди векторен слой.';
+      }
+    }
+    updateImportActionRows();
+    scheduleImportContourPreview();
+  }
+
+  function scheduleImportContourPreview() {
+    clearTimeout(importDialogState.contourTimer);
+    importDialogState.contourTimer = setTimeout(refreshImportContourPreview, 120);
+  }
+
+  function refreshImportContourPreview() {
+    if (importDialogState.isSvg) return;
+    var canvas = importDialogState.processedCanvas;
+    if (!canvas || !window.ST_TRACE || !ST_TRACE.traceCanvasAsync) return;
+
+    var gen = ++importDialogState.tracePreviewGen;
+    importDialogState.tracePreviewBusy = true;
+    updateImportActionRows();
+
+    var previewHint = document.getElementById('st-import-preview-hint');
+    if (previewHint) {
+      previewHint.textContent = 'Trace на контура… (VTracer + Potrace в worker)';
+    }
+
+    var traceOpts = getImportTraceOptions();
+    ST_TRACE.traceCanvasAsync(canvas, traceOpts).then(function (raw) {
+      if (gen !== importDialogState.tracePreviewGen) return;
+      importDialogState.tracePreviewBusy = false;
+      var vectorData = raw;
+      if (window.ST_VECTOR && ST_VECTOR.normalizeVectorData) {
+        vectorData = ST_VECTOR.normalizeVectorData(raw);
+      }
+      importDialogState.tracePreviewData = vectorData;
+      drawImportPreviewCanvas(canvas, vectorData);
+
+      if (previewHint) {
+        if (vectorData.paths && vectorData.paths.length) {
+          var engine = raw.engine === 'vtracer' ? 'VTracer' : 'Potrace';
+          previewHint.textContent = 'Контур (' + engine + ', ' + vectorData.paths.length + ' path) — готов за векторен слой.';
+        } else {
+          previewHint.textContent = 'Trace не намери контури — опитай друга чувствителност или speckles.';
+        }
+      }
+      updateImportActionRows();
+    }).catch(function () {
+      if (gen !== importDialogState.tracePreviewGen) return;
+      importDialogState.tracePreviewBusy = false;
+      importDialogState.tracePreviewData = null;
+      if (previewHint) previewHint.textContent = 'Trace не успя — ползвай растерен слой.';
+      updateImportActionRows();
+    });
   }
 
   function scheduleImportPreview() {
@@ -2670,12 +4627,11 @@
 
     var file = importDialogState.file;
     var source = importDialogState.sourceImg;
-    if (!file || !source) {
+    if (!file || !source || importDialogState.isSvg) {
       closeImportDialog();
       return;
     }
 
-    var isSvg = importDialogState.isSvg;
     var tolEl = document.getElementById('st-import-tolerance');
     removeBg = true;
     if (tolEl) bgTolerance = parseFloat(tolEl.value);
@@ -2690,14 +4646,9 @@
         window.alert('Файлът не може да се обработи. Опитай отново или с друг формат.');
         return;
       }
-      addLayer(makeImageLayer(imgEl, file.name, isSvg, { stickerProcessed: !!stickerProcessed }));
+      addLayer(makeImageLayer(imgEl, file.name, false, { stickerProcessed: !!stickerProcessed }));
       closeImportDialog();
-      scheduleDraftSave();
-    }
-
-    if (isSvg) {
-      finish(source, false);
-      return;
+      markDraftDirty();
     }
 
     clearTimeout(importDialogState.previewTimer);
@@ -2715,119 +4666,167 @@
     }, bgTolerance);
   }
 
-  function confirmImportDialogVector() {
+  function confirmImportDialogSvgRaster() {
     if (importDialogState.confirming) return;
-    if (!window.ST_VECTOR || !ST_VECTOR.ready()) {
-      window.alert('Vector библиотеките не са заредени. Презареди страницата.');
-      return;
-    }
 
     var file = importDialogState.file;
-    var source = importDialogState.sourceImg;
-    if (!file || !source || importDialogState.isSvg) {
+    var svgText = importDialogState.svgText;
+    if (!file || !svgText) {
       closeImportDialog();
       return;
     }
 
-    var tolEl = document.getElementById('st-import-tolerance');
-    removeBg = true;
-    if (tolEl) bgTolerance = parseFloat(tolEl.value);
-
     importDialogState.confirming = true;
     setImportConfirmBusy(true);
 
-    clearTimeout(importDialogState.previewTimer);
-    refreshImportPreview();
+    rasterizeSvgTextToCanvas(svgText, function (canvas) {
+      if (!canvas) {
+        importDialogState.confirming = false;
+        setImportConfirmBusy(false);
+        window.alert('SVG не може да се растеризира.');
+        return;
+      }
+      imageFromCanvas(canvas, function (imgEl) {
+        if (!imgEl) {
+          importDialogState.confirming = false;
+          setImportConfirmBusy(false);
+          window.alert('SVG не може да се добави като изображение.');
+          return;
+        }
+        addLayer(makeImageLayer(imgEl, file.name, false, { stickerProcessed: true }));
+        closeImportDialog();
+        markDraftDirty();
+      });
+    });
+  }
 
-    var vectorData = importDialogState.processedCanvas
-      ? vectorDataFromProcessedCanvas(importDialogState.processedCanvas)
-      : null;
+  function confirmImportDialogVector() {
+    if (importDialogState.confirming) return;
 
-    if (!vectorData) {
-      importDialogState.confirming = false;
-      setImportConfirmBusy(false);
-      window.alert('Trace не успя — опитай с по-контрастно изображение или промени чувствителността.');
+    var file = importDialogState.file;
+    if (!file) {
+      closeImportDialog();
       return;
     }
 
-    addLayer(makeVectorLayer(file.name, vectorData));
+    if (importDialogState.isSvg) {
+      if (importDialogState.svgRasterOnly) {
+        window.alert('Този SVG съдържа само вградена снимка, без path контури. Експортирай отново като векторен SVG.');
+        return;
+      }
+      var vd = importDialogState.vectorData;
+      if (!vd || !vd.paths || !vd.paths.length) {
+        window.alert('SVG файлът няма path елементи. Нужен е векторен SVG с контури.');
+        return;
+      }
+      importDialogState.confirming = true;
+      setImportConfirmBusy(true);
+      addLayer(makeVectorLayer(file.name, vd));
+      closeImportDialog();
+      markDraftDirty();
+      return;
+    }
+
     closeImportDialog();
-    scheduleDraftSave();
+  }
+
+  function openImportDialogAfterLoad(file) {
+    var dialog = document.getElementById('st-import-dialog');
+    if (!dialog) return;
+
+    var nameEl = document.getElementById('st-import-filename');
+    var svgNote = document.getElementById('st-import-svg-note');
+
+    importDialogState.confirming = false;
+    setImportConfirmBusy(false);
+
+    if (nameEl) nameEl.textContent = file.name;
+    if (svgNote) svgNote.hidden = false;
+    updateImportActionRows();
+
+    refreshImportPreview();
+    if (typeof dialog.showModal === 'function') dialog.showModal();
   }
 
   function openImportDialog(file) {
     var dialog = document.getElementById('st-import-dialog');
+    if (!isSvgUploadFile(file)) {
+      window.alert(SVG_UPLOAD_ONLY_MSG);
+      return;
+    }
     if (!dialog) {
       loadImageFileDirect(file);
       return;
     }
 
-    var isSvg = /\.svg$/i.test(file.name) || file.type === 'image/svg+xml';
-    var isRaster = isRasterImageFile(file);
-    var reader = new FileReader();
-    reader.onload = function () {
-      var raw = new Image();
-      raw.onload = function () {
-        importDialogState.file = file;
-        importDialogState.isSvg = isSvg;
-        importDialogState.sourceImg = raw;
-        importDialogState.processedCanvas = null;
+    resetImportDialogState();
+    importDialogState.file = file;
+    importDialogState.isSvg = true;
 
-        var nameEl = document.getElementById('st-import-filename');
-        var pngOpts = document.getElementById('st-import-png-options');
-        var svgNote = document.getElementById('st-import-svg-note');
-        var tolEl = document.getElementById('st-import-tolerance');
-        var tolVal = document.getElementById('st-import-tolerance-val');
-
-        importDialogState.confirming = false;
-        setImportConfirmBusy(false);
-
-        if (nameEl) nameEl.textContent = file.name;
-        if (pngOpts) pngOpts.hidden = !isRaster;
-        if (svgNote) svgNote.hidden = !isSvg;
-        updateImportActionRows(isRaster, isSvg);
-        if (tolEl) {
-          tolEl.value = String(bgTolerance);
-          if (tolVal) tolVal.textContent = String(bgTolerance);
-        }
-
-        refreshImportPreview();
-        if (typeof dialog.showModal === 'function') dialog.showModal();
-      };
-      raw.onerror = function () {
-        window.alert('Файлът не може да се зареди. Опитай друг PNG или SVG.');
-      };
-      raw.src = reader.result;
-    };
-    reader.onerror = function () {
-      window.alert('Файлът не може да се прочете.');
-    };
-    reader.readAsDataURL(file);
+    readFileAsText(file, function (err, text) {
+      if (err || !text) {
+        window.alert('Файлът не може да се прочете.');
+        resetImportDialogState();
+        return;
+      }
+      importDialogState.svgText = text;
+      if (window.ST_VECTOR && ST_VECTOR.prepareSvgImport) {
+        var svgImport = ST_VECTOR.prepareSvgImport(text);
+        importDialogState.vectorData = svgImport.vectorData;
+        importDialogState.svgRasterOnly = !!svgImport.rasterOnly;
+      } else {
+        importDialogState.vectorData = (window.ST_VECTOR && ST_VECTOR.parseSvgPaths)
+          ? ST_VECTOR.parseSvgPaths(text)
+          : { paths: [], viewW: 0, viewH: 0 };
+        importDialogState.svgRasterOnly = false;
+      }
+      openImportDialogAfterLoad(file);
+    });
   }
 
+  var SVG_UPLOAD_ONLY_MSG = 'Приемат се само SVG файлове с векторни контури (path). PNG, JPG и WebP не се поддържат — експортирай логото като SVG от Inkscape, Illustrator или Figma.';
+
   function loadImageFileDirect(file) {
-    var isSvg = /\.svg$/i.test(file.name) || file.type === 'image/svg+xml';
-    var reader = new FileReader();
-    reader.onload = function () {
-      var raw = new Image();
-      raw.onload = function () {
-        function finish(imgEl) {
-          addLayer(makeImageLayer(imgEl, file.name, isSvg, { stickerProcessed: isRasterImageFile(file) }));
+    if (!isSvgUploadFile(file)) {
+      window.alert(SVG_UPLOAD_ONLY_MSG);
+      return;
+    }
+    readFileAsText(file, function (err, text) {
+      if (err || !text) {
+        window.alert('Файлът не може да се прочете.');
+        return;
+      }
+      if (window.ST_VECTOR && ST_VECTOR.prepareSvgImport) {
+        var svgImport = ST_VECTOR.prepareSvgImport(text);
+        var vd = svgImport.vectorData;
+        if (vd && vd.paths && vd.paths.length) {
+          addLayer(makeVectorLayer(file.name, vd));
+          markDraftDirty();
+          return;
         }
-        var processed = processImageForSticker(raw, {
-          removeBackground: isRasterImageFile(file),
-          tolerance: bgTolerance,
-        });
-        var out = new Image();
-        out.onload = function () { finish(out); };
-        out.src = processed.toDataURL('image/png');
-      };
-      raw.src = reader.result;
-    };
-    reader.readAsDataURL(file);
+        if (svgImport.rasterOnly) {
+          window.alert('Този SVG съдържа само вградена снимка, без path контури. Експортирай отново като векторен SVG.');
+          return;
+        }
+      } else {
+        var legacyVd = (window.ST_VECTOR && ST_VECTOR.parseSvgPaths)
+          ? ST_VECTOR.parseSvgPaths(text)
+          : null;
+        if (legacyVd && legacyVd.paths && legacyVd.paths.length) {
+          addLayer(makeVectorLayer(file.name, legacyVd));
+          markDraftDirty();
+          return;
+        }
+      }
+      window.alert('SVG файлът няма path елементи. Нужен е векторен SVG с контури.');
+    });
   }
 
   function loadImageFile(file) {
+    if (!isSvgUploadFile(file)) {
+      window.alert(SVG_UPLOAD_ONLY_MSG);
+      return;
+    }
     openImportDialog(file);
   }
 
@@ -2835,31 +4834,13 @@
     var dialog = document.getElementById('st-import-dialog');
     if (!dialog) return;
 
-    on('st-import-cancel', 'click', closeImportDialog);
     on('st-import-cancel-svg', 'click', closeImportDialog);
     on('st-import-close-x', 'click', closeImportDialog);
-    on('st-import-confirm', 'click', confirmImportDialog);
-    on('st-import-confirm-svg', 'click', confirmImportDialog);
-    on('st-import-vector', 'click', confirmImportDialogVector);
+    on('st-import-confirm-svg', 'click', confirmImportDialogVector);
 
     dialog.addEventListener('cancel', function (e) {
       e.preventDefault();
-      closeImportDialog();
     });
-
-    dialog.addEventListener('click', function (e) {
-      if (e.target === dialog) closeImportDialog();
-    });
-
-    var tolEl = document.getElementById('st-import-tolerance');
-    var tolVal = document.getElementById('st-import-tolerance-val');
-
-    if (tolEl) {
-      tolEl.addEventListener('input', function () {
-        if (tolVal) tolVal.textContent = tolEl.value;
-        scheduleImportPreview();
-      });
-    }
   }
 
   function buildMsg() {
@@ -2868,7 +4849,7 @@
       '',
       'Категория:   ' + CFG.title,
       'Размер:      ' + stickerSize.widthCm + ' × ' + stickerSize.heightCm + ' cm',
-      'Ориент. цена: ' + getPrice() + ' ' + CFG.currency,
+      'Ориент. цена: ' + (window.Pricing ? Pricing.format(getPrice()) : getPrice() + ' ' + CFG.currency),
       '',
       'Слоеве (' + layers.length + '):',
     ];
@@ -2880,11 +4861,11 @@
       } else if (layer.type === 'vector') {
         lines.push('  ' + (i + 1) + '. Вектор: ' + layer.fileName);
       } else {
-        lines.push('  ' + (i + 1) + '. Файл: ' + layer.fileName + (layer.isSvg ? ' (SVG)' : ' (PNG)'));
+        lines.push('  ' + (i + 1) + '. Файл: ' + layer.fileName + ' (SVG)');
       }
     });
     lines.push('');
-    lines.push('Моля прикачи SVG за плотер (и PNG превю ако имаш).');
+    lines.push('Моля прикачи SVG файла.');
     return lines.join('\n');
   }
 
@@ -3116,7 +5097,7 @@
     var oldRects = animateReorder ? captureLayerItemRects(list) : null;
     list.innerHTML = '';
     if (!layers.length) {
-      list.innerHTML = '<p class="cfg-layers-empty">Добави текст или SVG/PNG файл.</p>';
+      list.innerHTML = '<p class="cfg-layers-empty">Добави текст или SVG файл.</p>';
       updateLayerHint();
       return;
     }
@@ -3171,6 +5152,41 @@
     updateLayerHint();
   }
 
+  function getLayerSizeCm(layer, rect) {
+    if (!layer || !rect) return null;
+    var box = getLayerContentBox(layer, rect);
+    var wb = getLayerWorldBounds(box);
+    if (!wb) return null;
+    var wCm = pxToMm(wb.maxX - wb.minX, rect.w, stickerSize.widthCm * 10) / 10;
+    var hCm = pxToMm(wb.maxY - wb.minY, rect.h, stickerSize.heightCm * 10) / 10;
+    return {
+      w: Math.round(wCm * 10) / 10,
+      h: Math.round(hCm * 10) / 10,
+    };
+  }
+
+  function updateLayerSizeLabel(rect) {
+    var el = document.getElementById('st-layer-size');
+    if (!el) return;
+    if (selectedLayerIds.length !== 1) {
+      el.hidden = true;
+      return;
+    }
+    var layer = getSelectedLayer();
+    if (!layer) {
+      el.hidden = true;
+      return;
+    }
+    rect = rect || getStickerRect();
+    var size = getLayerSizeCm(layer, rect);
+    if (!size) {
+      el.hidden = true;
+      return;
+    }
+    el.hidden = false;
+    el.textContent = 'Размер на слоя: ' + size.w + ' × ' + size.h + ' cm';
+  }
+
   function updateLayerHint() {
     var hint = document.getElementById('st-layer-hint');
     if (!hint) return;
@@ -3222,14 +5238,20 @@
       if (fileTypeEl) {
         fileTypeEl.textContent = layer.isSvg
           ? 'Векторен SVG — подходящ за рязане на плотер.'
-          : 'PNG растер — trace → вектор за плотер (бутон по-долу).';
+          : 'PNG/JPG — може като растерен слой или trace → вектор (SVG paths).';
       }
       if (traceBtn) {
         traceBtn.hidden = !!layer.isSvg;
         traceBtn.disabled = !!layer.isSvg;
+        traceBtn.title = '';
       }
     } else if (layer && layer.type === 'vector') {
       if (vectorNameEl) vectorNameEl.textContent = layer.fileName || layer.name;
+      var noisyHint = document.getElementById('st-vector-noisy-hint');
+      var toRasterBtn = document.getElementById('st-vector-to-raster');
+      var noisy = window.ST_VECTOR && ST_VECTOR.isNoisyVectorLayer && ST_VECTOR.isNoisyVectorLayer(layer);
+      if (noisyHint) noisyHint.hidden = !noisy;
+      if (toRasterBtn) toRasterBtn.hidden = noisy;
       if (traceBtn) traceBtn.hidden = true;
     } else {
       if (fileTypeEl) fileTypeEl.textContent = '';
@@ -3237,6 +5259,7 @@
     }
 
     updateLayerHint();
+    updateLayerSizeLabel();
     updateAlignButtons();
   }
 
@@ -3252,8 +5275,8 @@
     });
   }
 
-  function renderQuickSizes() {
-    var wrap = document.getElementById('st-quick-sizes');
+  function renderQuickSizesIn(wrapId) {
+    var wrap = document.getElementById(wrapId);
     if (!wrap) return;
     wrap.innerHTML = '';
     (CFG.quickSizes || []).forEach(function (sz) {
@@ -3264,26 +5287,15 @@
       btn.dataset.h = String(sz.h);
       btn.textContent = sz.label + ' cm';
       btn.addEventListener('click', function () {
-        stickerSize.widthCm = sz.w;
-        stickerSize.heightCm = sz.h;
-        document.getElementById('st-width').value = String(sz.w);
-        document.getElementById('st-height').value = String(sz.h);
-        drawPreview();
-        updatePriceDisplay();
-        updateLinks();
-        updateQuickSizeButtons();
-        saveHistory();
+        applyStickerSize(sz.w, sz.h);
       });
       wrap.appendChild(btn);
     });
   }
 
-  function applyStickerSizeFromInputs() {
-    var lim = CFG.size;
-    stickerSize.widthCm = clampSize(document.getElementById('st-width').value, lim.minW, lim.maxW);
-    stickerSize.heightCm = clampSize(document.getElementById('st-height').value, lim.minH, lim.maxH);
-    document.getElementById('st-width').value = String(stickerSize.widthCm);
-    document.getElementById('st-height').value = String(stickerSize.heightCm);
+  function renderQuickSizes() {
+    renderQuickSizesIn('st-quick-sizes');
+    renderQuickSizesIn('st-size-dlg-quick-sizes');
   }
 
   function canvasXY(e) {
@@ -3547,7 +5559,9 @@
       if (layer.type === 'image' || layer.type === 'vector') {
         layer.size = Math.max(0.1, ptr.startScale * ratio);
       } else {
-        layer.size = Math.round(Math.max(TEXT_SIZE_MIN, Math.min(TEXT_SIZE_MAX, ptr.startScale * ratio)));
+        var stickerRect = getStickerRect();
+        var maxTextSz = getTextSizeMax(stickerRect);
+        layer.size = Math.max(TEXT_SIZE_MIN, Math.min(maxTextSz, ptr.startScale * ratio));
       }
     }
     scheduleDrawPreview();
@@ -3568,7 +5582,6 @@
       refreshCanvasCursor();
       clearSnapGuides();
       drawPreviewNow();
-      scheduleDraftSave();
     }
   }
 
@@ -3688,7 +5701,19 @@
   });
 
   initImportDialog();
-  on('st-trace-layer', 'click', traceSelectedImageLayer);
+
+  (function initSvgUploadInfo() {
+    var btn = document.getElementById('st-svg-info-btn');
+    var wrap = btn && btn.closest('.st-svg-info');
+    if (!btn || !wrap) return;
+
+    btn.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      var open = wrap.classList.toggle('is-open');
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+  })();
 
   var textInput = document.getElementById('st-text');
   if (textInput) {
@@ -3698,7 +5723,7 @@
       layer.text = e.target.value;
       drawPreview();
       updateLinks();
-      scheduleDraftSave();
+      markDraftDirty();
     });
     textInput.addEventListener('change', function () {
       var layer = getSelectedLayer();
@@ -3722,8 +5747,12 @@
     var layer = getSelectedLayer();
     if (!layer || layer.type !== 'text') return;
     layer.font = e.target.value;
+    var fontLoads = [loadCanvasFontFamily(layer.font, [28, layer.size || 28, 48])];
+    if (window.ST_VECTOR && ST_VECTOR.loadFont) {
+      fontLoads.push(ST_VECTOR.loadFont(layer.font).catch(function () { return null; }));
+    }
     if (document.fonts && document.fonts.load) {
-      document.fonts.load('700 28px "' + layer.font + '"').then(function () {
+      Promise.all(fontLoads).then(function () {
         drawPreview();
         saveHistory();
       });
@@ -3747,7 +5776,7 @@
     snapGuidesBtn.addEventListener('click', function () {
       snapEnabled = !snapEnabled;
       updateSnapToggleUi();
-      scheduleDraftSave();
+      markDraftDirty();
     });
   }
 
@@ -3765,20 +5794,95 @@
 
   ['st-width', 'st-height'].forEach(function (id) {
     document.getElementById(id).addEventListener('change', function () {
-      applyStickerSizeFromInputs();
-      drawPreview();
-      updatePriceDisplay();
-      updateLinks();
-      updateQuickSizeButtons();
-      saveHistory();
+      applyStickerSize();
     });
   });
+
+  function rasterizeVectorLayerToCanvas(layer, maxDim) {
+    if (!layer || layer.type !== 'vector' || !layer.paths || !layer.paths.length) return null;
+    var refW = layer.contentW || layer.viewW || 1;
+    var refH = layer.contentH || layer.viewH || 1;
+    maxDim = maxDim || 1200;
+    var scale = Math.min(1, maxDim / Math.max(refW, refH));
+    var w = Math.max(1, Math.round(refW * scale));
+    var h = Math.max(1, Math.round(refH * scale));
+    var off = document.createElement('canvas');
+    off.width = w;
+    off.height = h;
+    var ctx = off.getContext('2d');
+    ctx.save();
+    ctx.scale(w / refW, h / refH);
+    if (layer.offsetX || layer.offsetY) ctx.translate(-(layer.offsetX || 0), -(layer.offsetY || 0));
+    ctx.fillStyle = '#ffffff';
+    layer.paths.forEach(function (d) {
+      try {
+        ctx.fill(new Path2D(d), 'evenodd');
+      } catch (e) { /* skip */ }
+    });
+    ctx.restore();
+    return off;
+  }
+
+  function convertVectorLayerToRaster(layerId) {
+    var layer = getLayerById(layerId);
+    if (!layer || layer.type !== 'vector') return;
+    var off = rasterizeVectorLayerToCanvas(layer);
+    if (!off) {
+      window.alert('Векторният слой не може да се преобразува.');
+      return;
+    }
+    imageFromCanvas(off, function (imgEl) {
+      if (!imgEl) {
+        window.alert('Преобразуването не успя.');
+        return;
+      }
+      var idx = -1;
+      var i;
+      for (i = 0; i < layers.length; i++) {
+        if (layers[i].id === layerId) { idx = i; break; }
+      }
+      if (idx < 0) return;
+      var newLayer = makeImageLayer(imgEl, layer.fileName || layer.name, false, {
+        stickerProcessed: true,
+        size: layer.size,
+        x: layer.x,
+        y: layer.y,
+        rotation: layer.rotation,
+      });
+      layers[idx] = newLayer;
+      selectedLayerIds = [newLayer.id];
+      selectedLayerId = newLayer.id;
+      renderLayersPanel();
+      syncControlsToSelectedLayer();
+      updateAlignButtons();
+      drawPreview();
+      updateLinks();
+      saveHistory();
+    });
+  }
 
   function vectorDataFromProcessedCanvas(canvas) {
     if (!window.ST_VECTOR || !ST_VECTOR.ready() || !canvas) return null;
     var traced = ST_VECTOR.traceCanvas(canvas);
     if (!traced.paths || !traced.paths.length) return null;
+    if (ST_VECTOR.normalizeVectorData) traced = ST_VECTOR.normalizeVectorData(traced);
+    if (!traced.paths || !traced.paths.length) return null;
     return traced;
+  }
+
+  function vectorDataFromProcessedCanvasAsync(canvas, traceOpts) {
+    traceOpts = traceOpts || getImportTraceOptions();
+    if (!canvas) return Promise.resolve(null);
+    if (window.ST_TRACE && ST_TRACE.traceCanvasAsync) {
+      return ST_TRACE.traceCanvasAsync(canvas, traceOpts).then(function (raw) {
+        if (!raw || !raw.paths || !raw.paths.length) return null;
+        if (window.ST_VECTOR && ST_VECTOR.normalizeVectorData) {
+          return ST_VECTOR.normalizeVectorData(raw);
+        }
+        return raw;
+      });
+    }
+    return Promise.resolve(vectorDataFromProcessedCanvas(canvas, traceOpts));
   }
 
   function replaceLayerWithVector(layerId, vectorData) {
@@ -3827,7 +5931,7 @@
       off.height = layer.imgEl.naturalHeight;
       off.getContext('2d').drawImage(layer.imgEl, 0, 0);
     } else if (layer.imgEl && layer.imgEl.naturalWidth) {
-      var processed = processImageForSticker(layer.imgEl, { removeBackground: true, tolerance: bgTolerance });
+      var processed = processImageForTrace(layer.imgEl, { tolerance: bgTolerance });
       off.width = processed.width;
       off.height = processed.height;
       off.getContext('2d').drawImage(processed, 0, 0);
@@ -3836,17 +5940,224 @@
       window.alert('Изображението не е готово за trace.');
       return;
     }
-    var vectorData = vectorDataFromProcessedCanvas(off);
-    if (btn) btn.disabled = false;
-    if (!vectorData) {
-      window.alert('Trace не успя — опитай с по-просто лого или по-висока чувствителност при import.');
-      return;
-    }
-    replaceLayerWithVector(layer.id, vectorData);
+
+    var smoothEl = document.getElementById('st-import-smooth');
+    var speckleEl = document.getElementById('st-import-speckle');
+    var traceOpts = (window.ST_TRACE && ST_TRACE.traceOptionsFromSliders)
+      ? ST_TRACE.traceOptionsFromSliders(smoothEl, speckleEl)
+      : getImportTraceOptions();
+
+    vectorDataFromProcessedCanvasAsync(off, traceOpts).then(function (vectorData) {
+      if (btn) btn.disabled = false;
+      if (!vectorData) {
+        window.alert('Trace не успя — опитай с по-контрастно изображение или промени гладкост/speckles.');
+        return;
+      }
+      if (window.ST_VECTOR && ST_VECTOR.validateVectorTrace) {
+        var quality = ST_VECTOR.validateVectorTrace(vectorData);
+        if (!quality.ok) {
+          window.alert(quality.reason || 'Trace не е подходящ — остави растерния слой.');
+          return;
+        }
+      }
+      replaceLayerWithVector(layer.id, vectorData);
+    }).catch(function () {
+      if (btn) btn.disabled = false;
+      window.alert('Trace не успя — опитай отново.');
+    });
   }
 
   var SVG_EXPORT_BTN_IDS = ['st-download-svg', 'st-download-svg-basic'];
   var svgExportBusy = false;
+
+  var exportDialogState = {
+    kind: '',
+    filename: '',
+    mime: '',
+    saveContent: null,
+    previewUrl: '',
+    previewUrlOwned: false,
+  };
+
+  function revokeExportPreviewUrl() {
+    if (exportDialogState.previewUrlOwned && exportDialogState.previewUrl) {
+      try { URL.revokeObjectURL(exportDialogState.previewUrl); } catch (e) { /* ignore */ }
+    }
+    exportDialogState.previewUrl = '';
+    exportDialogState.previewUrlOwned = false;
+  }
+
+  function resetExportDialogState() {
+    revokeExportPreviewUrl();
+    exportDialogState.kind = '';
+    exportDialogState.filename = '';
+    exportDialogState.mime = '';
+    exportDialogState.saveContent = null;
+  }
+
+  function closeExportDialog() {
+    var dialog = document.getElementById('st-export-dialog');
+    if (dialog && dialog.open) dialog.close();
+    resetExportDialogState();
+    var img = document.getElementById('st-export-preview-img');
+    var loading = document.getElementById('st-export-loading');
+    var saveBtn = document.getElementById('st-export-save');
+    if (img) {
+      img.hidden = true;
+      img.removeAttribute('src');
+    }
+    if (loading) loading.hidden = true;
+    if (saveBtn) saveBtn.disabled = true;
+  }
+
+  function setExportDialogLoading(title, meta) {
+    var dialog = document.getElementById('st-export-dialog');
+    var titleEl = document.getElementById('st-export-title');
+    var metaEl = document.getElementById('st-export-meta');
+    var img = document.getElementById('st-export-preview-img');
+    var loading = document.getElementById('st-export-loading');
+    var saveBtn = document.getElementById('st-export-save');
+    if (titleEl) titleEl.textContent = title || 'Export';
+    if (metaEl) metaEl.textContent = meta || '';
+    if (img) {
+      img.hidden = true;
+      img.removeAttribute('src');
+    }
+    if (loading) loading.hidden = false;
+    if (saveBtn) saveBtn.disabled = true;
+    if (dialog && typeof dialog.showModal === 'function' && !dialog.open) dialog.showModal();
+  }
+
+  function showExportDialogReady(opts) {
+    opts = opts || {};
+    var dialog = document.getElementById('st-export-dialog');
+    var titleEl = document.getElementById('st-export-title');
+    var metaEl = document.getElementById('st-export-meta');
+    var img = document.getElementById('st-export-preview-img');
+    var loading = document.getElementById('st-export-loading');
+    var saveBtn = document.getElementById('st-export-save');
+
+    revokeExportPreviewUrl();
+    exportDialogState.kind = opts.kind || '';
+    exportDialogState.filename = opts.filename || 'export';
+    exportDialogState.mime = opts.mime || 'application/octet-stream';
+    exportDialogState.saveContent = opts.saveContent;
+    exportDialogState.previewUrl = opts.previewUrl || '';
+    exportDialogState.previewUrlOwned = !!opts.previewUrlOwned;
+
+    if (titleEl) titleEl.textContent = opts.title || 'Export';
+    if (metaEl) metaEl.textContent = opts.meta || exportDialogState.filename;
+    if (loading) loading.hidden = true;
+    if (img) {
+      img.src = exportDialogState.previewUrl;
+      img.alt = opts.previewAlt || exportDialogState.filename;
+      img.hidden = !exportDialogState.previewUrl;
+    }
+    if (saveBtn) {
+      saveBtn.disabled = !exportDialogState.saveContent;
+      saveBtn.removeAttribute('aria-disabled');
+    }
+    if (dialog && typeof dialog.showModal === 'function' && !dialog.open) dialog.showModal();
+  }
+
+  function saveExportFromDialog() {
+    if (!exportDialogState.saveContent) return;
+    if (exportDialogState.kind === 'png' && typeof exportDialogState.saveContent === 'string') {
+      try {
+        var link = document.createElement('a');
+        link.download = exportDialogState.filename;
+        link.href = exportDialogState.saveContent;
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } catch (e) {
+        window.alert('Неуспешно запазване на PNG. Опитай отново.');
+      }
+      return;
+    }
+    downloadBlob(exportDialogState.filename, exportDialogState.mime, exportDialogState.saveContent);
+  }
+
+  function buildPreviewPngDataUrl() {
+    var off = document.createElement('canvas');
+    off.width = CW;
+    off.height = CH;
+    drawExport(off.getContext('2d'), CW, CH);
+    return off.toDataURL('image/png');
+  }
+
+  function openPngExportPreview() {
+    setExportDialogLoading('PNG превю', 'Подготвя се превю…');
+    buildPreviewPngDataUrlAsync().then(function (dataUrl) {
+      showExportDialogReady({
+        kind: 'png',
+        title: 'PNG превю',
+        meta: 'savovpro-sticker-preview.png · визуализация за поръчка',
+        filename: 'savovpro-sticker-preview.png',
+        mime: 'image/png',
+        previewUrl: dataUrl,
+        previewUrlOwned: false,
+        saveContent: dataUrl,
+        previewAlt: 'PNG превю на стикера',
+      });
+    }).catch(function () {
+      closeExportDialog();
+      window.alert('PNG превюто не може да се генерира. Опитай отново.');
+    });
+  }
+
+  function openSvgExportPreview() {
+    if (!layers.length || svgExportBusy) return;
+    syncEditorToLayers();
+    setExportDialogLoading('SVG файл', 'Подготвя се файл…');
+    svgExportBusy = true;
+    setSvgExportLoading(true);
+    ensureExportFontsReady().then(function () {
+      return new Promise(function (resolve, reject) {
+        buildExportSvgAsync(function (svg, err) {
+          if (err || !svg) reject(err || new Error('svg failed'));
+          else resolve(svg);
+        });
+      });
+    }).then(function (svg) {
+      svgExportBusy = false;
+      setSvgExportLoading(false);
+      return buildSvgPreviewDataUrlAsync(svg).then(function (previewUrl) {
+        var w = stickerSize.widthCm;
+        var h = stickerSize.heightCm;
+        var name = 'savovpro-sticker-' + String(w).replace('.', '-') + 'x' + String(h).replace('.', '-') + 'cm.svg';
+        showExportDialogReady({
+          kind: 'svg',
+          title: 'SVG файл',
+          meta: name + ' · ' + w + ' × ' + h + ' cm · текстът е автоматично конвертиран в контури',
+          filename: name,
+          mime: 'image/svg+xml;charset=utf-8',
+          previewUrl: previewUrl,
+          previewUrlOwned: false,
+          saveContent: svg,
+          previewAlt: 'Превю на стикера',
+        });
+      });
+    }).catch(function (err) {
+      svgExportBusy = false;
+      setSvgExportLoading(false);
+      closeExportDialog();
+      console.error('SVG export failed', err);
+      window.alert('SVG експортът не успя. Опитай отново или опрости дизайна.');
+    });
+  }
+
+  function initExportDialog() {
+    var dialog = document.getElementById('st-export-dialog');
+    if (!dialog) return;
+    on('st-export-close', 'click', closeExportDialog);
+    on('st-export-close-x', 'click', closeExportDialog);
+    on('st-export-save', 'click', saveExportFromDialog);
+    dialog.addEventListener('cancel', function (e) {
+      e.preventDefault();
+    });
+  }
 
   function setSvgExportLoading(loading) {
     SVG_EXPORT_BTN_IDS.forEach(function (id) {
@@ -3868,8 +6179,8 @@
       } else {
         el.removeAttribute('aria-busy');
         if (el.classList.contains('cfg-icon-btn')) {
-          el.setAttribute('title', 'SVG за плотер (точен размер)');
-          el.setAttribute('aria-label', 'SVG за плотер');
+          el.setAttribute('title', 'SVG файл (точен размер)');
+          el.setAttribute('aria-label', 'SVG файл');
         } else if (el.dataset.origLabel) {
           el.textContent = el.dataset.origLabel;
         }
@@ -3878,22 +6189,7 @@
   }
 
   function downloadPlotterSvg() {
-    if (!layers.length || svgExportBusy) return;
-    svgExportBusy = true;
-    setSvgExportLoading(true);
-    buildExportSvgAsync(function (svg, err) {
-      svgExportBusy = false;
-      setSvgExportLoading(false);
-      if (err || !svg) {
-        console.error('SVG export failed', err);
-        window.alert('SVG експортът не успя. Опитай отново или опрости дизайна.');
-        return;
-      }
-      var w = stickerSize.widthCm;
-      var h = stickerSize.heightCm;
-      var name = 'savovpro-sticker-' + String(w).replace('.', '-') + 'x' + String(h).replace('.', '-') + 'cm.svg';
-      downloadBlob(name, 'image/svg+xml;charset=utf-8', svg);
-    });
+    openSvgExportPreview();
   }
 
   document.getElementById('st-fit-layer').addEventListener('click', function () {
@@ -3982,14 +6278,7 @@
   document.getElementById('st-fullscreen-hint').addEventListener('click', function () { toggleFullscreen(); });
 
   function downloadPreviewPng() {
-    var off = document.createElement('canvas');
-    off.width = CW;
-    off.height = CH;
-    drawExport(off.getContext('2d'), CW, CH);
-    var link = document.createElement('a');
-    link.download = 'savovpro-sticker-preview.png';
-    link.href = off.toDataURL('image/png');
-    link.click();
+    openPngExportPreview();
   }
   document.getElementById('st-download').addEventListener('click', downloadPreviewPng);
   on('st-download-order-png', 'click', downloadPreviewPng);
@@ -3997,11 +6286,30 @@
   on('st-download-svg', 'click', downloadPlotterSvg);
   on('st-download-svg-basic', 'click', downloadPlotterSvg);
 
+  initExportDialog();
+
   document.querySelectorAll('.cfg-acc-head').forEach(function (head) {
     head.addEventListener('click', function () {
       var acc = head.closest('.cfg-acc');
-      acc.classList.toggle('is-open', !acc.classList.contains('is-open'));
-      head.setAttribute('aria-expanded', String(acc.classList.contains('is-open')));
+      var opening = !acc.classList.contains('is-open');
+      acc.classList.toggle('is-open', opening);
+      head.setAttribute('aria-expanded', String(opening));
+      if (!opening) return;
+      requestAnimationFrame(function () {
+        if (isMobileShellLayout()) {
+          acc.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+          return;
+        }
+        var panel = document.querySelector('.cfg-controls');
+        if (!panel || panel.scrollHeight <= panel.clientHeight) return;
+        var panelRect = panel.getBoundingClientRect();
+        var accRect = acc.getBoundingClientRect();
+        if (accRect.bottom > panelRect.bottom - 10) {
+          panel.scrollTop += accRect.bottom - panelRect.bottom + 14;
+        } else if (accRect.top < panelRect.top + 10) {
+          panel.scrollTop -= panelRect.top - accRect.top + 14;
+        }
+      });
     });
   });
 
@@ -4011,9 +6319,8 @@
       gridId: 'st-clipart-grid',
       searchId: 'st-clipart-q',
       searchBtnId: 'st-clipart-search-btn',
-      loadColor: 'ffffff',
-      onPick: function (iconId, img) {
-        addLayer(makeImageLayer(img, iconId, true));
+      onPick: function (iconId) {
+        addClipartIconLayer(iconId);
       },
     });
   }
@@ -4021,24 +6328,24 @@
   initUiModeToggle();
   initStartOverButton();
   initOnboarding();
+  initDraftResumeDialog();
+  initSetupWizard();
   initShortcutsDialog();
+  initQuickActionsDialog();
+  initControlsScrollChaining();
+  initSizeDialog();
+  initMobileShell();
   renderFontOptions();
   renderQuickSizes();
   initAlignGrids();
-  applyStickerSizeFromInputs();
+  applyStickerSize(null, null, { skipHistory: true });
   updateQuickSizeButtons();
   updateZoomUI();
   updateSnapToggleUi();
 
-  restoreDraftFromStorage().then(function (restored) {
-    if (!restored) addLayer(makeTextLayer(), true);
-    saveHistory();
-    updateAlignButtons();
-    updatePriceDisplay();
-    updateLinks();
-
-    preloadStickerFonts().then(function () {
-      drawPreview();
-    });
-  });
+  if (hasDraftInStorage()) {
+    openDraftResumeDialog();
+  } else {
+    bootFreshSession();
+  }
 })();

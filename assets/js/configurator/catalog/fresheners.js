@@ -1,3 +1,4 @@
+/** Базови цени → assets/js/pricing-config.js → engrave.categories.fresheners */
 window.CFG_CONFIG = {
   id: 'fresheners',
   title: 'Ароматизатори',
@@ -15,8 +16,6 @@ window.CFG_CONFIG = {
       textCY: 0.50,
       textMaxW: 0.78,
       clipH: 0.42,
-      price: 15,
-      currency: '€',
     },
     'freshener-walnut-black': {
       name: 'Ароматизатор орех / черно',
@@ -26,8 +25,6 @@ window.CFG_CONFIG = {
       textCY: 0.50,
       textMaxW: 0.78,
       clipH: 0.42,
-      price: 15,
-      currency: '€',
     },
   },
   templates: [

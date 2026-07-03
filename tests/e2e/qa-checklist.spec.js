@@ -8,6 +8,7 @@ const {
   clearEngraveDraft,
   clearStickerDraft,
   openEngraveClipart,
+  switchEngraveAdvanced,
   sampleLogoPath,
 } = require('./helpers');
 
@@ -39,6 +40,20 @@ test.describe('Manual QA checklist (automated)', () => {
     const href = await page.locator('#btn-wa').getAttribute('href');
     const decoded = decodeURIComponent(href || '');
     expect(decoded).toMatch(/превю|прикачи/i);
+  });
+
+  test('keychain: easy/advanced mode toggle', async ({ page }) => {
+    await clearEngraveDraft(page);
+    await page.goto('/configurator-product.html?cat=keychains');
+    await waitEngraveReady(page);
+
+    await expect(page.locator('#kc-layout')).toHaveClass(/st-mode-basic/);
+    await expect(page.locator('#acc-engrave')).toBeHidden();
+    await expect(page.locator('#kc-mode-basic')).toBeVisible();
+
+    await switchEngraveAdvanced(page);
+    await expect(page.locator('#acc-engrave')).toBeVisible();
+    await expect(page.locator('#acc-media')).toBeVisible();
   });
 
   test('keychain: per-category page title and meta', async ({ page }) => {
@@ -91,6 +106,7 @@ test.describe('Manual QA checklist (automated)', () => {
     await clearEngraveDraft(page);
     await page.goto('/configurator-product.html?cat=keychains');
     await waitEngraveReady(page);
+    await switchEngraveAdvanced(page);
     await openEngraveClipart(page);
     await expect(page.locator('#kc-clipart-grid .cfg-clipart-btn').first()).toBeVisible({
       timeout: 15000,
@@ -101,6 +117,7 @@ test.describe('Manual QA checklist (automated)', () => {
     await clearEngraveDraft(page);
     await page.goto('/configurator-product.html?cat=keychains');
     await waitEngraveReady(page);
+    await switchEngraveAdvanced(page);
 
     const acc = page.locator('#acc-media');
     if (!(await acc.evaluate((el) => el.classList.contains('is-open')))) {

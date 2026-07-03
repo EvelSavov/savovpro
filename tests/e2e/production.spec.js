@@ -7,9 +7,9 @@ test.describe('Production smoke @ savovpro.com', () => {
   test('vendor assets are not 404', async ({ request }) => {
     for (const path of [
       '/assets/js/vendor/opentype.min.js',
-      '/assets/js/vendor/imagetracer.js',
+      '/assets/js/vendor/potrace-ts.js',
       '/assets/js/configurator/sticker-vector.js',
-      '/assets/fonts/montserrat-700.woff',
+      '/assets/fonts/stickers/montserrat-700.woff',
     ]) {
       const res = await request.get(ORIGIN + path);
       expect(res.status(), path).toBe(200);

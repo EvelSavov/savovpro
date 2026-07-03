@@ -155,7 +155,7 @@
 
 ## Content SEO
 
-- [x] **P1 — Homepage H1/H2** — SEO подзаглавие + services heading с ключови думи
+- [x] **P1 — Homepage H1/H2** — services heading; SEO keywords в `<meta name="description">` (не на страницата)
 - [x] **P2 — Alt text audit** на gallery (повечето [x]; hub cards alt added)
 - [x] **P2 — Internal links** — services → configurator URLs
 - [ ] **P3 — Blog / FAQ** — „Как да поръчам стикер“, „Какво е SVG за плотер“
@@ -185,7 +185,7 @@
 - [x] Accordion controls, layers panel
 - [x] **P1 — Error state** — `.cfg-boot-error` в boot-engrave / boot-sticker
 - [x] **P1 — First-time user** — sticker onboarding + engrave `#kc-flow-hint`
-- [x] **P2 — Basic mode stickers** — имейл CTA видим и в basic mode
+- [x] **P2 — Basic mode stickers** — имейл CTA видим и в basic mode; engrave: Лесно/Напреднал toggle
 - [x] **P2 — Price clarity** — „ориентировъчна“, условия (мин. поръчка, срок)
 - [~] **P2 — Accessibility pass**
   - [x] Focus visible на configurator buttons (`:focus-visible`)

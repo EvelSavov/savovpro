@@ -1,3 +1,4 @@
+/** Цени → assets/js/pricing-config.js (stickers) */
 window.CFG_CONFIG = {
   id: 'stickers',
   title: 'Стикери',
@@ -7,8 +8,8 @@ window.CFG_CONFIG = {
     maxW: 120,
     minH: 2,
     maxH: 120,
-    defaultW: 10,
-    defaultH: 5,
+    defaultW: 20,
+    defaultH: 10,
   },
   quickSizes: [
     { label: '5 × 5', w: 5, h: 5 },
@@ -32,9 +33,10 @@ window.CFG_CONFIG = {
     { id: 'DM Sans', label: 'DM Sans — минималистичен' },
   ],
   defaults: {
-    widthCm: 10,
-    heightCm: 5,
+    widthCm: 20,
+    heightCm: 10,
     removeBg: true,
     font: 'Montserrat',
+    defaultText: 'SAVOV PRO\nMade for you',
   },
 };

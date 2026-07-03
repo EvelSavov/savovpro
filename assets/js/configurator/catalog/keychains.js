@@ -1,3 +1,4 @@
+/** Базови цени → assets/js/pricing-config.js → engrave.categories.keychains */
 window.CFG_CONFIG = {
   id: 'keychains',
   title: 'Ключодържатели',
@@ -14,8 +15,6 @@ window.CFG_CONFIG = {
       mask: 'assets/configurator/keychains/keychain-round-light-mask.png',
       textCY: 0.67,
       textMaxW: 0.72,
-      price: 8,
-      currency: '€',
     },
     'keychain-rect-walnut-leather': {
       name: 'Правоъгълен орех с кожа',
@@ -25,8 +24,6 @@ window.CFG_CONFIG = {
       textCY: 0.62,
       textMaxW: 0.68,
       clipH: 0.36,
-      price: 12,
-      currency: '€',
     },
     'keychain-rect-walnut-chain': {
       name: 'Правоъгълен орех с верижка',
@@ -36,8 +33,6 @@ window.CFG_CONFIG = {
       textCY: 0.55,
       textMaxW: 0.62,
       clipH: 0.32,
-      price: 10,
-      currency: '€',
     },
   },
   templates: [

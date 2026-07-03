@@ -13,7 +13,6 @@ window.initConfiguratorClipart = function (opts) {
     { label: '★ Символи', ids: ['mdi:crown', 'mdi:star', 'mdi:anchor', 'mdi:key-variant', 'mdi:fire', 'mdi:lightning-bolt', 'mdi:compass', 'mdi:shield-star', 'mdi:trophy', 'mdi:medal', 'mdi:peace', 'mdi:yin-yang'] },
     { label: '✿ Природа', ids: ['mdi:leaf', 'mdi:tree', 'mdi:weather-sunny', 'mdi:weather-night', 'mdi:snowflake', 'mdi:mountain', 'mdi:flower-petal-outline', 'mdi:wave', 'mdi:pine-tree', 'mdi:weather-cloudy', 'mdi:grass', 'mdi:seed-outline'] },
     { label: '✦ Животни', ids: ['mdi:paw', 'mdi:cat', 'mdi:dog', 'mdi:bird', 'mdi:fish', 'mdi:rabbit', 'mdi:butterfly', 'mdi:owl', 'mdi:horse', 'mdi:elephant', 'mdi:shark', 'mdi:bee-outline'] },
-    { label: '✝ Вяра', ids: ['mdi:cross', 'mdi:star-david', 'mdi:yin-yang', 'mdi:hand-heart', 'mdi:peace', 'mdi:hands-pray'] },
     { label: '◉ Спорт', ids: ['mdi:soccer', 'mdi:basketball', 'mdi:tennis', 'mdi:bicycle', 'mdi:run', 'mdi:swim', 'mdi:weight-lifter', 'mdi:ski', 'mdi:golf', 'mdi:boxing-glove'] },
     { label: '♪ Музика', ids: ['mdi:music-note', 'mdi:guitar-acoustic', 'mdi:piano', 'mdi:headphones', 'mdi:music-clef-treble', 'mdi:microphone', 'mdi:violin', 'mdi:trumpet'] },
   ];
@@ -64,7 +63,12 @@ window.initConfiguratorClipart = function (opts) {
     img.crossOrigin = 'anonymous';
     img.onload = function () { opts.onPick(iconId, img); };
     img.onerror = function () {
-      if (img.src.indexOf('?') !== -1) img.src = iconSvgUrl(iconId);
+      var plain = iconSvgUrl(iconId);
+      if (img.src !== plain) {
+        img.src = plain;
+        return;
+      }
+      if (opts.loadColor) img.src = iconSvgUrl(iconId);
     };
     img.src = iconSvgUrl(iconId, opts.loadColor || PREVIEW_HEX);
   }

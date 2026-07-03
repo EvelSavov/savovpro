@@ -46,11 +46,16 @@
       showBootError('Липсва конфигурация за тази категория. Опитай отново или избери друга.');
       return;
     }
-    loadScript('assets/js/configurator/clipart.js', function () {
+    if (window.Pricing) Pricing.applyStickerCatalog(window.CFG_CONFIG);
+    loadScript('assets/js/configurator/clipart.js?v=20260702', function () {
       loadScript('assets/js/vendor/opentype.min.js?v=20250629', function () {
-        loadScript('assets/js/vendor/imagetracer.js?v=20250629', function () {
-          loadScript('assets/js/configurator/sticker-vector.js?v=20250629', function () {
-            loadScript('assets/js/configurator/sticker-core.js?v=20250629', function () {});
+        loadScript('assets/js/vendor/potrace-ts.js?v=20260702', function () {
+        loadScript('assets/js/vendor/vtracer-webapp-bg.js?v=20260703', function () {
+          loadScript('assets/js/configurator/sticker-trace.js?v=20260703', function () {
+            loadScript('assets/js/configurator/sticker-vector.js?v=20260703g', function () {
+              loadScript('assets/js/configurator/sticker-core.js?v=20260703u', function () {});
+              });
+            });
           });
         });
       });

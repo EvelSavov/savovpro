@@ -213,12 +213,12 @@
     /* track which text input was last focused for symbol insertion */
     var lastFocusedInput = document.getElementById('kc-line1');
 
-    /* ── Multi-side constants ── */
-    var EXTRA_DOUBLE_SAME = 3;
-    var EXTRA_DOUBLE_DIFF = 5;
+    /* ── Multi-side pricing from assets/js/pricing-config.js ── */
     var sideStorage = [null, null];  /* stores snapshotLayers() per side */
 
     var DRAFT_KEY = 'savovpro-engrave-draft-v1';
+    var UI_MODE_KEY = 'savovpro-kc-ui-mode-v1';
+    var uiMode = 'basic';
     var DRAFT_SAVE_MS = 700;
     var draftSaveTimer = 0;
     var ICONIFY_CDN = 'https://api.iconify.design';
@@ -298,6 +298,7 @@
         activeSide: state.activeSide,
         nextLayerId: nextLayerId,
         selectedLayerId: selectedLayerId,
+        uiMode: uiMode,
         layers: layers.map(serializeLayerForDraft).filter(Boolean),
         sideStorage: sidesCopy.map(serializeSideLayers),
       };
@@ -411,6 +412,7 @@
       if (draft.activeSide != null) state.activeSide = draft.activeSide;
       if (draft.nextLayerId != null) nextLayerId = draft.nextLayerId;
       selectedLayerId = draft.selectedLayerId != null ? draft.selectedLayerId : selectedLayerId;
+      if (draft.uiMode === 'advanced' || draft.uiMode === 'basic') uiMode = draft.uiMode;
 
       document.querySelectorAll('.cfg-model-btn').forEach(function (b) {
         b.classList.toggle('is-active', b.dataset.model === state.model);
@@ -476,6 +478,47 @@
       if (btn) btn.addEventListener('click', startOver);
     }
 
+    function setUiMode(mode, opts) {
+      opts = opts || {};
+      uiMode = mode === 'advanced' ? 'advanced' : 'basic';
+      var layout = document.getElementById('kc-layout');
+      if (layout) {
+        layout.classList.toggle('st-mode-basic', uiMode === 'basic');
+        layout.classList.toggle('st-mode-advanced', uiMode === 'advanced');
+      }
+      var styleAcc = document.getElementById('acc-style');
+      if (styleAcc) {
+        styleAcc.classList.toggle('kc-style-basic-panel', uiMode === 'basic');
+        if (uiMode === 'basic') styleAcc.classList.add('is-open');
+      }
+      var basicBtn = document.getElementById('kc-mode-basic');
+      var advBtn = document.getElementById('kc-mode-advanced');
+      if (basicBtn) {
+        basicBtn.classList.toggle('is-active', uiMode === 'basic');
+        basicBtn.setAttribute('aria-pressed', String(uiMode === 'basic'));
+      }
+      if (advBtn) {
+        advBtn.classList.toggle('is-active', uiMode === 'advanced');
+        advBtn.setAttribute('aria-pressed', String(uiMode === 'advanced'));
+      }
+      if (!opts.skipSave) {
+        try { localStorage.setItem(UI_MODE_KEY, uiMode); } catch (e) { /* ignore */ }
+        scheduleDraftSave();
+      }
+    }
+
+    function initUiModeToggle() {
+      try {
+        var saved = localStorage.getItem(UI_MODE_KEY);
+        if (saved === 'advanced' || saved === 'basic') uiMode = saved;
+      } catch (e) { /* ignore */ }
+      setUiMode(uiMode, { skipSave: true });
+      var basicBtn = document.getElementById('kc-mode-basic');
+      var advBtn = document.getElementById('kc-mode-advanced');
+      if (basicBtn) basicBtn.addEventListener('click', function () { setUiMode('basic'); });
+      if (advBtn) advBtn.addEventListener('click', function () { setUiMode('advanced'); });
+    }
+
     function restoreDraftFromStorage() {
       var raw;
       try {
@@ -512,6 +555,7 @@
 
         return sidePromise.then(function () {
           applyDraftMeta(draft);
+          setUiMode(uiMode, { skipSave: true });
           renderLayersPanel();
           syncControlsToSelectedLayer();
           draw();
@@ -523,16 +567,27 @@
     }
 
     function getPrice() {
+      if (window.Pricing) {
+        return Pricing.calcEngrave(CFG.id, state.model, {
+          sides: state.sides,
+          sameDesign: state.sameDesign,
+        });
+      }
       var m = MODELS[state.model];
       if (!m) return 0;
-      var extra = state.sides === 2 ? (state.sameDesign ? EXTRA_DOUBLE_SAME : EXTRA_DOUBLE_DIFF) : 0;
-      return m.price + extra;
+      return m.price || 0;
+    }
+
+    function getCurrency() {
+      return (window.Pricing && Pricing.config.currency) || (MODELS[state.model] && MODELS[state.model].currency) || '€';
     }
 
     function updatePriceDisplay() {
       var priceEl = document.getElementById('kc-price-display');
-      var m = MODELS[state.model];
-      if (priceEl) priceEl.textContent = getPrice() + ' ' + (m ? m.currency : '€');
+      if (!priceEl) return;
+      priceEl.textContent = window.Pricing
+        ? Pricing.format(getPrice())
+        : getPrice() + ' ' + getCurrency();
     }
 
     function updateSidesUI() {
@@ -570,9 +625,13 @@
 
       /* Update the extra cost label next to "Двустранно" */
       var extraDoubleEl = document.getElementById('kc-extra-double');
-      if (extraDoubleEl) {
-        var extra = state.sameDesign ? EXTRA_DOUBLE_SAME : EXTRA_DOUBLE_DIFF;
-        extraDoubleEl.textContent = '+' + extra + ' €';
+      if (extraDoubleEl && window.Pricing) {
+        extraDoubleEl.textContent = Pricing.formatExtra(Pricing.getDoubleSidedExtra(true));
+      }
+
+      var extraDiffEl = document.getElementById('kc-extra-diff');
+      if (extraDiffEl && window.Pricing) {
+        extraDiffEl.textContent = Pricing.formatExtra(Pricing.getDoubleSidedExtra(false));
       }
 
       updatePriceDisplay();
@@ -658,10 +717,6 @@
       {
         label: '✦ Животни',
         ids: ['mdi:paw', 'mdi:cat', 'mdi:dog', 'mdi:bird', 'mdi:fish', 'mdi:rabbit', 'mdi:butterfly', 'mdi:owl', 'mdi:horse', 'mdi:elephant', 'mdi:shark', 'mdi:bee-outline'],
-      },
-      {
-        label: '✝ Вяра',
-        ids: ['mdi:cross', 'mdi:star-david', 'mdi:yin-yang', 'mdi:hand-heart', 'mdi:peace', 'mdi:hands-pray'],
       },
       {
         label: '◉ Спорт',
@@ -895,17 +950,16 @@
     }
 
     function buildMsg() {
-      var m = MODELS[state.model];
-      var price = getPrice();
       var sidesLabel = state.sides === 1
         ? 'Едностранно'
         : (state.sameDesign ? 'Двустранно — еднакъв дизайн' : 'Двустранно — различни дизайни');
+      var priceStr = window.Pricing ? Pricing.format(getPrice()) : String(getPrice());
 
       var lines = [
         'Здравейте! Искам да поръчам персонализиран продукт.',
         '',
         'Категория:   ' + CFG.title,
-        'Модел:       ' + getModelName(state.model) + (m ? ' (' + price + ' ' + m.currency + ')' : ''),
+        'Модел:       ' + getModelName(state.model) + ' (' + priceStr + ')',
         'Гравиране:   ' + sidesLabel,
         '',
       ];
@@ -1532,7 +1586,6 @@
         /* Предмети */
         'подарък':'gift','часовник':'clock','камера':'camera','телефон':'phone',
         'очила':'glasses','шапка':'hat','дом':'home','замък':'castle',
-        /* Вяра */
         'кръст':'cross','молитва':'prayer','мир':'peace','йога':'yoga',
         /* Игри */
         'игра':'game','шах':'chess','карти':'cards','зар':'dice',
@@ -1731,12 +1784,25 @@
         var opening = !acc.classList.contains('is-open');
         acc.classList.toggle('is-open', opening);
         head.setAttribute('aria-expanded', String(opening));
+        if (!opening) return;
+        requestAnimationFrame(function () {
+          var panel = document.querySelector('.cfg-controls');
+          if (!panel || panel.scrollHeight <= panel.clientHeight) return;
+          var panelRect = panel.getBoundingClientRect();
+          var accRect = acc.getBoundingClientRect();
+          if (accRect.bottom > panelRect.bottom - 10) {
+            panel.scrollTop += accRect.bottom - panelRect.bottom + 14;
+          } else if (accRect.top < panelRect.top + 10) {
+            panel.scrollTop -= panelRect.top - accRect.top + 14;
+          }
+        });
       });
     });
 
     applyCategoryUI();
     renderModelGrid();
     initStartOverButton();
+    initUiModeToggle();
 
     function finishInit() {
       renderLayersPanel();

@@ -27,7 +27,7 @@ window.CONFIGURATOR_CATEGORIES = [
   {
     id: 'stickers',
     title: 'Стикери',
-    description: 'Текстови стикери или собствен SVG/PNG дизайн с избор на размер.',
+    description: 'Текстови стикери или собствен SVG дизайн с избор на размер.',
     image: 'assets/products/665D1722-16FF-4A70-BB4F-7B542D7EDFEE_1_201_a-2.jpeg',
     catalog: 'assets/js/configurator/catalog/stickers.js',
     engine: 'sticker',

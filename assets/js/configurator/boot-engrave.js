@@ -37,6 +37,7 @@
       showBootError('Липсва конфигурация за тази категория. Опитай отново или избери друга.');
       return;
     }
+    if (window.Pricing) Pricing.applyEngraveCatalog(window.CFG_CONFIG);
     var core = document.createElement('script');
     core.src = 'assets/js/configurator/core.js';
     core.onerror = function () {

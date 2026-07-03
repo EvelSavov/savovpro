@@ -202,10 +202,6 @@
       });
     }
 
-    lightbox.addEventListener("click", function (e) {
-      if (e.target === lightbox) closeGallery();
-    });
-
     lightbox.addEventListener("close", function () {
       document.body.classList.remove("lightbox-open");
       lightboxImg.removeAttribute("src");
@@ -213,14 +209,12 @@
 
     lightbox.addEventListener("cancel", function (e) {
       e.preventDefault();
-      closeGallery();
     });
 
     document.addEventListener("keydown", function (e) {
       if (!isGalleryOpen()) return;
       if (e.key === "Escape") {
         e.preventDefault();
-        closeGallery();
       } else if (e.key === "ArrowLeft") {
         e.preventDefault();
         showGallerySlide(galleryIndex - 1);

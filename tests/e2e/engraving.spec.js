@@ -3,6 +3,7 @@ const { test, expect } = require('@playwright/test');
 const {
   waitEngraveReady,
   openEngraveClipart,
+  switchEngraveAdvanced,
   sampleLogoPath,
   clearEngraveDraft,
   clearEngraveDraftOnce,
@@ -18,6 +19,7 @@ test.describe('Keychain engrave configurator', () => {
 
   test('supports text, clipart icon, and logo upload layers', async ({ page }) => {
     await page.locator('#kc-line1').fill('SAVOV PRO');
+    await switchEngraveAdvanced(page);
     await openEngraveClipart(page);
     const layersBefore = await page.locator('#kc-layers-list .cfg-layer-item').count();
     await page.locator('#kc-clipart-grid .cfg-clipart-btn').first().click();
@@ -30,6 +32,7 @@ test.describe('Keychain engrave configurator', () => {
   });
 
   test('shows double-sided engraving UI', async ({ page }) => {
+    await switchEngraveAdvanced(page);
     await expect(page.locator('#acc-engrave')).toBeVisible();
     await page.locator('.cfg-sides-btn[data-sides="2"]').click();
     await expect(page.locator('#kc-design-mode')).toBeVisible();
@@ -38,7 +41,7 @@ test.describe('Keychain engrave configurator', () => {
 
   test('downloads PNG preview', async ({ page }) => {
     const downloadPromise = page.waitForEvent('download');
-    await page.locator('#kc-download').click();
+    await page.locator('#kc-download-order').click();
     const download = await downloadPromise;
     expect(download.suggestedFilename()).toBe('savovpro-preview.png');
   });
