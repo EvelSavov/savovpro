@@ -13,6 +13,11 @@ const CATEGORIES = [
     ready: '#kc-canvas',
   },
   {
+    title: 'Химикалки',
+    url: /configurator-product\.html\?cat=pens/,
+    ready: '#kc-canvas',
+  },
+  {
     title: 'Стикери',
     url: /configurator-sticker\.html\?cat=stickers/,
     ready: '#st-canvas',

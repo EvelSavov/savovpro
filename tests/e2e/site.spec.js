@@ -14,6 +14,6 @@ test.describe('Public site smoke', () => {
     await page.goto('/configurator.html');
     await expect(page.locator('.cfg-hub-intro')).toBeVisible();
     await expect(page.locator('#cfg-hub-grid')).toBeVisible();
-    await expect(page.locator('.cfg-hub-card')).toHaveCount(3);
+    await expect(page.locator('.cfg-hub-card')).toHaveCount(4);
   });
 });

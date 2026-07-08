@@ -38,12 +38,23 @@
       return;
     }
     if (window.Pricing) Pricing.applyEngraveCatalog(window.CFG_CONFIG);
-    var core = document.createElement('script');
-    core.src = 'assets/js/configurator/core.js';
-    core.onerror = function () {
-      showBootError('Неуспешно зареждане на конфигуратора. Провери интернет връзката и опитай отново.');
+    var tour = document.createElement('script');
+    tour.src = 'assets/js/configurator/engrave-tour.js?v=20260706a';
+    tour.onload = function () {
+      var core = document.createElement('script');
+      core.src = 'assets/js/configurator/core.js?v=20260706a';
+      core.onerror = function () {
+        showBootError('Неуспешно зареждане на конфигуратора. Провери интернет връзката и опитай отново.');
+      };
+      document.body.appendChild(core);
     };
-    document.body.appendChild(core);
+    tour.onerror = function () {
+      /* tour failed to load — boot core anyway without tour */
+      var core = document.createElement('script');
+      core.src = 'assets/js/configurator/core.js?v=20260706a';
+      document.body.appendChild(core);
+    };
+    document.body.appendChild(tour);
   };
   catalog.onerror = function () {
     showBootError('Неуспешно зареждане на каталога. Провери интернет връзката и опитай отново.');

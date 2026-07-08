@@ -4,20 +4,55 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#0a0a0a" />
-  <meta name="description" content="Поръчай текстови стикери или качи SVG дизайн с персонализиран размер. SAVOV PRO Ltd." />
+  <meta name="description" content="Онлайн конфигуратор за персонализирани стикери с плотерно рязане. Текстови стикери или собствен SVG/PNG дизайн — избери размер, шрифт и цвят. SAVOV PRO." />
+  <meta name="keywords" content="персонализирани стикери, стикери с плотер, плотерно рязане, стикери по поръчка, стикери с надпис, стикери за автомобил, vinyl стикери" />
   <link rel="canonical" href="https://savovpro.com/configurator-sticker.html?cat=stickers" />
   <meta property="og:type" content="website" />
   <meta property="og:locale" content="bg_BG" />
   <meta property="og:url" content="https://savovpro.com/configurator-sticker.html?cat=stickers" />
-  <meta property="og:title" content="SAVOV PRO — Стикери" />
-  <meta property="og:description" content="Създай текстов или SVG стикер с точен размер. Преглед на canvas и SVG за плотер." />
+  <meta property="og:title" content="SAVOV PRO — Персонализирани стикери с плотерно рязане" />
+  <meta property="og:description" content="Онлайн конфигуратор за персонализирани стикери с плотерно рязане. Текстови стикери или собствен SVG/PNG дизайн — избери размер, шрифт и цвят." />
   <meta property="og:image" content="https://savovpro.com/assets/products/665D1722-16FF-4A70-BB4F-7B542D7EDFEE_1_201_a-2.jpeg" />
+  <meta property="og:image:width" content="640" />
+  <meta property="og:image:height" content="640" />
+  <meta property="og:image:alt" content="Персонализирани стикери с плотерно рязане — SAVOV PRO" />
   <meta property="og:site_name" content="SAVOV PRO Ltd." />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="SAVOV PRO — Стикери" />
-  <meta name="twitter:description" content="Създай текстов или SVG стикер с точен размер. Преглед на canvas и SVG за плотер." />
+  <meta name="twitter:title" content="SAVOV PRO — Персонализирани стикери с плотерно рязане" />
+  <meta name="twitter:description" content="Онлайн конфигуратор за персонализирани стикери с плотерно рязане. Текстови стикери или собствен SVG/PNG дизайн." />
   <meta name="twitter:image" content="https://savovpro.com/assets/products/665D1722-16FF-4A70-BB4F-7B542D7EDFEE_1_201_a-2.jpeg" />
-  <title>SAVOV PRO — Стикери</title>
+  <title>Персонализирани стикери с плотерно рязане | SAVOV PRO</title>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebApplication",
+        "@id": "https://savovpro.com/configurator-sticker.html?cat=stickers#webapp",
+        "name": "SAVOV PRO — Конфигуратор за стикери",
+        "description": "Онлайн конфигуратор за персонализирани стикери с плотерно рязане. Въведи текст или качи SVG/PNG дизайн.",
+        "url": "https://savovpro.com/configurator-sticker.html?cat=stickers",
+        "applicationCategory": "DesignApplication",
+        "operatingSystem": "Web",
+        "isPartOf": { "@id": "https://savovpro.com/#website" },
+        "offers": {
+          "@type": "Offer",
+          "priceCurrency": "EUR",
+          "price": "2.00",
+          "description": "Стикери с плотерно рязане от 2 €"
+        }
+      },
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Начало", "item": "https://savovpro.com/" },
+          { "@type": "ListItem", "position": 2, "name": "Конфигуратор", "item": "https://savovpro.com/configurator.html" },
+          { "@type": "ListItem", "position": 3, "name": "Стикери", "item": "https://savovpro.com/configurator-sticker.html?cat=stickers" }
+        ]
+      }
+    ]
+  }
+  </script>
   <link rel="icon" href="assets/logo/logo-mark.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="assets/logo/logo-mark.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -34,7 +69,8 @@
       <a class="logo-link" href="index.html" aria-label="SAVOV PRO Ltd. — начало">
         <img class="logo-svg" src="assets/logo/logo-full.svg" width="140" height="40" alt="SAVOV PRO" loading="eager" decoding="async" />
       </a>
-      <span class="cfg-header-title" id="cfg-category-title">Стикери</span>
+      <h1 class="sr-only">Персонализирани стикери с плотерно рязане — онлайн конфигуратор</h1>
+      <span class="cfg-header-title" id="cfg-category-title" aria-hidden="true">Стикери</span>
       <a class="cfg-header-back" href="configurator.html">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
         <span class="cfg-header-back-label">Категории</span>
@@ -129,7 +165,10 @@
                 <button type="button" class="st-mode-btn is-active" id="st-mode-basic" aria-pressed="true">Лесно</button>
                 <button type="button" class="st-mode-btn" id="st-mode-advanced" aria-pressed="false">Напреднал</button>
               </div>
-              <button type="button" class="st-start-over-btn" id="st-start-over">Започни отначало</button>
+              <div style="display:flex;align-items:center;gap:6px">
+                <button type="button" class="st-tour-help-btn" id="st-tour-help" title="Ръководство за употреба — интерактивно" aria-label="Интерактивно ръководство">?</button>
+                <button type="button" class="st-start-over-btn" id="st-start-over">Започни отначало</button>
+              </div>
             </div>
 
             <div class="cfg-acc is-open st-size-panel" id="acc-size">
@@ -617,5 +656,7 @@
   <script src="assets/js/pricing-config.js"></script>
   <script src="assets/js/configurator/categories.js"></script>
   <script src="assets/js/configurator/boot-sticker.js"></script>
+  <script src="assets/js/analytics.js" defer></script>
+  <script src="assets/js/cookie-consent.js" defer></script>
 </body>
 </html>

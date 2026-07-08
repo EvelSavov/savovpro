@@ -7,12 +7,14 @@ const {
   sampleLogoPath,
   clearEngraveDraft,
   clearEngraveDraftOnce,
+  dismissEngraveOnboarding,
   ENGRAVE_DRAFT_KEY,
 } = require('./helpers');
 
 test.describe('Keychain engrave configurator', () => {
   test.beforeEach(async ({ page }) => {
     await clearEngraveDraft(page);
+    await dismissEngraveOnboarding(page);
     await page.goto('/configurator-product.html?cat=keychains');
     await waitEngraveReady(page);
   });
@@ -58,6 +60,7 @@ test.describe('Keychain engrave configurator', () => {
 
 test.describe('Engrave draft restore', () => {
   test('restores design after refresh', async ({ page }) => {
+    await dismissEngraveOnboarding(page);
     await page.goto('/configurator-product.html?cat=keychains');
     await clearEngraveDraftOnce(page);
     await page.reload();
@@ -78,6 +81,7 @@ test.describe('Engrave draft restore', () => {
   });
 
   test('start over clears draft after confirm', async ({ page }) => {
+    await dismissEngraveOnboarding(page);
     await page.goto('/configurator-product.html?cat=keychains');
     await clearEngraveDraftOnce(page);
     await page.reload();
@@ -101,6 +105,7 @@ test.describe('Engrave draft restore', () => {
 test.describe('Freshener engrave configurator', () => {
   test('hides double-sided engraving section', async ({ page }) => {
     await clearEngraveDraft(page);
+    await dismissEngraveOnboarding(page);
     await page.goto('/configurator-product.html?cat=fresheners');
     await waitEngraveReady(page);
     await expect(page.locator('#acc-engrave')).toBeHidden();

@@ -1799,10 +1799,229 @@
       });
     });
 
+    /* ══════════════════════════════════════════════════════════════
+       Wizard / Draft Resume / Tour
+       ══════════════════════════════════════════════════════════════ */
+
+    var kcWizardSteps = ['intro', 'text', 'done'];
+    var kcWizardIdx = 0;
+
+    /* ── Parse draft raw without restoring state ── */
+    function parseDraftRaw() {
+      try {
+        var raw = localStorage.getItem(DRAFT_KEY);
+        return raw ? JSON.parse(raw) : null;
+      } catch (e) { return null; }
+    }
+
+    function isMeaningfulDraft(draft) {
+      if (!draft || draft.catId !== CFG.id) return false;
+      return (draft.layers || []).some(function (l) {
+        if (l.type === 'text') return (l.line1 && l.line1 !== 'ИМЕ') || !!l.line2;
+        return true; /* icon / image layer → always meaningful */
+      });
+    }
+
+    /* ── Draft Resume Dialog ── */
+
+    function renderKcDraftSummary(draft) {
+      var el = document.getElementById('kc-draft-resume-summary');
+      if (!el || !draft) return;
+      var textL = (draft.layers || []).find(function (l) { return l.type === 'text'; });
+      var parts = [];
+      if (textL) {
+        if (textL.line1) parts.push('<strong>' + escHtml(textL.line1) + '</strong>');
+        if (textL.line2) parts.push(escHtml(textL.line2));
+      }
+      var m = draft.model && MODELS[draft.model];
+      if (m) parts.push('<span>' + escHtml(m.shortName || m.name) + '</span>');
+      el.innerHTML = parts.map(function (t) {
+        return '<div class="st-draft-resume-summary__row">' + t + '</div>';
+      }).join('');
+    }
+
+    function openKcDraftResumeDialog(draft) {
+      renderKcDraftSummary(draft);
+      var dlg = document.getElementById('kc-draft-resume-dialog');
+      if (!dlg) { bootFreshKcSession(); return; }
+      if (typeof dlg.showModal === 'function') dlg.showModal();
+    }
+
+    function closeKcDraftResumeDialog() {
+      var dlg = document.getElementById('kc-draft-resume-dialog');
+      if (dlg && dlg.open) dlg.close();
+    }
+
+    function continueKcDraft() {
+      closeKcDraftResumeDialog();
+      restoreDraftFromStorage().then(function (ok) {
+        if (ok) { showDraftRestoredNotice(); finishInit(); }
+        else bootFreshKcSession();
+      });
+    }
+
+    function startKcNewDesign() {
+      closeKcDraftResumeDialog();
+      clearDraftStorage();
+      bootFreshKcSession();
+    }
+
+    function initKcDraftResumeDialog() {
+      var c = document.getElementById('kc-draft-resume-continue');
+      var n = document.getElementById('kc-draft-resume-new');
+      if (c) c.addEventListener('click', continueKcDraft);
+      if (n) n.addEventListener('click', startKcNewDesign);
+      var dlg = document.getElementById('kc-draft-resume-dialog');
+      if (dlg) dlg.addEventListener('cancel', function (e) { e.preventDefault(); });
+    }
+
+    /* ── Setup Wizard ── */
+
+    function openKcWizard() {
+      kcWizardIdx = 0;
+      var l1 = document.getElementById('kc-wizard-line1');
+      var l2 = document.getElementById('kc-wizard-line2');
+      if (l1) l1.value = '';
+      if (l2) l2.value = '';
+      renderKcWizardUI();
+      var dlg = document.getElementById('kc-setup-wizard');
+      if (!dlg) { bootFreshKcDefault(); return; }
+      if (typeof dlg.showModal === 'function') dlg.showModal();
+    }
+
+    function closeKcWizard() {
+      var dlg = document.getElementById('kc-setup-wizard');
+      if (dlg && dlg.open) dlg.close();
+    }
+
+    function renderKcWizardUI() {
+      var current = kcWizardSteps[kcWizardIdx];
+      kcWizardSteps.forEach(function (s) {
+        var el = document.getElementById('kc-wizard-step-' + s);
+        if (el) el.hidden = s !== current;
+      });
+
+      var nonIntro = kcWizardSteps.filter(function (s) { return s !== 'intro'; });
+      var niIdx = nonIntro.indexOf(current);
+
+      var lbl = document.getElementById('kc-wizard-step-label');
+      if (lbl) lbl.textContent = niIdx >= 0 ? ('Стъпка ' + (niIdx + 1) + ' от ' + nonIntro.length) : '';
+
+      var prog = document.getElementById('kc-wizard-progress');
+      if (prog) {
+        prog.innerHTML = nonIntro.map(function (s, i) {
+          return '<span class="st-wizard-progress-dot' + (i <= niIdx ? ' is-done' : '') + '"></span>';
+        }).join('');
+      }
+
+      var back = document.getElementById('kc-wizard-back');
+      var next = document.getElementById('kc-wizard-next');
+      var done = document.getElementById('kc-wizard-done');
+      var foot = document.getElementById('kc-wizard-foot');
+      if (back) back.hidden = kcWizardIdx === 0;
+      if (next) next.hidden = current === 'done';
+      if (done) done.hidden = current !== 'done';
+      if (foot) foot.classList.toggle('is-first-step', kcWizardIdx === 0);
+
+      if (current === 'done') renderKcWizardSummary();
+    }
+
+    function renderKcWizardSummary() {
+      var el = document.getElementById('kc-wizard-summary');
+      if (!el) return;
+      var l1 = ((document.getElementById('kc-wizard-line1') || {}).value || '').trim();
+      var l2 = ((document.getElementById('kc-wizard-line2') || {}).value || '').trim();
+      var html = '';
+      if (l1) html += '<div class="st-wizard-summary-row"><span class="st-wizard-summary-label">Ред 1:</span> <strong>' + escHtml(l1) + '</strong></div>';
+      if (l2) html += '<div class="st-wizard-summary-row"><span class="st-wizard-summary-label">Ред 2:</span> <strong>' + escHtml(l2) + '</strong></div>';
+      if (!l1 && !l2) html = '<p class="cfg-hint">По подразбиране: „ИМЕ" — смени го от контролния панел.</p>';
+      el.innerHTML = html;
+    }
+
+    function kcWizardGoNext() {
+      if (kcWizardIdx < kcWizardSteps.length - 1) { kcWizardIdx++; renderKcWizardUI(); }
+    }
+
+    function kcWizardGoBack() {
+      if (kcWizardIdx > 0) { kcWizardIdx--; renderKcWizardUI(); }
+    }
+
+    function applyKcWizardToDesign() {
+      var l1v = ((document.getElementById('kc-wizard-line1') || {}).value || '').trim() || 'ИМЕ';
+      var l2v = ((document.getElementById('kc-wizard-line2') || {}).value || '').trim();
+      layers = [makeTextLayer({ line1: l1v, line2: l2v })];
+      selectedLayerId = layers[0].id;
+      var line1In = document.getElementById('kc-line1');
+      var line2In = document.getElementById('kc-line2');
+      if (line1In) line1In.value = l1v;
+      if (line2In) line2In.value = l2v;
+    }
+
+    function finishKcWizard() {
+      closeKcWizard();
+      applyKcWizardToDesign();
+      finishInit();
+      maybeLaunchEngraveTour();
+    }
+
+    function skipKcWizard() {
+      closeKcWizard();
+      bootFreshKcDefault();
+      maybeLaunchEngraveTour();
+    }
+
+    function initKcWizard() {
+      var next = document.getElementById('kc-wizard-next');
+      var back = document.getElementById('kc-wizard-back');
+      var done = document.getElementById('kc-wizard-done');
+      var skip = document.getElementById('kc-wizard-skip-top');
+      if (next) next.addEventListener('click', kcWizardGoNext);
+      if (back) back.addEventListener('click', kcWizardGoBack);
+      if (done) done.addEventListener('click', finishKcWizard);
+      if (skip) skip.addEventListener('click', skipKcWizard);
+      var dlg = document.getElementById('kc-setup-wizard');
+      if (dlg) dlg.addEventListener('cancel', function (e) { e.preventDefault(); });
+    }
+
+    /* ── Tour ── */
+
+    function maybeLaunchEngraveTour() {
+      if (window.ENGRAVE_TOUR && ENGRAVE_TOUR.shouldAutoStart()) {
+        setTimeout(function () { ENGRAVE_TOUR.start(); }, 550);
+      }
+    }
+
+    function initKcHelpButton() {
+      var btn = document.getElementById('kc-tour-help');
+      if (!btn) return;
+      if (!window.ENGRAVE_TOUR || ENGRAVE_TOUR.shouldAutoStart()) btn.classList.add('has-tour');
+      btn.addEventListener('click', function () {
+        btn.classList.remove('has-tour');
+        if (window.ENGRAVE_TOUR) ENGRAVE_TOUR.start();
+      });
+    }
+
+    /* ── Boot helpers ── */
+
+    function bootFreshKcDefault() {
+      layers = [makeTextLayer({ line1: 'ИМЕ' })];
+      selectedLayerId = layers[0].id;
+      finishInit();
+    }
+
+    function bootFreshKcSession() {
+      openKcWizard();
+    }
+
+    /* ══════════════════════════════════════════════════════════════ */
+
     applyCategoryUI();
     renderModelGrid();
     initStartOverButton();
     initUiModeToggle();
+    initKcDraftResumeDialog();
+    initKcWizard();
+    initKcHelpButton();
 
     function finishInit() {
       renderLayersPanel();
@@ -1816,12 +2035,11 @@
       }
     }
 
-    restoreDraftFromStorage().then(function (restored) {
-      if (!restored) {
-        layers = [makeTextLayer({ line1: 'ИМЕ' })];
-        selectedLayerId = layers[0].id;
-      }
-      finishInit();
-    });
+    var kcParsedDraft = parseDraftRaw();
+    if (isMeaningfulDraft(kcParsedDraft)) {
+      openKcDraftResumeDialog(kcParsedDraft);
+    } else {
+      bootFreshKcSession();
+    }
 
   })();

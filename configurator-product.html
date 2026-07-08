@@ -4,20 +4,50 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#0a0a0a" />
-  <meta name="description" content="Персонализирай своя продукт онлайн — избери модел, текст и шрифт. SAVOV PRO Ltd." />
+  <meta name="description" content="Персонализирай своя продукт с лазерно гравиране — избери модел, въведи текст и виж превю в реално време. Ключодържатели, ароматизатори, химикалки. SAVOV PRO." />
+  <meta name="keywords" content="лазерно гравиране онлайн, персонализирани ключодържатели, гравиране на химикалки, персонализирани ароматизатори, подаръци с гравиране по поръчка" />
   <link rel="canonical" href="https://savovpro.com/configurator-product.html" />
   <meta property="og:type" content="website" />
   <meta property="og:locale" content="bg_BG" />
   <meta property="og:url" content="https://savovpro.com/configurator-product.html" />
-  <meta property="og:title" content="SAVOV PRO — Персонализирай продукт" />
-  <meta property="og:description" content="Персонализирай своя продукт онлайн — избери модел, текст и шрифт. SAVOV PRO Ltd." />
+  <meta property="og:title" content="SAVOV PRO — Персонализирай продукт с лазерно гравиране" />
+  <meta property="og:description" content="Онлайн конфигуратор за лазерно гравиране — избери модел, въведи текст и виж превю в реално време." />
   <meta property="og:image" content="https://savovpro.com/assets/products/20260111_161704-2.jpg" />
+  <meta property="og:image:width" content="640" />
+  <meta property="og:image:height" content="640" />
+  <meta property="og:image:alt" content="Онлайн конфигуратор за лазерно гравиране — SAVOV PRO" />
   <meta property="og:site_name" content="SAVOV PRO Ltd." />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="SAVOV PRO — Персонализирай продукт" />
-  <meta name="twitter:description" content="Персонализирай своя продукт онлайн — избери модел, текст и шрифт. SAVOV PRO Ltd." />
+  <meta name="twitter:title" content="SAVOV PRO — Персонализирай продукт с лазерно гравиране" />
+  <meta name="twitter:description" content="Онлайн конфигуратор за лазерно гравиране — избери модел, въведи текст и виж превю в реално време." />
   <meta name="twitter:image" content="https://savovpro.com/assets/products/20260111_161704-2.jpg" />
-  <title>SAVOV PRO Конфигуратор</title>
+  <title>Персонализирай продукт с лазерно гравиране | SAVOV PRO</title>
+  <script type="application/ld+json" id="ld-engrave-page">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebApplication",
+        "@id": "https://savovpro.com/configurator-product.html#webapp",
+        "name": "SAVOV PRO — Конфигуратор за лазерно гравиране",
+        "description": "Онлайн конфигуратор за персонализирани продукти с лазерно гравиране.",
+        "url": "https://savovpro.com/configurator-product.html",
+        "applicationCategory": "DesignApplication",
+        "operatingSystem": "Web",
+        "isPartOf": { "@id": "https://savovpro.com/#website" }
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": "https://savovpro.com/configurator-product.html#breadcrumb",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Начало", "item": "https://savovpro.com/" },
+          { "@type": "ListItem", "position": 2, "name": "Конфигуратор", "item": "https://savovpro.com/configurator.html" },
+          { "@type": "ListItem", "position": 3, "name": "Продукт", "item": "https://savovpro.com/configurator-product.html" }
+        ]
+      }
+    ]
+  }
+  </script>
   <link rel="icon" href="assets/logo/logo-mark.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="assets/logo/logo-mark.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -55,7 +85,8 @@
           decoding="async"
         />
       </a>
-      <span class="cfg-header-title" id="cfg-category-title">Конфигуратор</span>
+      <h1 class="sr-only" id="cfg-page-h1">Онлайн конфигуратор за лазерно гравиране — персонализирани подаръци</h1>
+      <span class="cfg-header-title" id="cfg-category-title" aria-hidden="true">Конфигуратор</span>
       <a class="cfg-header-back" id="cfg-back-link" href="configurator.html">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <polyline points="15 18 9 12 15 6"/>
@@ -103,11 +134,16 @@
 
           <!-- Controls -->
           <div class="cfg-controls">
-            <div class="st-mode-toggle" role="group" aria-label="Режим на конфигуратор">
-              <button type="button" class="st-mode-btn is-active" id="kc-mode-basic" aria-pressed="true">Лесно</button>
-              <button type="button" class="st-mode-btn" id="kc-mode-advanced" aria-pressed="false">Напреднал</button>
+            <div class="st-mobile-panel-head">
+              <div class="st-mode-toggle" role="group" aria-label="Режим на конфигуратор">
+                <button type="button" class="st-mode-btn is-active" id="kc-mode-basic" aria-pressed="true">Лесно</button>
+                <button type="button" class="st-mode-btn" id="kc-mode-advanced" aria-pressed="false">Напреднал</button>
+              </div>
+              <div style="display:flex;align-items:center;gap:6px">
+                <button type="button" class="st-tour-help-btn" id="kc-tour-help" title="Ръководство за употреба — интерактивно" aria-label="Интерактивно ръководство">?</button>
+                <button type="button" class="st-start-over-btn" id="kc-start-over">Започни отначало</button>
+              </div>
             </div>
-            <button type="button" class="st-start-over-btn" id="kc-start-over">Започни отначало</button>
 
             <!-- ═══ 0. СЛОЕВЕ ═══ -->
             <div class="cfg-acc is-open" id="acc-layers">
@@ -480,10 +516,82 @@
     </a>
   </div>
 
+  <!-- ── Draft Resume Dialog ── -->
+  <dialog class="st-draft-resume-dialog" id="kc-draft-resume-dialog" aria-labelledby="kc-draft-resume-title">
+    <div class="st-draft-resume-dialog__panel">
+      <header class="st-draft-resume-dialog__head">
+        <h2 class="st-draft-resume-dialog__title" id="kc-draft-resume-title">Запазен дизайн</h2>
+      </header>
+      <p class="st-draft-resume-dialog__lead">Имаш незавършена работа от последното посещение. Какво предпочиташ?</p>
+      <div class="st-draft-resume-summary" id="kc-draft-resume-summary"></div>
+      <footer class="st-draft-resume-dialog__foot">
+        <button type="button" class="btn btn-outline st-draft-resume-btn" id="kc-draft-resume-new">Нов дизайн</button>
+        <button type="button" class="btn btn-primary st-draft-resume-btn" id="kc-draft-resume-continue">Продължи</button>
+      </footer>
+    </div>
+  </dialog>
+
+  <!-- ── Setup Wizard ── -->
+  <dialog class="st-wizard-dialog" id="kc-setup-wizard" aria-labelledby="kc-wizard-title">
+    <div class="st-wizard-dialog__panel">
+      <header class="st-wizard-dialog__head">
+        <div>
+          <h2 class="st-wizard-dialog__title" id="kc-wizard-title">Бърз старт</h2>
+          <p class="st-wizard-dialog__step" id="kc-wizard-step-label"></p>
+        </div>
+        <button type="button" class="st-wizard-dialog__skip" id="kc-wizard-skip-top" aria-label="Пропусни">Пропусни</button>
+      </header>
+
+      <div class="st-wizard-progress" id="kc-wizard-progress" aria-hidden="true"></div>
+
+      <div class="st-wizard-dialog__body">
+        <div class="st-wizard-step is-active" id="kc-wizard-step-intro" data-wizard-step="intro">
+          <div class="st-wizard-intro">
+            <p class="st-wizard-intro__lead">Кратък въпросник, който попълва конфигуратора вместо теб — за по-бърз старт.</p>
+            <ul class="st-wizard-intro__list">
+              <li>Въвеждаш текста за гравиране (ред 1 и ред 2)</li>
+              <li>Избираш модел и шрифт от контролния панел после</li>
+              <li><strong>Всичко може да се промени</strong> — текст, размер, позиция, шрифт</li>
+            </ul>
+            <p class="cfg-hint st-wizard-intro__hint">„Пропусни" по всяко време, ако предпочиташ да настроиш сам.</p>
+          </div>
+        </div>
+
+        <div class="st-wizard-step" id="kc-wizard-step-text" data-wizard-step="text" hidden>
+          <p class="st-wizard-step__lead">Какво да се гравира? (може да е само ред 1)</p>
+          <div class="cfg-group">
+            <label class="cfg-label" for="kc-wizard-line1">Ред 1</label>
+            <input class="cfg-input" id="kc-wizard-line1" type="text" maxlength="24" placeholder="Напр. ИВАН ПЕТРОВ" autocomplete="off" spellcheck="false" />
+          </div>
+          <div class="cfg-group">
+            <label class="cfg-label" for="kc-wizard-line2">Ред 2 <span class="cfg-label-note">(по желание)</span></label>
+            <input class="cfg-input" id="kc-wizard-line2" type="text" maxlength="24" placeholder="Напр. 2025 · за спомен" autocomplete="off" spellcheck="false" />
+          </div>
+        </div>
+
+        <div class="st-wizard-step" id="kc-wizard-step-done" data-wizard-step="done" hidden>
+          <p class="st-wizard-step__lead">Преглед — конфигураторът ще се попълни с твоите настройки.</p>
+          <div class="st-wizard-summary" id="kc-wizard-summary"></div>
+        </div>
+      </div>
+
+      <footer class="st-wizard-dialog__foot is-first-step" id="kc-wizard-foot">
+        <div class="st-wizard-dialog__foot-nav">
+          <button type="button" class="btn btn-outline st-wizard-foot-btn st-wizard-foot-btn--back" id="kc-wizard-back" hidden>← Назад</button>
+        </div>
+        <div class="st-wizard-dialog__foot-actions">
+          <button type="button" class="btn btn-primary st-wizard-foot-btn st-wizard-foot-btn--next" id="kc-wizard-next">Напред</button>
+          <button type="button" class="btn btn-primary st-wizard-foot-btn st-wizard-foot-btn--done" id="kc-wizard-done" hidden>Готово</button>
+        </div>
+      </footer>
+    </div>
+  </dialog>
+
   <script src="assets/js/site-config.js"></script>
   <script src="assets/js/pricing-config.js"></script>
   <script src="assets/js/configurator/categories.js"></script>
   <script src="assets/js/configurator/boot-engrave.js"></script>
-
+  <script src="assets/js/analytics.js" defer></script>
+  <script src="assets/js/cookie-consent.js" defer></script>
 </body>
 </html>

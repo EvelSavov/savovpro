@@ -8,6 +8,8 @@ const STICKER_DRAFT_KEY = 'savovpro-sticker-draft-v1';
 const ENGRAVE_DRAFT_KEY = 'savovpro-engrave-draft-v1';
 const STICKER_ONBOARDING_KEY = 'savovpro-sticker-onboarding-v1';
 const STICKER_WIZARD_KEY = 'savovpro-sticker-wizard-v1';
+const STICKER_TOUR_KEY = 'savovpro-sticker-tour-v1';
+const ENGRAVE_TOUR_KEY = 'savovpro-engrave-tour-v1';
 
 function sampleLogoPath() {
   return SAMPLE_LOGO;
@@ -25,7 +27,7 @@ function sampleLogoPng() {
 async function dismissStickerOnboarding(page) {
   await page.addInitScript((keys) => {
     keys.forEach(function (key) { localStorage.setItem(key, '1'); });
-  }, [STICKER_ONBOARDING_KEY, STICKER_WIZARD_KEY]);
+  }, [STICKER_ONBOARDING_KEY, STICKER_WIZARD_KEY, STICKER_TOUR_KEY]);
 }
 
 /** @param {import('@playwright/test').Page} page */
@@ -33,6 +35,13 @@ async function clearStickerDraft(page) {
   await page.addInitScript((key) => {
     localStorage.removeItem(key);
   }, STICKER_DRAFT_KEY);
+}
+
+/** @param {import('@playwright/test').Page} page */
+async function dismissEngraveOnboarding(page) {
+  await page.addInitScript((key) => {
+    localStorage.setItem(key, '1');
+  }, ENGRAVE_TOUR_KEY);
 }
 
 /** @param {import('@playwright/test').Page} page */
@@ -51,8 +60,42 @@ async function clearEngraveDraftOnce(page) {
 }
 
 /** @param {import('@playwright/test').Page} page */
+async function skipEngraveWizardIfOpen(page) {
+  const wizard = page.locator('#kc-setup-wizard[open]');
+  if (await wizard.count()) {
+    await page.locator('#kc-wizard-skip-top').click();
+    await page.waitForFunction(() => {
+      var dlg = document.getElementById('kc-setup-wizard');
+      return !dlg || !dlg.open;
+    });
+  }
+}
+
+/** @param {import('@playwright/test').Page} page */
+async function continueEngraveDraftIfOpen(page) {
+  const dialog = page.locator('#kc-draft-resume-dialog[open]');
+  if (await dialog.count()) {
+    await page.locator('#kc-draft-resume-continue').click();
+    await page.waitForFunction(() => {
+      var dlg = document.getElementById('kc-draft-resume-dialog');
+      return !dlg || !dlg.open;
+    });
+  }
+}
+
+/** @param {import('@playwright/test').Page} page */
 async function waitEngraveReady(page) {
   await page.waitForSelector('#kc-canvas');
+  await page.waitForFunction(() => {
+    var wizard  = document.getElementById('kc-setup-wizard');
+    var resume  = document.getElementById('kc-draft-resume-dialog');
+    var list    = document.getElementById('kc-layers-list');
+    return (wizard && wizard.open) ||
+           (resume && resume.open) ||
+           (list && list.querySelector('.cfg-layer-item'));
+  }, null, { timeout: 15_000 });
+  await skipEngraveWizardIfOpen(page);
+  await continueEngraveDraftIfOpen(page);
   await page.waitForFunction(() => {
     var list = document.getElementById('kc-layers-list');
     return list && list.querySelector('.cfg-layer-item');
@@ -174,12 +217,15 @@ module.exports = {
   sampleLogoPath,
   sampleLogoPng,
   dismissStickerOnboarding,
+  dismissEngraveOnboarding,
   clearStickerDraft,
   clearEngraveDraft,
   clearEngraveDraftOnce,
   waitEngraveReady,
   waitStickerReady,
   skipStickerWizardIfOpen,
+  skipEngraveWizardIfOpen,
+  continueEngraveDraftIfOpen,
   switchStickerAdvanced,
   switchEngraveAdvanced,
   openEngraveClipart,
@@ -190,5 +236,7 @@ module.exports = {
   sampleSvgPath,
   STICKER_DRAFT_KEY,
   STICKER_WIZARD_KEY,
+  STICKER_TOUR_KEY,
   ENGRAVE_DRAFT_KEY,
+  ENGRAVE_TOUR_KEY,
 };

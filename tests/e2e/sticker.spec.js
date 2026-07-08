@@ -10,6 +10,7 @@ const {
   sampleSvgPath,
   STICKER_DRAFT_KEY,
   STICKER_WIZARD_KEY,
+  STICKER_TOUR_KEY,
 } = require('./helpers');
 
 test.describe('Sticker setup wizard', () => {
@@ -17,6 +18,9 @@ test.describe('Sticker setup wizard', () => {
     await page.addInitScript((keys) => {
       keys.forEach(function (key) { localStorage.removeItem(key); });
     }, [STICKER_DRAFT_KEY, STICKER_WIZARD_KEY]);
+    await page.addInitScript((key) => {
+      localStorage.setItem(key, '1'); // suppress tour during wizard test
+    }, STICKER_TOUR_KEY);
     await page.goto('/configurator-sticker.html?cat=stickers');
     await page.waitForSelector('#st-canvas');
     await expect(page.locator('#st-setup-wizard[open]')).toBeVisible();

@@ -1003,6 +1003,17 @@
   function initStartOverButton() {
     var btn = document.getElementById('st-start-over');
     if (btn) btn.addEventListener('click', startOver);
+
+    var helpBtn = document.getElementById('st-tour-help');
+    if (helpBtn) {
+      if (!window.STICKER_TOUR || STICKER_TOUR.shouldAutoStart()) {
+        helpBtn.classList.add('has-tour');
+      }
+      helpBtn.addEventListener('click', function () {
+        helpBtn.classList.remove('has-tour');
+        if (window.STICKER_TOUR) STICKER_TOUR.start();
+      });
+    }
   }
 
   function restoreDraftFromStorage() {
@@ -1455,6 +1466,12 @@
     return text !== defaultText;
   }
 
+  function maybeLaunchTour() {
+    if (window.STICKER_TOUR && STICKER_TOUR.shouldAutoStart()) {
+      setTimeout(function () { STICKER_TOUR.start(); }, 550);
+    }
+  }
+
   function skipSetupWizard() {
     closeSetupWizard();
     markSetupWizardDone();
@@ -1467,6 +1484,7 @@
       updateLinks();
       drawPreview();
     }
+    maybeLaunchTour();
   }
 
   function finishSetupWizard() {
@@ -1528,6 +1546,8 @@
         if (head) head.setAttribute('aria-expanded', 'true');
       }
     }
+
+    maybeLaunchTour();
   }
 
   function initSetupWizard() {
