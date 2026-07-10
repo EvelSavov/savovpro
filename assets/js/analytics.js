@@ -14,6 +14,11 @@
   var CLARITY_ID  = 'xj5e6k6fci';
   var GA4_ID      = 'G-4L6S5VSTF2';
   var CONSENT_KEY = 'savovpro-analytics-consent';
+  var PROD_HOST   = 'savovpro.com';
+
+  /* Only run on the production domain — skip localhost and previews */
+  var hostname = location.hostname;
+  if (hostname !== PROD_HOST && !hostname.endsWith('.' + PROD_HOST)) return;
 
   /* ── Consent helpers ───────────────────────────────────────────── */
 
