@@ -121,8 +121,12 @@
       card.className = 'cfg-hub-card' + (cat.comingSoon ? ' is-soon' : '');
       if (url) card.href = url;
 
+      var hasBlank = !!cat.blankImage;
       card.innerHTML =
-        '<div class="cfg-hub-card__img"><img src="' + cat.image + '" alt="' + cat.title + '" loading="lazy" decoding="async" /></div>' +
+        '<div class="cfg-hub-card__img' + (hasBlank ? ' has-hover' : '') + '"' +
+          (hasBlank ? ' style="--hub-photo:url(' + cat.image + ')"' : '') + '>' +
+          '<img class="cfg-hub-card__blank" src="' + (hasBlank ? cat.blankImage : cat.image) + '" alt="' + cat.title + '" loading="lazy" decoding="async" />' +
+        '</div>' +
         '<span class="cfg-hub-card__title">' + cat.title + '</span>' +
         '<span class="cfg-hub-card__desc">' + cat.description + '</span>' +
         (cat.comingSoon ? '<span class="cfg-hub-card__badge">Скоро</span>' : '');

@@ -78,6 +78,41 @@
     var CW = canvas.width;   // 440
     var CH = canvas.height;  // 440
 
+    /* ── Viewport zoom ──
+       Uses CSS transform: scale() on the canvas.
+       getBoundingClientRect() accounts for CSS transforms, so canvasXY()
+       continues to map pointer positions correctly at any zoom level.       */
+    /* view.panX/Y are in CSS-pixel offsets from the canvas's natural centred position */
+    var view = { scale: 1, panX: 0, panY: 0 };
+
+    function applyViewTransform() {
+      if (view.scale === 1) {
+        /* At 1× the canvas fills the viewport exactly — no pan needed */
+        view.panX = 0; view.panY = 0;
+        canvas.style.transform = '';
+      } else {
+        /* Clamp pan: keep at least half the canvas inside the viewport */
+        var maxPan = 180 * (view.scale - 1);
+        view.panX = Math.max(-maxPan, Math.min(maxPan, view.panX));
+        view.panY = Math.max(-maxPan, Math.min(maxPan, view.panY));
+        canvas.style.transform =
+          'translate(' + view.panX + 'px,' + view.panY + 'px) scale(' + view.scale + ')';
+      }
+      var pct = Math.round(view.scale * 100) + '%';
+      var lbl = document.getElementById('kc-zoom-label');
+      if (lbl) lbl.textContent = pct;
+      var sl = document.getElementById('kc-zoom-slider');
+      if (sl) sl.value = Math.round(view.scale * 100);
+    }
+    function zoomBy(factor) {
+      view.scale = Math.min(3, Math.max(0.4, view.scale * factor));
+      applyViewTransform();
+    }
+    function setZoom(s) {
+      view.scale = Math.min(3, Math.max(0.4, s));
+      applyViewTransform();
+    }
+
     /* ── Global state (model / sides / engrave — NOT text/image, those live in layers) ── */
     var state = {
       model:      CFG.defaultModel,
@@ -181,6 +216,18 @@
       syncControlsToSelectedLayer();
       saveHistory();
       draw();
+    }
+
+    function duplicateLayerById(id) {
+      var src = null;
+      for (var i = 0; i < layers.length; i++) { if (layers[i].id === id) { src = layers[i]; break; } }
+      if (!src) return;
+      var copy = JSON.parse(JSON.stringify(src));
+      copy.id = nextLayerId++;
+      copy.x += 10; copy.y += 10;
+      layers.push(copy);
+      selectedLayerId = copy.id;
+      renderLayersPanel(); syncControlsToSelectedLayer(); saveHistory(); draw();
     }
 
     function selectLayerById(id) {
@@ -771,31 +818,90 @@
       var rw = l1 ? lc.measureText(l1).width : sz * 4;
       if (l2) { setFont(s1); rw = Math.max(rw, lc.measureText(l2).width); }
       var rh = l2 ? s1 + s2 + s1 * 0.56 : s1 * 1.2;
-      return { w: (rw || sz * 4) + 20, h: (rh || sz * 1.2) + 16 };
+      var cw = rw || sz * 4;
+      var ch = rh || sz * 1.2;
+      return { w: cw + 20, h: ch + 16, cw: cw, ch: ch };
     }
 
     function drawIconLayer(lc, layer) {
       var img = layer.iconImg;
-      if (!img || !img.complete || !img.naturalWidth) return { w: layer.size + 16, h: layer.size + 16 };
       var s = layer.size;
+      if (!img || !img.complete || !img.naturalWidth) return { w: s + 16, h: s + 16, cw: s, ch: s };
       lc.drawImage(img, -s / 2, -s / 2, s, s);
-      return { w: s + 16, h: s + 16 };
+      return { w: s + 16, h: s + 16, cw: s, ch: s };
     }
 
     function drawImageLayer(lc, layer, iw, ih) {
       var uImg = layer.imgEl;
-      if (!uImg || !uImg.naturalWidth) return { w: 40, h: 40 };
+      if (!uImg || !uImg.naturalWidth) return { w: 40, h: 40, cw: 40, ch: 40 };
       var fitW = iw * 0.22;
       var fitH = ih * 0.40;
       var fitScale = Math.min(fitW / uImg.naturalWidth, fitH / uImg.naturalHeight);
       var uW = uImg.naturalWidth  * fitScale * layer.size;
       var uH = uImg.naturalHeight * fitScale * layer.size;
       lc.drawImage(uImg, -uW / 2, -uH / 2, uW, uH);
-      return { w: uW + 16, h: uH + 16 };
+      return { w: uW + 16, h: uH + 16, cw: uW, ch: uH };
     }
 
     /* ── Bounding boxes ── */
     var elementBoxes = {};   /* layerId → {cx, cy, w, h, rotation} */
+
+    /* ── Mask pixel cache for out-of-bounds detection ── */
+    var maskPixelCache    = {};  /* cacheKey → Uint8ClampedArray */
+    var maskCentroidCache = {};  /* cacheKey → {x, y} in canvas px */
+
+    /* State from the last completed draw — used by snap to get centerX/Y */
+    var lastRenderState = { ix: 0, iy: 0, iw: 0, ih: 0, centerX: 0, centerY: 0, maskKey: null };
+
+    function getMaskCentroid(pixels, cacheKey) {
+      if (maskCentroidCache[cacheKey]) return maskCentroidCache[cacheKey];
+      var sumX = 0, sumY = 0, n = 0;
+      for (var y = 0; y < CH; y++) {
+        for (var x = 0; x < CW; x++) {
+          if (pixels[(y * CW + x) * 4 + 3] > 64) { sumX += x; sumY += y; n++; }
+        }
+      }
+      var result = n ? { x: sumX / n, y: sumY / n } : null;
+      maskCentroidCache[cacheKey] = result;
+      return result;
+    }
+
+    /* px to shrink the sampled bounding box on each side before checking —
+       absorbs font leading / handle padding without hiding real overflows */
+    var BOUNDS_TOL = 6;
+
+    function isLayerOutsideMask(box, pixels) {
+      var r   = (box.rotation || 0) * Math.PI / 180;
+      var hw  = Math.max(1, (box.cw || box.w) / 2 - BOUNDS_TOL);
+      var hh  = Math.max(1, (box.ch || box.h) / 2 - BOUNDS_TOL);
+      var cos = Math.cos(r);
+      var sin = Math.sin(r);
+      var cx  = box.cx;
+      var cy  = box.cy;
+      /* 7×7 grid inside the bounding box — handles concave mask shapes */
+      var STEPS = 7;
+      for (var gi = 0; gi < STEPS; gi++) {
+        for (var gj = 0; gj < STEPS; gj++) {
+          var lx = -hw + (hw * 2) * (gi / (STEPS - 1));
+          var ly = -hh + (hh * 2) * (gj / (STEPS - 1));
+          var x = Math.round(cx + lx * cos - ly * sin);
+          var y = Math.round(cy + lx * sin + ly * cos);
+          if (x < 0 || y < 0 || x >= CW || y >= CH) return true;
+          if (pixels[(y * CW + x) * 4 + 3] < 64) return true;
+        }
+      }
+      return false;
+    }
+
+    function isLayerOutsideRect(box, zone) {
+      var r  = (box.rotation || 0) * Math.PI / 180;
+      var cw = Math.max(1, (box.cw || box.w) / 2 - BOUNDS_TOL);
+      var ch = Math.max(1, (box.ch || box.h) / 2 - BOUNDS_TOL);
+      var hw = cw * Math.abs(Math.cos(r)) + ch * Math.abs(Math.sin(r));
+      var hh = cw * Math.abs(Math.sin(r)) + ch * Math.abs(Math.cos(r));
+      return box.cx - hw < zone.x1 || box.cx + hw > zone.x2 ||
+             box.cy - hh < zone.y1 || box.cy + hh > zone.y2;
+    }
 
     /* ── Main draw ──
        Uses PNG mask + destination-in compositing so all layers are
@@ -816,6 +922,10 @@
           var ix = (CW - iw) / 2;
           var iy = (CH - ih) / 2;
 
+          /* Store for snap / centroid use */
+          lastRenderState.ix = ix; lastRenderState.iy = iy;
+          lastRenderState.iw = iw; lastRenderState.ih = ih;
+
           /* 1. Draw the product */
           ctx.drawImage(img, ix, iy, iw, ih);
 
@@ -826,6 +936,8 @@
           var maxW = iw * m.textMaxW;
           var centerX = ix + iw * 0.5;
           var centerY = iy + ih * m.textCY;
+          lastRenderState.centerX = centerX;
+          lastRenderState.centerY = centerY;
 
           elementBoxes = {};
 
@@ -842,7 +954,7 @@
             else if (layer.type === 'icon')   dims = drawIconLayer(lc, layer);
             else if (layer.type === 'image')  dims = drawImageLayer(lc, layer, iw, ih);
             lc.restore();
-            if (dims) elementBoxes[layer.id] = { cx: lx, cy: ly, w: dims.w, h: dims.h, rotation: layer.rotation };
+            if (dims) elementBoxes[layer.id] = { cx: lx, cy: ly, w: dims.w, h: dims.h, cw: dims.cw || dims.w, ch: dims.ch || dims.h, rotation: layer.rotation };
           });
 
           /* 4. Clip to mask or rectangular engraving zone */
@@ -871,6 +983,42 @@
           /* 6. Selection handles */
           if (selectedLayerId && elementBoxes[selectedLayerId]) {
             drawHandles(elementBoxes[selectedLayerId]);
+          }
+
+          /* 7. Out-of-bounds warning — uses mask pixels when available */
+          var warnEl = document.getElementById('kc-bounds-warn');
+          if (warnEl) {
+            var anyOut;
+            if (maskImg) {
+              var cacheKey = m.mask + '|' + Math.round(ix) + '|' + Math.round(iy) + '|' + Math.round(iw);
+              if (!maskPixelCache[cacheKey]) {
+                var mc2 = document.createElement('canvas');
+                mc2.width = CW; mc2.height = CH;
+                var mc2ctx = mc2.getContext('2d');
+                mc2ctx.drawImage(maskImg, ix, iy, iw, ih);
+                maskPixelCache[cacheKey] = mc2ctx.getImageData(0, 0, CW, CH).data;
+              }
+              lastRenderState.maskKey = cacheKey;
+              var pixels = maskPixelCache[cacheKey];
+              anyOut = layers.some(function (l) {
+                if (!l.visible) return false;
+                var box = elementBoxes[l.id];
+                return box ? isLayerOutsideMask(box, pixels) : false;
+              });
+            } else {
+              var clipW2 = iw * (m.textMaxW || 0.8);
+              var clipH2 = ih * (m.clipH != null ? m.clipH : (m.textMaxW || 0.8) * 0.55);
+              var engZone = {
+                x1: centerX - clipW2 / 2, x2: centerX + clipW2 / 2,
+                y1: centerY - clipH2 / 2, y2: centerY + clipH2 / 2
+              };
+              anyOut = layers.some(function (l) {
+                if (!l.visible) return false;
+                var box = elementBoxes[l.id];
+                return box ? isLayerOutsideRect(box, engZone) : false;
+              });
+            }
+            warnEl.classList.toggle('is-visible', anyOut);
           }
         }
 
@@ -1036,16 +1184,22 @@
         item.className = 'cfg-layer-item' + (isSelected ? ' is-selected' : '') + (!layer.visible ? ' is-hidden' : '');
         item.setAttribute('data-id', String(layer.id));
         item.draggable = true;
+        var DUP_SVG = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
         item.innerHTML =
           '<span class="cfg-layer-drag" aria-label="Премести">⋮⋮</span>' +
           '<span class="cfg-layer-badge cfg-layer-badge--' + layer.type + '">' + (TYPE_SVG[layer.type] || '?') + '</span>' +
           '<span class="cfg-layer-name">' + escHtml(displayName) + '</span>' +
+          '<button class="cfg-layer-dup" type="button" title="Дублирай слой (Ctrl+D)">' + DUP_SVG + '</button>' +
           '<button class="cfg-layer-vis" type="button" title="' + (layer.visible ? 'Скрий' : 'Покажи') + '">' + (layer.visible ? EYE_SVG : EYE_OFF_SVG) + '</button>' +
           '<button class="cfg-layer-del" type="button" title="Изтрий слой">✕</button>';
 
         item.addEventListener('click', function (e) {
-          if (e.target.closest('.cfg-layer-vis') || e.target.closest('.cfg-layer-del')) return;
+          if (e.target.closest('.cfg-layer-vis') || e.target.closest('.cfg-layer-del') || e.target.closest('.cfg-layer-dup')) return;
           selectLayerById(layer.id);
+        });
+        item.querySelector('.cfg-layer-dup').addEventListener('click', function (e) {
+          e.stopPropagation();
+          duplicateLayerById(layer.id);
         });
         item.querySelector('.cfg-layer-vis').addEventListener('click', function (e) {
           e.stopPropagation();
@@ -1393,16 +1547,44 @@
       return Math.hypot(px - s.x, py - s.y) <= 14;
     }
 
+    /* Space-bar pan state */
+    var spacePan = false;
+
+    function refreshCanvasCursor() {
+      /* When spacePan is active, force grab cursor; otherwise clear inline style
+         so the CSS `cursor: grab` rule takes effect naturally */
+      canvas.style.cursor = spacePan ? 'grab' : '';
+    }
+
     var ptr = {
       active: false, mode: null, layerId: null,
       startX: 0, startY: 0,
       ox: 0, oy: 0,
       startAngle: 0, startRotation: 0,
       startDist: 0, startScale: 0,
+      /* pan — store view.panX/Y at gesture start */
+      startClientX: 0, startClientY: 0,
+      startPanX: 0, startPanY: 0,
     };
+
+    function getRawClientXY(e) {
+      var src = e.touches ? e.touches[0] : e;
+      return { x: src.clientX, y: src.clientY };
+    }
 
     function onPointerDown(e) {
       e.preventDefault();
+      var raw = getRawClientXY(e);
+
+      /* Space+drag or middle-click = pan viewport */
+      if (spacePan || e.button === 1) {
+        ptr.active = true; ptr.mode = 'pan';
+        ptr.startClientX = raw.x; ptr.startClientY = raw.y;
+        ptr.startPanX = view.panX; ptr.startPanY = view.panY;
+        canvas.style.cursor = 'grabbing';
+        return;
+      }
+
       var p = canvasXY(e);
       var px = p.x, py = p.y;
       var hitId = null, mode = 'move';
@@ -1429,6 +1611,13 @@
       if (!hitId) {
         selectedLayerId = null;
         renderLayersPanel(); syncControlsToSelectedLayer(); draw();
+        /* When zoomed in, dragging empty space pans the view */
+        if (view.scale > 1) {
+          ptr.active = true; ptr.mode = 'pan';
+          ptr.startClientX = raw.x; ptr.startClientY = raw.y;
+          ptr.startPanX = view.panX; ptr.startPanY = view.panY;
+          canvas.style.cursor = 'grabbing';
+        }
         return;
       }
 
@@ -1454,6 +1643,16 @@
     function onPointerMove(e) {
       if (!ptr.active) return;
       e.preventDefault();
+
+      /* Viewport pan mode — move via CSS translate, works with overflow:hidden */
+      if (ptr.mode === 'pan') {
+        var rawPan = getRawClientXY(e);
+        view.panX = ptr.startPanX + (rawPan.x - ptr.startClientX);
+        view.panY = ptr.startPanY + (rawPan.y - ptr.startClientY);
+        applyViewTransform();
+        return;
+      }
+
       var p = canvasXY(e);
       var px = p.x, py = p.y;
       var layer = getLayerById(ptr.layerId);
@@ -1488,7 +1687,11 @@
     }
 
     function onPointerUp() {
-      if (ptr.active) { saveHistory(); ptr.active = false; canvas.style.cursor = 'default'; }
+      if (!ptr.active) return;
+      var wasPan = ptr.mode === 'pan';
+      ptr.active = false;
+      if (!wasPan) saveHistory();
+      refreshCanvasCursor();
     }
 
     canvas.addEventListener('mousedown',  onPointerDown);
@@ -1742,14 +1945,39 @@
       if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.shiftKey && e.key === 'z'))) { e.preventDefault(); redo(); }
     });
 
-    /* ── Snap to center ── */
+    /* ── Snap: centre using mask centroid when available ── */
+    function snapLayerToCenter(layer) {
+      if (!layer) return;
+      var m = MODELS[state.model];
+      var key = lastRenderState.maskKey;
+      if (m.mask && key && maskPixelCache[key]) {
+        var c = getMaskCentroid(maskPixelCache[key], key);
+        if (c) {
+          layer.x = c.x - lastRenderState.centerX;
+          layer.y = c.y - lastRenderState.centerY;
+          return;
+        }
+      }
+      layer.x = 0; layer.y = 0;
+    }
+
     document.getElementById('kc-snap').addEventListener('click', function () {
       var layer = getSelectedLayer();
       if (!layer) return;
       saveHistory();
-      layer.x = 0; layer.y = 0;
+      snapLayerToCenter(layer);
       draw();
     });
+
+    /* ── Bounds warning — snap all layers to mask centre ── */
+    var kcBoundsCenter = document.getElementById('kc-bounds-center');
+    if (kcBoundsCenter) {
+      kcBoundsCenter.addEventListener('click', function () {
+        saveHistory();
+        layers.forEach(function (l) { snapLayerToCenter(l); });
+        draw(); updateLinks();
+      });
+    }
 
     /* ── Download preview ── */
     function downloadPreview() {
@@ -1761,6 +1989,138 @@
     document.getElementById('kc-download').addEventListener('click', downloadPreview);
     var kcDownloadOrder = document.getElementById('kc-download-order');
     if (kcDownloadOrder) kcDownloadOrder.addEventListener('click', downloadPreview);
+
+    /* ── Zoom controls ── */
+    (function () {
+      /* Toolbar +/− buttons */
+      var zIn   = document.getElementById('kc-zoom-in');
+      var zOut  = document.getElementById('kc-zoom-out');
+      var z1to1 = document.getElementById('kc-zoom-1to1');
+      if (zIn)   zIn.addEventListener('click',   function () { zoomBy(1.25); });
+      if (zOut)  zOut.addEventListener('click',  function () { zoomBy(0.8);  });
+      if (z1to1) z1to1.addEventListener('click', function () { setZoom(1);   });
+
+      /* Zoom slider row (below canvas) */
+      var sl    = document.getElementById('kc-zoom-slider');
+      var slIn  = document.getElementById('kc-zoom-in2');
+      var slOut = document.getElementById('kc-zoom-out2');
+      if (sl)    sl.addEventListener('input',    function () { setZoom(+this.value / 100); });
+      if (slIn)  slIn.addEventListener('click',  function () { zoomBy(1.25); });
+      if (slOut) slOut.addEventListener('click', function () { zoomBy(0.8);  });
+
+      /* Wheel: zoom normally, Shift+wheel = horizontal pan */
+      if (kcViewport) {
+        kcViewport.addEventListener('wheel', function (e) {
+          e.preventDefault();
+          if (e.shiftKey) {
+            view.panX -= e.deltaY * 0.7;
+            applyViewTransform();
+            return;
+          }
+          zoomBy(e.deltaY < 0 ? 1.1 : (1 / 1.1));
+        }, { passive: false });
+      }
+    })();
+
+    /* ── Fullscreen ── */
+    (function () {
+      var previewEl = document.querySelector('.cfg-preview');
+
+      function toggleFullscreen(forceOff) {
+        if (!previewEl) return;
+        var on = forceOff === true ? false : !previewEl.classList.contains('is-fullscreen');
+        previewEl.classList.toggle('is-fullscreen', on);
+        document.body.style.overflow = on ? 'hidden' : '';
+        var btn = document.getElementById('kc-fullscreen');
+        if (btn) {
+          btn.setAttribute('aria-pressed', String(on));
+          btn.title = on ? 'Изход от цял екран (Esc)' : 'Цял екран';
+          /* swap icon between expand and collapse */
+          btn.querySelector('svg').innerHTML = on
+            ? '<polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/><line x1="10" y1="14" x2="3" y2="21"/><line x1="21" y1="3" x2="14" y2="10"/>'
+            : '<polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>';
+        }
+      }
+
+      var fsBtn  = document.getElementById('kc-fullscreen');
+      var fsHint = document.getElementById('kc-fullscreen-hint');
+      if (fsBtn)  fsBtn.addEventListener('click',  function () { toggleFullscreen(); });
+      if (fsHint) fsHint.addEventListener('click', function () { toggleFullscreen(); });
+
+      /* Expose so keyboard handler can close fullscreen */
+      window._kcToggleFullscreen = toggleFullscreen;
+      window._kcPreviewEl = previewEl;
+    })();
+
+    /* ── Keyboard shortcuts ── */
+    document.addEventListener('keyup', function (e) {
+      if (e.code === 'Space') { spacePan = false; refreshCanvasCursor(); }
+    });
+    /* If the window loses focus while Space is held, unstick pan mode */
+    window.addEventListener('blur', function () {
+      if (spacePan) { spacePan = false; refreshCanvasCursor(); }
+    });
+
+    document.addEventListener('keydown', function (e) {
+      var tag = document.activeElement ? document.activeElement.tagName : '';
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+
+      /* Space = pan mode */
+      if (e.code === 'Space' && !e.repeat) {
+        e.preventDefault();
+        spacePan = true; refreshCanvasCursor();
+        return;
+      }
+
+      /* Arrow nudge */
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+        var layer = getSelectedLayer();
+        if (!layer) return;
+        e.preventDefault();
+        var step = e.shiftKey ? 5 : 1;
+        saveHistory();
+        if (e.key === 'ArrowLeft')  layer.x -= step;
+        if (e.key === 'ArrowRight') layer.x += step;
+        if (e.key === 'ArrowUp')    layer.y -= step;
+        if (e.key === 'ArrowDown')  layer.y += step;
+        syncControlsToSelectedLayer(); draw();
+        return;
+      }
+
+      /* Delete / Backspace — remove selected layer */
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        if (selectedLayerId) {
+          e.preventDefault();
+          deleteLayerById(selectedLayerId);
+        }
+        return;
+      }
+
+      /* Ctrl/Cmd+D — duplicate */
+      if ((e.metaKey || e.ctrlKey) && e.key === 'd') {
+        if (selectedLayerId) {
+          e.preventDefault();
+          duplicateLayerById(selectedLayerId);
+        }
+        return;
+      }
+
+      /* Escape — exit fullscreen first, then deselect */
+      if (e.key === 'Escape') {
+        if (window._kcPreviewEl && window._kcPreviewEl.classList.contains('is-fullscreen')) {
+          window._kcToggleFullscreen(true);
+        } else {
+          selectedLayerId = null;
+          renderLayersPanel(); syncControlsToSelectedLayer(); draw();
+        }
+        return;
+      }
+
+      /* +/− zoom */
+      if (e.key === '+' || e.key === '=') { e.preventDefault(); zoomBy(1.25); return; }
+      if (e.key === '-')                   { e.preventDefault(); zoomBy(0.8);  return; }
+      if (e.key === '0' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); setZoom(1); return; }
+    });
 
     /* ── Character counters ── */
     function updateCharCount(inputId, val) {

@@ -20,7 +20,7 @@
   }
 
   var params = new URLSearchParams(window.location.search);
-  var catId = params.get('cat') || '';
+  var catId = params.get('cat') || window.ENGRAVE_DEFAULT_CAT || '';
   var meta = (window.CONFIGURATOR_CATEGORIES || []).find(function (c) {
     return c.id === catId;
   });

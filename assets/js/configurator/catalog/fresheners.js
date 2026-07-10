@@ -11,8 +11,8 @@ window.CFG_CONFIG = {
     'freshener-walnut-silver': {
       name: 'Ароматизатор орех / сребро',
       shortName: 'Орех сребро',
-      src: 'assets/configurator/fresheners/freshener-walnut-silver-blank.png',
-      mask: null,
+      src: 'assets/configurator/fresheners/walnut-silver/blank.png',
+      mask: 'assets/configurator/fresheners/walnut-silver/mask.png',
       textCY: 0.50,
       textMaxW: 0.78,
       clipH: 0.42,
@@ -20,8 +20,8 @@ window.CFG_CONFIG = {
     'freshener-walnut-black': {
       name: 'Ароматизатор орех / черно',
       shortName: 'Орех черно',
-      src: 'assets/configurator/fresheners/freshener-walnut-black-blank.png',
-      mask: null,
+      src: 'assets/configurator/fresheners/walnut-black/blank.png',
+      mask: 'assets/configurator/fresheners/walnut-black/mask.png',
       textCY: 0.50,
       textMaxW: 0.78,
       clipH: 0.42,

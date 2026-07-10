@@ -61,7 +61,8 @@
     @media (max-width: 600px) {
       .cfg-wrap .section { padding-top: 0.5rem; padding-bottom: 1.5rem; }
       .cfg-preview { padding: 0.75rem 0.75rem 1rem; gap: 0.5rem; }
-      #kc-canvas { max-width: 100%; }
+      .kc-canvas-viewport,
+      .kc-zoom-row { max-width: 100%; }
       .cfg-hint { font-size: 0.72rem; }
       /* Tighter accordion inner padding on phones */
       .cfg-acc-inner { padding: 0.2rem 0.75rem 0.85rem; gap: 0.9rem; }
@@ -109,15 +110,82 @@
       top: calc(var(--header-h) + 1rem);
     }
 
+    .kc-canvas-viewport {
+      width: 100%;
+      max-width: 360px;
+      overflow: hidden;
+      border-radius: var(--radius-sm);
+      /* No flex — plain block container so getBoundingClientRect stays predictable */
+    }
+
     #kc-canvas {
       display: block;
       width: 100%;
-      max-width: 360px;
       height: auto;
       cursor: grab;
       touch-action: none;
+      transform-origin: center center;
     }
     #kc-canvas:active { cursor: grabbing; }
+
+    .kc-zoom-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      width: 100%;
+      max-width: 360px;
+    }
+    .kc-zoom-row .cfg-range { flex: 1; min-width: 0; }
+    .kc-zoom-row-btn { flex-shrink: 0; width: 30px; height: 30px; }
+    .kc-zoom-row-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+      white-space: nowrap;
+      flex-shrink: 0;
+      user-select: none;
+    }
+
+    /* ── Fullscreen ── */
+    .cfg-preview.is-fullscreen {
+      position: fixed;
+      inset: 0;
+      z-index: 300;
+      margin: 0;
+      border-radius: 0;
+      border: none;
+      padding: 1rem 1rem calc(1rem + env(safe-area-inset-bottom));
+      overflow-y: auto;
+      top: 0 !important;
+      background: #080808;
+    }
+    .cfg-preview.is-fullscreen .kc-canvas-viewport {
+      max-width: min(90vw, 600px);
+    }
+    .cfg-preview.is-fullscreen .cfg-canvas-toolbar,
+    .cfg-preview.is-fullscreen .kc-zoom-row {
+      max-width: min(90vw, 600px);
+    }
+
+    .cfg-zoom-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+      min-width: 3.2ch;
+      text-align: center;
+      white-space: nowrap;
+      user-select: none;
+    }
+    .cfg-icon-btn--text {
+      width: auto;
+      padding: 0.5rem 0.6rem;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
 
     .cfg-reset-btn {
       display: inline-flex;
@@ -1241,12 +1309,25 @@
   border-radius: var(--radius-sm);
   overflow: hidden;
   padding: 0.75rem;
+  position: relative;
+  transition: background 0.4s ease;
 }
 
 .cfg-hub-card__img img {
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
+  position: relative;
+  z-index: 1;
+  transition: transform 0.4s ease;
+}
+
+.cfg-hub-card:hover .cfg-hub-card__img {
+  background: radial-gradient(ellipse at 50% 80%, rgba(201,162,39,0.22) 0%, #140e03 55%, #0a0a0a 100%);
+}
+
+.cfg-hub-card:hover .cfg-hub-card__img img {
+  transform: scale(1.06);
 }
 
 .cfg-hub-card__title {

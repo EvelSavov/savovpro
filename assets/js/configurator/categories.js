@@ -13,10 +13,12 @@ window.CONFIGURATOR_CATEGORIES = [
     metaDescription: 'Персонализирани дървени ключодържатели с лазерно гравиране — текст, символи, лого или монограм. Перфектен подарък за рожден ден, именен ден или бизнес партньори. Онлайн конфигуратор. SAVOV PRO.',
     metaKeywords: 'ключодържатели с гравиране, персонализирани ключодържатели, дървени ключодържатели, ключодържатели по поръчка, гравирани подаръци, подарък за рожден ден',
     h1: 'Персонализирани ключодържатели с лазерно гравиране',
-    image: 'assets/configurator/keychains/keychain-round-light-blank.png',
+    image: 'assets/products/20260111_161704-2.jpg',
+    blankImage: 'assets/configurator/keychains/round-light/blank.png',
     ogImage: 'assets/products/20260111_161704-2.jpg',
     catalog: 'assets/js/configurator/catalog/keychains.js',
     engine: 'engrave',
+    page: 'configurator-keychains.html',
     comingSoon: false,
   },
   {
@@ -26,10 +28,12 @@ window.CONFIGURATOR_CATEGORIES = [
     metaDescription: 'Персонализирани дървени ароматизатори за кола с лазерно гравиране — текст, лого или монограм. Уникален подарък за автомобилни фенове. Онлайн конфигуратор. SAVOV PRO.',
     metaKeywords: 'ароматизатори за кола с гравиране, персонализирани ароматизатори, дървени ароматизатори, ароматизатори по поръчка, авто аксесоари подаръци',
     h1: 'Персонализирани ароматизатори за кола с лазерно гравиране',
-    image: 'assets/configurator/fresheners/freshener-walnut-silver-blank.png',
-    ogImage: 'assets/configurator/fresheners/freshener-walnut-silver-blank.png',
+    image: 'assets/products/DABF0698-9C20-422D-A22C-24D1A6F53FD1_1_201_a-2.jpeg',
+    blankImage: 'assets/configurator/fresheners/walnut-silver/blank.png',
+    ogImage: 'assets/products/DABF0698-9C20-422D-A22C-24D1A6F53FD1_1_201_a-2.jpeg',
     catalog: 'assets/js/configurator/catalog/fresheners.js',
     engine: 'engrave',
+    page: 'configurator-fresheners.html',
     comingSoon: false,
   },
   {
@@ -39,10 +43,12 @@ window.CONFIGURATOR_CATEGORIES = [
     metaDescription: 'Персонализирани бамбукови химикалки с лазерно гравиране — текст, лого или PNG дизайн. Отличен бизнес подарък или корпоративен сувенир. Онлайн конфигуратор. SAVOV PRO.',
     metaKeywords: 'химикалки с гравиране, персонализирани химикалки, бамбукови химикалки, химикалки по поръчка, бизнес подаръци с лого, корпоративни сувенири',
     h1: 'Персонализирани бамбукови химикалки с лазерно гравиране',
-    image: 'assets/configurator/pens/pen-bamboo-blank.png',
-    ogImage: 'assets/configurator/pens/pen-bamboo-blank.png',
+    image: 'assets/products/20260111_163111-2.jpg',
+    blankImage: 'assets/configurator/pens/bamboo/blank.png',
+    ogImage: 'assets/products/20260111_163111-2.jpg',
     catalog: 'assets/js/configurator/catalog/pens.js',
     engine: 'engrave',
+    page: 'configurator-pens.html',
     comingSoon: false,
   },
   {
@@ -63,9 +69,7 @@ window.CONFIGURATOR_CATEGORIES = [
 /** Returns the URL for a category configurator page. */
 window.getConfiguratorUrl = function (cat) {
   if (!cat || cat.comingSoon) return null;
-  if (cat.page) {
-    return cat.page + (cat.page.indexOf('?') >= 0 ? '&' : '?') + 'cat=' + encodeURIComponent(cat.id);
-  }
+  if (cat.page) return cat.page;
   if (cat.engine === 'sticker') {
     return 'configurator-sticker.html?cat=' + encodeURIComponent(cat.id);
   }
@@ -84,7 +88,8 @@ window.applyConfiguratorPageMeta = function (catId) {
   document.title = seoTitle;
 
   var desc = meta.metaDescription || meta.description || '';
-  var canonical = 'https://savovpro.com/configurator-product.html?cat=' + encodeURIComponent(catId);
+  var canonicalPath = meta.page || ('configurator-product.html?cat=' + encodeURIComponent(catId));
+  var canonical = 'https://savovpro.com/' + canonicalPath;
   var ogImage = meta.ogImage || meta.image || '';
   if (ogImage && ogImage.indexOf('http') !== 0) {
     ogImage = 'https://savovpro.com/' + ogImage.replace(/^\//, '');

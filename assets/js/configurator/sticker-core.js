@@ -29,7 +29,7 @@
   var removeBg = CFG.defaults.removeBg !== false;
   var bgTolerance = 40;
 
-  var stickerSize = { widthCm: CFG.defaults.widthCm, heightCm: CFG.defaults.heightCm };
+  var stickerSize = { widthCm: CFG.size.defaultW, heightCm: CFG.size.defaultH };
   var VIEW_ZOOM_MIN = 0.4;
   var VIEW_ZOOM_MAX = 6;
   var view = { scale: 1.25, panX: 0, panY: 0 };
@@ -689,8 +689,8 @@
   function defaultDraftContentSignature() {
     return draftContentSignature({
       stickerSize: {
-        widthCm: CFG.defaults.widthCm,
-        heightCm: CFG.defaults.heightCm,
+        widthCm: CFG.size.defaultW,
+        heightCm: CFG.size.defaultH,
       },
       uiMode: 'basic',
       layers: [{
@@ -963,8 +963,8 @@
     selectedLayerIds = [];
     selectedLayerId = null;
     nextLayerId = 1;
-    stickerSize.widthCm = CFG.defaults.widthCm;
-    stickerSize.heightCm = CFG.defaults.heightCm;
+    stickerSize.widthCm = CFG.size.defaultW;
+    stickerSize.heightCm = CFG.size.defaultH;
     view.scale = 1.25;
     view.panX = 0;
     view.panY = 0;
@@ -1166,8 +1166,8 @@
     var wEl = document.getElementById('st-wizard-width');
     var hEl = document.getElementById('st-wizard-height');
     var textEl = document.getElementById('st-wizard-text');
-    if (wEl) setupWizardState.widthCm = parseFloat(wEl.value) || CFG.defaults.widthCm;
-    if (hEl) setupWizardState.heightCm = parseFloat(hEl.value) || CFG.defaults.heightCm;
+    if (wEl) setupWizardState.widthCm = parseFloat(wEl.value) || CFG.size.defaultW;
+    if (hEl) setupWizardState.heightCm = parseFloat(hEl.value) || CFG.size.defaultH;
     if (textEl) setupWizardState.text = textEl.value;
   }
 
@@ -1400,8 +1400,8 @@
   function readDefaultSetupWizardState() {
     return {
       stepIndex: 0,
-      widthCm: stickerSize.widthCm || CFG.defaults.widthCm || 20,
-      heightCm: stickerSize.heightCm || CFG.defaults.heightCm || 10,
+      widthCm: stickerSize.widthCm || CFG.size.defaultW || 20,
+      heightCm: stickerSize.heightCm || CFG.size.defaultH || 10,
       contentType: 'text',
       text: CFG.defaults.defaultText || 'SAVOV PRO\nMade for you',
       svgFileName: '',
@@ -1452,8 +1452,8 @@
 
   function wizardProducedNonDefaultDesign() {
     syncSetupWizardFromInputs();
-    if (setupWizardState.widthCm !== CFG.defaults.widthCm ||
-        setupWizardState.heightCm !== CFG.defaults.heightCm) {
+    if (setupWizardState.widthCm !== CFG.size.defaultW ||
+        setupWizardState.heightCm !== CFG.size.defaultH) {
       return true;
     }
     if (setupWizardState.contentType !== 'text') return true;

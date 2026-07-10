@@ -25,8 +25,8 @@ window.CFG_CONFIG = {
     'pen-bamboo': {
       name: 'Бамбукова химикалка',
       shortName: 'Бамбук',
-      src: 'assets/configurator/pens/pen-bamboo-blank.png',
-      mask: null,
+      src: 'assets/configurator/pens/bamboo/blank.png',
+      mask: 'assets/configurator/pens/bamboo/mask.png',
       textCY: 0.51,
       textMaxW: 0.18,
       clipH: 0.13,
