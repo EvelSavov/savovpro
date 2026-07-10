@@ -473,6 +473,13 @@ button.btn {
   background-image: none;
 }
 
+button.btn-primary {
+  background: linear-gradient(135deg, var(--gold), #a88620);
+}
+button.btn-primary:hover {
+  background: linear-gradient(135deg, var(--gold-hover), #c9a227);
+}
+
 .btn:active {
   transform: translateY(1px);
 }
