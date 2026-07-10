@@ -1137,6 +1137,45 @@ body.nav-open {
   }
 }
 
+/* ── Legal pages (privacy, terms) ─────────────────────────────────── */
+.legal-page {
+  min-height: 60vh;
+  padding: 3rem 1.25rem 4rem;
+}
+.legal-wrap {
+  max-width: 720px;
+  margin: 0 auto;
+}
+.legal-wrap h1 {
+  font-size: clamp(1.6rem, 4vw, 2.2rem);
+  margin-bottom: 0.25rem;
+}
+.legal-updated {
+  font-size: 0.82rem;
+  color: var(--muted, #666);
+  margin-bottom: 2.5rem;
+}
+.legal-wrap section {
+  margin-bottom: 2rem;
+}
+.legal-wrap h2 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: var(--gold, #c9a227);
+}
+.legal-wrap p, .legal-wrap li {
+  font-size: 0.92rem;
+  line-height: 1.7;
+  color: #c9c9c9;
+}
+.legal-wrap ul {
+  padding-left: 1.4rem;
+  margin: 0.25rem 0;
+}
+.legal-wrap li { margin-bottom: 0.3rem; }
+.legal-wrap a { color: var(--gold, #c9a227); text-underline-offset: 2px; }
+
 /* ── Cookie Consent Banner ─────────────────────────────────────────── */
 .cookie-banner {
   position: fixed;
