@@ -909,13 +909,20 @@ body.lightbox-open {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.35rem 0.5rem;
+  gap: 0.4rem 0.75rem;
 }
 
-.contact-social-sep {
-  color: var(--muted);
-  user-select: none;
+.contact-social-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--gold, #c9a227);
+  text-decoration: none;
+  font-size: 0.88rem;
+  transition: opacity 0.15s;
 }
+.contact-social-link:hover { opacity: 0.75; }
+.contact-social-link svg { flex-shrink: 0; }
 
 .contact-cta {
   display: flex;
