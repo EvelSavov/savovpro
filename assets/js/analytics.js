@@ -43,6 +43,24 @@
     })(window, document, 'clarity', 'script', CLARITY_ID);
   }
 
+  /* ── Google Consent Mode v2 (must run before gtag loads) ──────── */
+
+  function initConsentMode(granted) {
+    window.dataLayer = window.dataLayer || [];
+    window.gtag = window.gtag || function () { window.dataLayer.push(arguments); };
+    var state = granted ? 'granted' : 'denied';
+    gtag('consent', granted ? 'update' : 'default', {
+      analytics_storage:    state,
+      ad_storage:           'denied',  /* we don't run ads */
+      functionality_storage: 'denied',
+      personalization_storage: 'denied',
+      security_storage:     'granted',
+    });
+  }
+
+  /* Set denied defaults immediately — before any script loads */
+  initConsentMode(false);
+
   /* ── Load Google Analytics 4 ───────────────────────────────────── */
 
   function loadGA4() {
@@ -55,8 +73,6 @@
     s.src = 'https://www.googletagmanager.com/gtag/js?id=' + GA4_ID;
     document.head.appendChild(s);
 
-    window.dataLayer = window.dataLayer || [];
-    window.gtag = function () { window.dataLayer.push(arguments); };
     gtag('js', new Date());
     gtag('config', GA4_ID, {
       anonymize_ip: true,
@@ -136,6 +152,7 @@
    * Called by cookie-consent.js when the user clicks "Приемам".
    */
   window.initAnalyticsAfterConsent = function () {
+    initConsentMode(true);   /* upgrade consent before loading scripts */
     loadClarity();
     loadGA4();
     attachAutoEvents();
