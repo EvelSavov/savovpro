@@ -37,13 +37,12 @@
     banner.innerHTML = [
       '<div class="cookie-banner-inner">',
       '  <p class="cookie-banner-text">',
-      '    Използваме <strong>Microsoft Clarity</strong> и <strong>Google Analytics</strong> за анализ на посещенията ',
-      '    и подобряване на потребителското изживяване. Данните са анонимизирани.',
-      '    <a class="cookie-banner-link" href="privacy.html">Политика за поверителност</a>',
+      '    Използваме бисквитки за анализ на посещенията и подобряване на сайта.',
+      '    <a class="cookie-banner-link" href="privacy.html">Научи повече</a>',
       '  </p>',
       '  <div class="cookie-banner-actions">',
       '    <button class="btn btn-primary btn-compact" id="cookie-accept">Приемам</button>',
-      '    <button class="btn btn-ghost btn-compact" id="cookie-decline">Отхвърлям</button>',
+      '    <button class="btn btn-ghost btn-compact" id="cookie-decline">Не, благодаря</button>',
       '  </div>',
       '</div>',
     ].join('');
