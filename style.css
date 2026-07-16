@@ -234,7 +234,7 @@ a:hover {
 }
 
 .hero-lead {
-  margin: 0 0 1rem;
+  margin: 0 0 1.5rem;
   font-size: 1.12rem;
   color: var(--muted);
   max-width: 52ch;
@@ -242,14 +242,45 @@ a:hover {
 
 .hero-tags {
   margin: 0 0 1.5rem;
-  font-size: 0.98rem;
-  color: var(--muted);
+  font-size: 1.02rem;
+  letter-spacing: 0.01em;
+  line-height: 1.75;
+  color: rgba(244, 244, 245, 0.7);
 }
 
 .hero-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
+}
+
+/* Hero mini stats */
+.hero-mini-stats {
+  display: flex;
+  gap: 1.5rem;
+  list-style: none;
+  margin: 0 0 1.25rem;
+  padding: 0;
+}
+
+.hero-mini-stats li {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.hero-mini-num {
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--gold);
+  line-height: 1;
+}
+
+.hero-mini-label {
+  font-size: 0.78rem;
+  color: var(--muted);
+  letter-spacing: 0.02em;
 }
 
 .hero-social {
@@ -306,6 +337,7 @@ a:hover {
   position: relative;
   aspect-ratio: 1;
   max-height: min(560px, 85vw);
+  isolation: isolate;
   margin-inline: auto;
 }
 
@@ -346,6 +378,33 @@ a:hover {
   height: 100%;
   object-fit: cover;
   vertical-align: middle;
+}
+
+/* Premium overlay: left fade + radial vignette */
+.hero-carousel-slide::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background:
+    linear-gradient(
+      90deg,
+      rgba(0, 0, 0, 0.28) 0%,
+      rgba(0, 0, 0, 0.12) 18%,
+      rgba(0, 0, 0, 0) 35%
+    ),
+    radial-gradient(
+      circle,
+      rgba(0, 0, 0, 0) 55%,
+      rgba(0, 0, 0, 0.12) 82%,
+      rgba(0, 0, 0, 0.28) 100%
+    );
+  pointer-events: none;
+}
+
+/* Subtle contrast + warmth boost on images */
+.hero-carousel-slide img {
+  filter: contrast(1.05) saturate(1.06) brightness(1.03);
 }
 
 .hero-carousel-toolbar {
@@ -544,22 +603,22 @@ button.btn-primary:hover {
   border-bottom: 1px solid var(--border);
 }
 
-/* „За нас“ + „Контакт“: един непрекъснат блок без двойна рамка между тях */
+/* Za nas -- slightly lighter background for visual separation */
 #about.section-alt {
-  border-bottom: none;
+  background: rgba(255, 255, 255, 0.055);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
 }
 
-#about + #contact.section-alt {
-  border-top: none;
+/* Kontakt -- darker background */
+#contact.section-alt {
+  background: rgba(255, 255, 255, 0.018);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
 }
 
 #contact.section {
   padding-bottom: clamp(2rem, 5vw, 3rem);
-}
-
-/* Един разделител върху секцията — не и border-top на footer (двоен ефект с фона) */
-#contact.section-alt {
-  border-bottom: 1px solid var(--border);
 }
 
 .section-heading {
@@ -621,11 +680,21 @@ button.btn-primary:hover {
 
 .cards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 1.15rem;
   list-style: none;
   margin: 0;
   padding: 0;
+}
+
+.cards > li:last-child:nth-child(3n - 2) {
+  grid-column: 1 / -1;
+  max-width: calc((100% - 2 * 1.15rem) / 3);
+  margin-inline: auto;
+}
+
+.cards > li:last-child:nth-child(3n - 1) {
+  grid-column-end: -1;
 }
 
 .card {
@@ -638,66 +707,68 @@ button.btn-primary:hover {
   min-height: 260px;
   padding: 1.45rem 1.35rem;
   background-color: var(--bg-card);
-  background-repeat: no-repeat;
-  background-size: cover;
-  background-position: center;
   border: 1px solid var(--border);
   border-radius: var(--radius);
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
 }
 
+/* background image layer — scales on hover */
 .card::before {
   content: "";
   position: absolute;
   inset: 0;
   z-index: 0;
+  background-image: var(--card-bg);
+  background-size: cover;
+  background-position: center;
+  transition: transform 0.5s ease;
+}
+
+.card:hover::before {
+  transform: scale(1.07);
+}
+
+/* gradient overlay */
+.card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
   background: linear-gradient(
     to top,
     rgba(10, 10, 10, 0.94) 0%,
     rgba(10, 10, 10, 0.55) 42%,
     rgba(10, 10, 10, 0.2) 100%
   );
-  transition: opacity 0.2s ease;
+  transition: opacity 0.3s ease;
 }
 
-.card:hover::before {
-  opacity: 0.92;
+.card:hover::after {
+  opacity: 0.72;
 }
 
 .card:hover {
-  border-color: rgba(201, 162, 39, 0.35);
-  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.35);
+  border-color: rgba(201, 162, 39, 0.55);
+  box-shadow:
+    0 24px 56px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(201, 162, 39, 0.15),
+    0 8px 24px rgba(201, 162, 39, 0.08);
+  transform: translateY(-4px) scale(1.02);
 }
 
 .card > * {
   position: relative;
-  z-index: 1;
+  z-index: 2;
 }
 
-.card--service-vinyl {
-  background-image: url("assets/services/service-vinyl-plotter-cutting.png");
-}
-
-.card--service-3d {
-  background-image: url("assets/services/service-3d-printing.png");
-}
-
-.card--service-laser {
-  background-image: url("assets/services/service-laser-engraving.png");
-}
-
-.card--service-promo {
-  background-image: url("assets/services/service-promotional-products.png");
-}
-
-.card--service-auto {
-  background-image: url("assets/services/service-automotive-accessories.png");
-}
-
-.card--service-vehicle {
-  background-image: url("assets/services/service-vehicle-branding.png");
-}
+.card--service-vinyl      { --card-bg: url("assets/services/service-vinyl-plotter-cutting.png"); }
+.card--service-sublimation{ --card-bg: url("assets/services/service-sublimation.png"); }
+.card--service-3d         { --card-bg: url("assets/services/service-3d-printing.png"); }
+.card--service-laser      { --card-bg: url("assets/services/service-laser-engraving.png"); }
+.card--service-promo      { --card-bg: url("assets/services/service-promotional-products.png"); }
+.card--service-auto       { --card-bg: url("assets/services/service-automotive-accessories.png"); }
+.card--service-vehicle    { --card-bg: url("assets/services/service-vehicle-branding.png"); }
 
 .card h3 {
   margin: 0 0 0.55rem;
@@ -713,6 +784,104 @@ button.btn-primary:hover {
   font-size: 0.98rem;
   line-height: 1.55;
   color: rgba(244, 244, 245, 0.88);
+}
+
+/* ── Why us stats ──────────────────────────────────────────────── */
+
+.why-us {
+  background: var(--bg);
+  border-top: 1px solid var(--border);
+}
+
+.why-us-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  text-align: center;
+}
+
+.why-us-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 2rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-elevated);
+  transition: border-color 0.3s ease, transform 0.3s ease;
+}
+
+.why-us-stat:hover {
+  border-color: rgba(201, 162, 39, 0.4);
+  transform: translateY(-3px);
+}
+
+.why-us-number {
+  font-family: var(--font-heading);
+  font-size: 2.4rem;
+  font-weight: 800;
+  color: var(--gold);
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.why-us-plus {
+  font-size: 1.6rem;
+}
+
+.why-us-label {
+  font-size: 0.92rem;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+@media (max-width: 700px) {
+  .why-us-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 400px) {
+  .why-us-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── About benefits ────────────────────────────────────────────── */
+
+.about-benefits {
+  list-style: none;
+  margin: 1.5rem 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem 2rem;
+}
+
+.about-benefit {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  font-size: 0.98rem;
+  color: rgba(244, 244, 245, 0.85);
+}
+
+.about-benefit-icon {
+  flex-shrink: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--gold);
+  margin-top: 0.1em;
+}
+
+@media (max-width: 560px) {
+  .about-benefits {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* Gallery */
@@ -733,6 +902,13 @@ button.btn-primary:hover {
   overflow: hidden;
   border: 1px solid var(--border);
   background: var(--bg-elevated);
+  transition: border-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.gallery-item:hover {
+  border-color: rgba(201, 162, 39, 0.35);
+  transform: translateY(-3px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
 }
 
 .gallery-item img {
@@ -743,11 +919,18 @@ button.btn-primary:hover {
   object-fit: cover;
   object-position: center;
   vertical-align: middle;
+  transition: transform 0.35s ease, filter 0.35s ease;
+}
+
+.gallery-item:hover img {
+  transform: scale(1.04);
+  filter: brightness(1.08);
 }
 
 .gallery-open {
   display: block;
   width: 100%;
+  overflow: hidden;
   color: inherit;
   text-decoration: none;
   cursor: zoom-in;
@@ -879,11 +1062,10 @@ body.lightbox-open {
 }
 
 .contact-list li {
-  display: grid;
-  grid-template-columns: 120px 1fr;
-  gap: 0.75rem 1rem;
-  align-items: baseline;
-  padding: 0.65rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 0.85rem 0;
 }
 
 .contact-list li + li {
@@ -1115,6 +1297,38 @@ body.nav-open {
 }
 
 /* Тесни телефони: пълна ширина за основните бутони */
+@media (max-width: 700px) {
+  .cards {
+    grid-template-columns: 1fr;
+  }
+
+  .cards > li:last-child:nth-child(3n - 2),
+  .cards > li:last-child:nth-child(3n - 1) {
+    grid-column: auto;
+    max-width: none;
+    margin-inline: 0;
+  }
+}
+
+@media (min-width: 701px) and (max-width: 900px) {
+  .cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .cards > li:last-child:nth-child(3n - 2),
+  .cards > li:last-child:nth-child(3n - 1) {
+    grid-column: auto;
+    max-width: none;
+    margin-inline: 0;
+  }
+
+  .cards > li:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+    max-width: calc(50% - 0.575rem);
+    margin-inline: auto;
+  }
+}
+
 @media (max-width: 560px) {
   .hero-actions {
     flex-direction: column;
