@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0a0a0a" />
+  <meta name="description" content="Лазерно гравиране — какво е, видове лазери, материали и приложения. SAVOV PRO гравира ключодържатели, ароматизатори, химикалки и подаръци в Смолян." />
+  <link rel="canonical" href="https://savovpro.com/services/laser-engraving.html" />
+  <title>Лазерно Гравиране — Видове лазери и приложения | SAVOV PRO</title>
+  <link rel="icon" href="../assets/logo/logo-mark.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700&family=Montserrat:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../style.css" />
+  <style>
+    .svc-hero {
+      background: linear-gradient(135deg, #0f0f10 0%, #0d1209 100%);
+      padding: 5rem 0 3.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .svc-hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: url('../assets/services/service-laser-engraving.png') center/cover no-repeat;
+      opacity: 0.18;
+      filter: saturate(0.5);
+    }
+    .svc-hero-inner { position: relative; max-width: 780px; }
+    .svc-breadcrumb {
+      font-size: 0.8rem;
+      color: rgba(244,244,245,0.45);
+      margin-bottom: 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .svc-breadcrumb a { color: var(--gold, #c9a227); text-decoration: none; }
+    .svc-breadcrumb a:hover { text-decoration: underline; }
+    .svc-hero h1 {
+      font-family: var(--font-heading, 'Montserrat', sans-serif);
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 700;
+      color: #fff;
+      margin: 0 0 1rem;
+      line-height: 1.15;
+    }
+    .svc-hero h1 span { color: var(--gold, #c9a227); }
+    .svc-hero-lead {
+      font-size: 1.1rem;
+      color: rgba(244,244,245,0.72);
+      line-height: 1.7;
+      margin: 0 0 2rem;
+      max-width: 620px;
+    }
+    .svc-body { padding: 4rem 0; }
+    .svc-section { margin-bottom: 4rem; }
+    .svc-section h2 {
+      font-family: var(--font-heading, 'Montserrat', sans-serif);
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #fff;
+      margin: 0 0 0.5rem;
+    }
+    .svc-section h2 .accent { color: var(--gold, #c9a227); }
+    .svc-divider {
+      width: 48px; height: 3px;
+      background: var(--gold, #c9a227);
+      border-radius: 2px;
+      margin-bottom: 1.5rem;
+    }
+    .svc-section p {
+      font-size: 1rem;
+      line-height: 1.8;
+      color: rgba(244,244,245,0.75);
+      margin: 0 0 1rem;
+      max-width: 740px;
+    }
+    .svc-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 1.25rem;
+      margin-top: 1.5rem;
+    }
+    .svc-card {
+      background: var(--bg-elevated, #141414);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 14px;
+      padding: 1.5rem 1.25rem;
+      transition: border-color 0.2s;
+    }
+    .svc-card:hover { border-color: rgba(201,162,39,0.35); }
+    .svc-card-icon { font-size: 1.8rem; margin-bottom: 0.75rem; display: block; }
+    .svc-card h3 { font-size: 1rem; font-weight: 700; color: #fff; margin: 0 0 0.5rem; }
+    .svc-card p { font-size: 0.88rem; color: rgba(244,244,245,0.62); line-height: 1.6; margin: 0; }
+    .svc-list {
+      list-style: none;
+      padding: 0;
+      margin: 1rem 0 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+    .svc-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.65rem;
+      font-size: 0.97rem;
+      color: rgba(244,244,245,0.75);
+      line-height: 1.6;
+    }
+    .svc-list li::before {
+      content: '▸';
+      color: var(--gold, #c9a227);
+      flex-shrink: 0;
+      margin-top: 0.05em;
+    }
+    .svc-cta {
+      background: linear-gradient(135deg, rgba(201,162,39,0.12) 0%, rgba(201,162,39,0.04) 100%);
+      border: 1px solid rgba(201,162,39,0.25);
+      border-radius: 18px;
+      padding: 3rem 2.5rem;
+      text-align: center;
+      margin-top: 3rem;
+    }
+    .svc-cta h2 { font-family: var(--font-heading, 'Montserrat', sans-serif); font-size: 1.8rem; color: #fff; margin: 0 0 0.75rem; }
+    .svc-cta p { color: rgba(244,244,245,0.65); margin: 0 auto 2rem; max-width: 480px; line-height: 1.7; }
+    .svc-cta-btns { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+    .svc-img { width: 100%; border-radius: 14px; object-fit: cover; height: 320px; display: block; margin: 1.5rem 0; border: 1px solid rgba(255,255,255,0.06); }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: start; }
+    .laser-type-table { width: 100%; border-collapse: collapse; margin-top: 1.25rem; font-size: 0.9rem; }
+    .laser-type-table th {
+      text-align: left;
+      padding: 0.6rem 1rem;
+      background: rgba(201,162,39,0.1);
+      color: var(--gold, #c9a227);
+      font-weight: 700;
+      border-bottom: 1px solid rgba(201,162,39,0.2);
+    }
+    .laser-type-table td {
+      padding: 0.7rem 1rem;
+      color: rgba(244,244,245,0.72);
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      vertical-align: top;
+      line-height: 1.55;
+    }
+    .laser-type-table tr:last-child td { border-bottom: none; }
+    @media (max-width: 720px) {
+      .two-col { grid-template-columns: 1fr; }
+      .laser-type-table { display: block; overflow-x: auto; }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header-backdrop" aria-hidden="true"></div>
+    <div class="container header-inner">
+      <a class="logo-link" href="../" aria-label="SAVOV PRO — начало">
+        <img class="logo-svg" src="../assets/logo/logo-full.svg" width="140" height="62" alt="SAVOV PRO" decoding="async" />
+      </a>
+      <div class="header-contact">
+        <a class="btn btn-ghost btn-compact" href="../#contact">Контакт</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="svc-hero">
+      <div class="container">
+        <div class="svc-hero-inner">
+          <nav class="svc-breadcrumb" aria-label="Навигация">
+            <a href="../">Начало</a>
+            <span aria-hidden="true">›</span>
+            <a href="../#services">Услуги</a>
+            <span aria-hidden="true">›</span>
+            <span>Лазерно гравиране</span>
+          </nav>
+          <h1>Лазерно <span>Гравиране</span></h1>
+          <p class="svc-hero-lead">
+            Прецизно, трайно и безконтактно — лазерното гравиране нанася детайлни изображения, надписи и логота
+            директно в повърхността на материала, без химикали и без изхабяване на инструмента.
+          </p>
+          <div style="display:flex; gap:1rem; flex-wrap:wrap;">
+            <a class="btn btn-primary" href="../configurator-product.html?cat=keychains">Поръчай гравиране</a>
+            <a class="btn btn-outline" href="../#contact">Свържи се с нас</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="svc-body">
+      <div class="container">
+
+        <!-- What is it -->
+        <section class="svc-section">
+          <h2>Какво е <span class="accent">лазерно гравиране?</span></h2>
+          <div class="svc-divider"></div>
+          <div class="two-col">
+            <div>
+              <p>
+                Лазерното гравиране е процес, при който концентриран лъч светлина изпарява или промяна цвета на повърхностния слой на материала.
+                Резултатът е трайно изображение, което е устойчиво на триене, вода и химикали — за разлика от печата или стикерите.
+              </p>
+              <p>
+                Лазерната глава се управлява от компютър (CNC) и следва векторен или растерен дизайн с висока точност —
+                обикновено до 0.1 мм. Процесът е безконтактен: инструментът не докосва материала, което изключва механично натоварване и деформации.
+              </p>
+              <p>
+                Технологията е широко използвана в подарочната и рекламна индустрия, ювелирното производство, електрониката и медицинските изделия.
+              </p>
+            </div>
+            <div>
+              <img class="svc-img" src="../assets/services/service-laser-engraving.png" alt="Лазерно гравиране — SAVOV PRO" />
+            </div>
+          </div>
+        </section>
+
+        <!-- Types of lasers -->
+        <section class="svc-section">
+          <h2>Видове <span class="accent">лазери</span></h2>
+          <div class="svc-divider"></div>
+          <p>Различните видове лазери работят на различни дължини на вълната и са оптимизирани за различни материали:</p>
+          <table class="laser-type-table" aria-label="Видове лазери за гравиране">
+            <thead>
+              <tr>
+                <th>Тип лазер</th>
+                <th>Дължина на вълната</th>
+                <th>Подходящи материали</th>
+                <th>Приложения</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>CO₂</strong></td>
+                <td>10 600 nm (инфрачервен)</td>
+                <td>Дърво, кожа, акрил, плат, стъкло, хартия, MDF</td>
+                <td>Гравиране и рязане на органични материали; подаръци, табели, декорации</td>
+              </tr>
+              <tr>
+                <td><strong>Fiber (влакнест)</strong></td>
+                <td>1 064 nm (близък инфрачервен)</td>
+                <td>Метали (неръждаема стомана, алуминий, мед, злато, сребро)</td>
+                <td>Ювелирни изделия, промишлено маркиране, QR кодове върху метал</td>
+              </tr>
+              <tr>
+                <td><strong>Diode (диоден)</strong></td>
+                <td>400–500 nm (видим / UV-близък)</td>
+                <td>Дърво, кожа, PLA, анодизиран алуминий</td>
+                <td>Достъпни настолни машини за хоби и малки поръчки</td>
+              </tr>
+              <tr>
+                <td><strong>UV лазер</strong></td>
+                <td>355 nm (ултравиолетов)</td>
+                <td>Стъкло, пластмаса, PCB, хранителни продукти</td>
+                <td>Студено гравиране без термично увреждане — фина маркировка</td>
+              </tr>
+              <tr>
+                <td><strong>MOPA (импулсен Fiber)</strong></td>
+                <td>1 064 nm, настраиваем импулс</td>
+                <td>Неръждаема стомана (цветно гравиране), анодизиран алуминий</td>
+                <td>Пълноцветна маркировка на метали без бои или покрития</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <!-- Engraving vs Cutting vs Marking -->
+        <section class="svc-section">
+          <h2>Гравиране, рязане или <span class="accent">маркиране?</span></h2>
+          <div class="svc-divider"></div>
+          <div class="svc-cards">
+            <div class="svc-card">
+              <span class="svc-card-icon">🔲</span>
+              <h3>Гравиране</h3>
+              <p>Лазерът изпарява слой от повърхността, оставяйки видим релеф. Резултатът е тактилно усещане — можете да усетите изображението с пръст.</p>
+            </div>
+            <div class="svc-card">
+              <span class="svc-card-icon">✂️</span>
+              <h3>Рязане</h3>
+              <p>Лазерът прорязва материала насквозь. Използва се за изрязване на форми от шперплат, акрил или кожа с прецизни контури.</p>
+            </div>
+            <div class="svc-card">
+              <span class="svc-card-icon">🏷️</span>
+              <h3>Маркиране</h3>
+              <p>Повърхностно потъмняване или промяна на цвета без дълбочина на гравиране. Типично за метали — QR кодове, серийни номера, баркодове.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Materials -->
+        <section class="svc-section">
+          <h2>Върху какви <span class="accent">материали работим?</span></h2>
+          <div class="svc-divider"></div>
+          <ul class="svc-list">
+            <li><strong>Дърво и МДФ</strong> — ключодържатели, рамки, кутии, декоративни табели и знаци</li>
+            <li><strong>Акрил (PMMA)</strong> — нощни лампи, табели с вътрешно осветление, декоративни предмети</li>
+            <li><strong>Кожа</strong> — ремъци, портфейли, тефтери — гравиране с топъл тон и естествен вид</li>
+            <li><strong>Анодизиран алуминий</strong> — ключодържатели, флашки, лаптопи и телефонни кейсове</li>
+            <li><strong>Стъкло</strong> — бутилки, чаши и плоски стъкла — матов ефект с висока прецизност</li>
+            <li><strong>Неръждаема стомана</strong> — съдове, прибори и промишлени изделия</li>
+            <li><strong>Каучук и силикон</strong> — печати, шаблони и уплътнения</li>
+            <li><strong>Плат и кожени изделия</strong> — персонализирани дрехи и аксесоари</li>
+          </ul>
+        </section>
+
+        <!-- Applications -->
+        <section class="svc-section">
+          <h2>Приложения и <span class="accent">примери</span></h2>
+          <div class="svc-divider"></div>
+          <div class="svc-cards">
+            <div class="svc-card">
+              <span class="svc-card-icon">🎁</span>
+              <h3>Персонализирани подаръци</h3>
+              <p>Ключодържатели с имена, снимки или надписи. Ароматизатори за кола. Химикалки с логото на фирмата.</p>
+            </div>
+            <div class="svc-card">
+              <span class="svc-card-icon">🏢</span>
+              <h3>Бизнес маркетинг</h3>
+              <p>Корпоративни подаръци и промоционални артикули с лого — трайни и представителни.</p>
+            </div>
+            <div class="svc-card">
+              <span class="svc-card-icon">🪧</span>
+              <h3>Табели и знаци</h3>
+              <p>Именни табели, указатели, врати и офис обозначения от акрил, дърво или метал.</p>
+            </div>
+            <div class="svc-card">
+              <span class="svc-card-icon">💍</span>
+              <h3>Ювелирни изделия</h3>
+              <p>Персонализиране на пръстени, гривни и медальони с имена, дати или координати.</p>
+            </div>
+            <div class="svc-card">
+              <span class="svc-card-icon">🏆</span>
+              <h3>Трофеи и награди</h3>
+              <p>Персонализирани купи, плакети и медали за спортни и корпоративни събития.</p>
+            </div>
+            <div class="svc-card">
+              <span class="svc-card-icon">📦</span>
+              <h3>Опаковки</h3>
+              <p>Кутии от шперплат или картон с лазерно гравирано лого за луксозни продукти и подаръчни комплекти.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- SAVOV PRO offering -->
+        <section class="svc-section">
+          <h2>Какво предлага <span class="accent">SAVOV PRO?</span></h2>
+          <div class="svc-divider"></div>
+          <p>Специализираме се в гравиране на дърво, МДФ, кожа и анодизиран алуминий. Изработваме предимно персонализирани подаръци за частни лица и корпоративни клиенти:</p>
+          <ul class="svc-list">
+            <li>Дървени ключодържатели с имена, дати и изображения</li>
+            <li>Ароматизатори за автомобил с персонализиран дизайн</li>
+            <li>Химикалки с лазерно гравирано лого или надпис</li>
+            <li>Декоративни табели и знаци за дома и офиса</li>
+            <li>Корпоративни подаръчни комплекти с лого</li>
+          </ul>
+          <p style="margin-top:1.25rem;">
+            Изпратете ни вашето изображение или лого в PNG/SVG формат и ние ще го обработим за гравиране. Минимална поръчка — 1 бройка.
+          </p>
+        </section>
+
+        <div class="svc-cta">
+          <h2>Искате персонализирано гравиране?</h2>
+          <p>Изпратете ни дизайна и материала — ще ви дадем оферта за 24 часа.</p>
+          <div class="svc-cta-btns">
+            <a class="btn btn-primary" href="../configurator-product.html?cat=keychains">Конфигурирай продукт</a>
+            <a class="btn btn-outline" href="https://wa.me/359884121606?text=Здравейте%2C%20искам%20да%20направя%20запитване%20за%20лазерно%20гравиране." target="_blank" rel="noopener noreferrer">WhatsApp запитване</a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <p class="footer-copy">© 2025 SAVOV PRO Ltd. Всички права запазени.</p>
+      <nav class="footer-legal" aria-label="Правна навигация">
+        <a href="../privacy.html">Поверителност</a>
+        <a href="../terms.html">Условия</a>
+        <a href="../#contact">Контакт</a>
+      </nav>
+    </div>
+  </footer>
+</body>
+</html>

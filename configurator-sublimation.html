@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0a0a0a" />
+  <meta name="description" content="Персонализирай своя сублимационен продукт онлайн — чаши, бутилки и магнити с твой дизайн. SAVOV PRO." />
+  <link rel="canonical" href="https://savovpro.com/configurator-sublimation.html" />
+  <title>3D Конфигуратор Сублимация | SAVOV PRO</title>
+  <link rel="icon" href="assets/logo/logo-mark.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* ── Layout ─────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; }
+
+    .sub-cfg-wrap {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      gap: 0;
+      height: calc(100dvh - var(--header-h, 64px));
+      overflow: hidden;
+    }
+
+    /* ── Side panel ─────────────────────────────────────────────── */
+    .sub-panel {
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-elevated, #141414);
+      border-right: 1px solid var(--border, rgba(255,255,255,0.08));
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+
+    .sub-panel-inner {
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      flex: 1;
+    }
+
+    .sub-section {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+
+    .sub-section-title {
+      font-family: var(--font-heading, 'Rajdhani', sans-serif);
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--gold, #c9a227);
+      margin: 0;
+    }
+
+    /* Product tabs */
+    .product-tabs {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .product-tab {
+      flex: 1;
+      min-width: 0;
+      padding: 0.55rem 0.5rem;
+      border: 1px solid var(--border, rgba(255,255,255,0.08));
+      border-radius: 8px;
+      background: transparent;
+      color: var(--muted, rgba(244,244,245,0.6));
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s, background 0.2s;
+      text-align: center;
+    }
+
+    .product-tab.active,
+    .product-tab:hover {
+      border-color: var(--gold, #c9a227);
+      color: var(--gold, #c9a227);
+      background: rgba(201,162,39,0.07);
+    }
+
+    /* Color rows */
+    .color-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .color-row label {
+      font-size: 0.82rem;
+      color: rgba(244,244,245,0.7);
+      flex: 1;
+    }
+
+    .color-row input[type="color"] {
+      width: 36px;
+      height: 28px;
+      border: 1px solid var(--border, rgba(255,255,255,0.08));
+      border-radius: 6px;
+      background: none;
+      cursor: pointer;
+      padding: 2px;
+    }
+
+    /* Upload area */
+    .upload-area {
+      border: 2px dashed var(--border, rgba(255,255,255,0.12));
+      border-radius: 10px;
+      padding: 1.25rem;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .upload-area:hover,
+    .upload-area.drag-over {
+      border-color: var(--gold, #c9a227);
+      background: rgba(201,162,39,0.04);
+    }
+
+    .upload-area p {
+      margin: 0.35rem 0 0;
+      font-size: 0.78rem;
+      color: var(--muted, rgba(244,244,245,0.5));
+    }
+
+    .upload-area svg {
+      color: var(--gold, #c9a227);
+    }
+
+    #img-file { display: none; }
+
+    /* Sliders */
+    .slider-row {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+
+    .slider-row label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      color: rgba(244,244,245,0.65);
+    }
+
+    .slider-row input[type="range"] {
+      width: 100%;
+      accent-color: var(--gold, #c9a227);
+      cursor: pointer;
+    }
+
+    /* Text controls */
+    .sub-input {
+      width: 100%;
+      padding: 0.55rem 0.75rem;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border, rgba(255,255,255,0.08));
+      border-radius: 8px;
+      color: var(--text, #f4f4f5);
+      font-size: 0.88rem;
+      transition: border-color 0.2s;
+    }
+
+    .sub-input:focus {
+      outline: none;
+      border-color: rgba(201,162,39,0.4);
+    }
+
+    select.sub-input {
+      cursor: pointer;
+    }
+
+    /* Remove image button */
+    .btn-ghost-sm {
+      font-size: 0.78rem;
+      padding: 0.35rem 0.65rem;
+      border: 1px solid var(--border, rgba(255,255,255,0.1));
+      border-radius: 6px;
+      background: none;
+      color: var(--muted, rgba(244,244,245,0.6));
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+      align-self: flex-start;
+    }
+
+    .btn-ghost-sm:hover {
+      border-color: rgba(255,80,80,0.5);
+      color: rgba(255,100,100,0.9);
+    }
+
+    /* Action buttons at bottom */
+    .sub-actions {
+      padding: 1rem 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      border-top: 1px solid var(--border, rgba(255,255,255,0.08));
+    }
+
+    .sub-actions .btn {
+      width: 100%;
+      justify-content: center;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* ── 3D Canvas area ──────────────────────────────────────────── */
+    .sub-viewport {
+      position: relative;
+      background: #e8e8ea;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #three-canvas {
+      display: block;
+      width: 100% !important;
+      height: 100% !important;
+      touch-action: none;
+    }
+
+    .sub-viewport-hint {
+      position: absolute;
+      bottom: 1rem;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.75rem;
+      color: rgba(0,0,0,0.35);
+      pointer-events: none;
+      white-space: nowrap;
+    }
+
+    .sub-watermark {
+      position: absolute;
+      bottom: 1rem;
+      right: 1rem;
+      font-size: 0.65rem;
+      color: rgba(160,120,20,0.45);
+      font-family: var(--font-heading, 'Rajdhani', sans-serif);
+      letter-spacing: 0.1em;
+      pointer-events: none;
+    }
+
+    /* ── Image preview strip ─────────────────────────────────────── */
+    .img-preview-wrap {
+      display: none;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .img-preview-wrap.has-image {
+      display: flex;
+    }
+
+    .img-preview {
+      width: 48px;
+      height: 48px;
+      object-fit: contain;
+      border-radius: 6px;
+      border: 1px solid var(--border, rgba(255,255,255,0.1));
+      background: rgba(255,255,255,0.04);
+    }
+
+    /* ── Mobile ─────────────────────────────────────────────────── */
+    @media (max-width: 720px) {
+      .sub-cfg-wrap {
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr auto;
+        height: auto;
+        min-height: calc(100dvh - 56px);
+      }
+
+      .sub-viewport {
+        order: -1;
+        height: 55vw;
+        min-height: 220px;
+      }
+
+      .sub-panel {
+        border-right: none;
+        border-top: 1px solid var(--border, rgba(255,255,255,0.08));
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header-backdrop" aria-hidden="true"></div>
+    <div class="container header-inner">
+      <a class="logo-link" href="index.html" aria-label="SAVOV PRO — начало">
+        <img class="logo-svg" src="assets/logo/logo-full.svg" width="140" height="62" alt="SAVOV PRO" decoding="async" />
+      </a>
+      <div class="header-contact">
+        <a class="btn btn-ghost btn-compact" href="index.html#contact">← Към сайта</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="sub-cfg-wrap">
+
+      <!-- ── Side panel ── -->
+      <aside class="sub-panel" aria-label="Настройки на дизайна">
+        <div class="sub-panel-inner">
+
+          <!-- Product selector -->
+          <div class="sub-section">
+            <h2 class="sub-section-title">Продукт</h2>
+            <div class="product-tabs" role="group" aria-label="Избор на продукт">
+              <button class="product-tab active" data-product="mug330">Чаша 330мл</button>
+              <button class="product-tab" data-product="mug420">Чаша 420мл</button>
+              <button class="product-tab" data-product="bottle">Бутилка</button>
+            </div>
+          </div>
+
+          <!-- Colors -->
+          <div class="sub-section">
+            <h2 class="sub-section-title">Цветове</h2>
+            <div class="color-row">
+              <label for="color-body">Тяло</label>
+              <input type="color" id="color-body" value="#ffffff" />
+            </div>
+            <div class="color-row">
+              <label for="color-handle">Дръжка</label>
+              <input type="color" id="color-handle" value="#ffffff" />
+            </div>
+            <div class="color-row">
+              <label for="color-inner">Вътре</label>
+              <input type="color" id="color-inner" value="#ffffff" />
+            </div>
+          </div>
+
+          <!-- Image upload -->
+          <div class="sub-section">
+            <h2 class="sub-section-title">Изображение</h2>
+            <div class="upload-area" id="upload-area" role="button" tabindex="0" aria-label="Качи изображение">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+              <p>Кликни или пусни PNG / JPG<br><small>макс. 10 MB</small></p>
+              <input type="file" id="img-file" accept="image/png,image/jpeg,image/webp" />
+            </div>
+            <div class="img-preview-wrap" id="img-preview-wrap">
+              <img class="img-preview" id="img-preview" src="" alt="Преглед" />
+              <button class="btn-ghost-sm" id="btn-remove-img">✕ Премахни</button>
+            </div>
+            <div class="slider-row">
+              <label>Размер <span id="img-size-val">60</span>%</label>
+              <input type="range" id="img-size" min="5" max="100" value="60" />
+            </div>
+            <div class="slider-row">
+              <label>Позиция X <span id="img-x-val">50</span>%</label>
+              <input type="range" id="img-x" min="0" max="100" value="50" />
+            </div>
+            <div class="slider-row">
+              <label>Позиция Y <span id="img-y-val">50</span>%</label>
+              <input type="range" id="img-y" min="0" max="100" value="50" />
+            </div>
+          </div>
+
+          <!-- Text -->
+          <div class="sub-section">
+            <h2 class="sub-section-title">Текст</h2>
+            <input class="sub-input" type="text" id="text-input" placeholder="Напиши текст тук…" maxlength="60" />
+            <select class="sub-input" id="text-font">
+              <option value="Arial">Arial</option>
+              <option value="Georgia">Georgia</option>
+              <option value="'Courier New'">Courier New</option>
+              <option value="Impact">Impact</option>
+              <option value="Verdana">Verdana</option>
+              <option value="'Times New Roman'">Times New Roman</option>
+            </select>
+            <div class="slider-row">
+              <label>Размер <span id="text-size-val">36</span>px</label>
+              <input type="range" id="text-size" min="12" max="120" value="36" />
+            </div>
+            <div class="color-row">
+              <label for="text-color">Цвят</label>
+              <input type="color" id="text-color" value="#1a1a1a" />
+            </div>
+            <div class="slider-row">
+              <label>Позиция X <span id="text-x-val">50</span>%</label>
+              <input type="range" id="text-x" min="0" max="100" value="50" />
+            </div>
+            <div class="slider-row">
+              <label>Позиция Y <span id="text-y-val">65</span>%</label>
+              <input type="range" id="text-y" min="0" max="100" value="65" />
+            </div>
+          </div>
+
+        </div><!-- /sub-panel-inner -->
+
+        <!-- Action buttons -->
+        <div class="sub-actions">
+          <button class="btn btn-ghost" id="btn-download">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Свали PNG mockup
+          </button>
+          <a class="btn btn-primary" id="btn-whatsapp" href="#" target="_blank" rel="noopener noreferrer">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>
+            Изпрати в WhatsApp
+          </a>
+          <a class="btn btn-outline" id="btn-email" href="#">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            Изпрати на Email
+          </a>
+        </div>
+      </aside>
+
+      <!-- ── 3D Viewport ── -->
+      <div class="sub-viewport">
+        <canvas id="three-canvas"></canvas>
+        <p class="sub-viewport-hint">Задръж и влачи за завъртане • Скролирай за zoom</p>
+        <span class="sub-watermark">SAVOV PRO</span>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Three.js from CDN -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
+    }
+  }
+  </script>
+
+  <script type="module">
+    import { state, PHONE, EMAIL } from './assets/js/configurator/sublimation/state.js';
+    import { drawTexture }         from './assets/js/configurator/sublimation/texture.js';
+    import { renderer, controls, startRenderLoop } from './assets/js/configurator/sublimation/scene.js';
+    import { buildMug, updateColors }              from './assets/js/configurator/sublimation/mug-builder.js';
+
+    /* ── Init ───────────────────────────────────────────────── */
+    buildMug('mug330');
+    drawTexture();
+    startRenderLoop();
+
+    /* ── UI wiring ──────────────────────────────────────────── */
+
+    document.querySelectorAll('.product-tab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.product-tab').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        state.product = btn.dataset.product;
+        buildMug(state.product);
+        drawTexture();
+      });
+    });
+
+    document.getElementById('color-body').addEventListener('input', e => {
+      state.bodyColor = e.target.value;
+      updateColors();
+      drawTexture();
+    });
+    document.getElementById('color-handle').addEventListener('input', e => {
+      state.handleColor = e.target.value;
+      updateColors();
+    });
+    document.getElementById('color-inner').addEventListener('input', e => {
+      state.innerColor = e.target.value;
+      updateColors();
+    });
+
+    /* Image upload */
+    const uploadArea  = document.getElementById('upload-area');
+    const fileInput   = document.getElementById('img-file');
+    const previewWrap = document.getElementById('img-preview-wrap');
+    const previewImg  = document.getElementById('img-preview');
+
+    uploadArea.addEventListener('click', () => fileInput.click());
+    uploadArea.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') fileInput.click(); });
+    uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.classList.add('drag-over'); });
+    uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('drag-over'));
+    uploadArea.addEventListener('drop', e => {
+      e.preventDefault();
+      uploadArea.classList.remove('drag-over');
+      const file = e.dataTransfer.files[0];
+      if (file) loadImageFile(file);
+    });
+    fileInput.addEventListener('change', () => { if (fileInput.files[0]) loadImageFile(fileInput.files[0]); });
+
+    function loadImageFile(file) {
+      if (file.size > 10 * 1024 * 1024) { alert('Файлът е прекалено голям (макс 10 MB)'); return; }
+      const reader = new FileReader();
+      reader.onload = ev => {
+        const img = new Image();
+        img.onload = () => {
+          state.userImage = img;
+          previewImg.src  = ev.target.result;
+          previewWrap.classList.add('has-image');
+          drawTexture();
+        };
+        img.src = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    document.getElementById('btn-remove-img').addEventListener('click', () => {
+      state.userImage = null;
+      fileInput.value = '';
+      previewWrap.classList.remove('has-image');
+      previewImg.src = '';
+      drawTexture();
+    });
+
+    function wireSlider(id, valId, stateKey, scale = 1) {
+      const el = document.getElementById(id);
+      const vl = document.getElementById(valId);
+      el.addEventListener('input', () => {
+        const v = parseFloat(el.value);
+        vl.textContent    = Math.round(v);
+        state[stateKey]   = v / scale;
+        drawTexture();
+      });
+    }
+
+    wireSlider('img-size',  'img-size-val',  'imgSize',  100);
+    wireSlider('img-x',     'img-x-val',     'imgX',     100);
+    wireSlider('img-y',     'img-y-val',     'imgY',     100);
+    wireSlider('text-size', 'text-size-val', 'textSize',   1);
+    wireSlider('text-x',    'text-x-val',    'textX',    100);
+    wireSlider('text-y',    'text-y-val',    'textY',    100);
+
+    document.getElementById('text-input').addEventListener('input', e => { state.text = e.target.value; drawTexture(); });
+    document.getElementById('text-font').addEventListener('change',  e => { state.font = e.target.value; drawTexture(); });
+    document.getElementById('text-color').addEventListener('input',  e => { state.textColor = e.target.value; drawTexture(); });
+
+    document.getElementById('btn-download').addEventListener('click', () => {
+      controls.autoRotate = false;
+      const link = document.createElement('a');
+      link.href     = renderer.domElement.toDataURL('image/png');
+      link.download = 'savovpro-sublimation-design.png';
+      link.click();
+    });
+
+    document.getElementById('btn-whatsapp').addEventListener('click', e => {
+      e.preventDefault();
+      const product = document.querySelector('.product-tab.active').textContent;
+      const txt     = state.text    ? `\nТекст: "${state.text}"` : '';
+      const hasImg  = state.userImage ? '\nИзображение: да (прилагам PNG)' : '';
+      const msg     = `Здравейте! Искам да поръчам персонализиран сублимационен продукт:\n\nПродукт: ${product}\nЦвят: ${state.bodyColor}${txt}${hasImg}\n\nМоля, изпратете ми оферта. Прилагам PNG mockup.`;
+      window.open(`https://wa.me/${PHONE.replace(/\D/g, '')}?text=${encodeURIComponent(msg)}`, '_blank');
+    });
+
+    document.getElementById('btn-email').addEventListener('click', e => {
+      e.preventDefault();
+      const product = document.querySelector('.product-tab.active').textContent;
+      const txt     = state.text    ? `\nТекст: "${state.text}"` : '';
+      const hasImg  = state.userImage ? '\nИзображение: прилагам PNG' : '';
+      const body    = `Здравейте,\n\nИскам да поръчам персонализиран сублимационен продукт:\n\nПродукт: ${product}\nЦвят: ${state.bodyColor}${txt}${hasImg}\n\nПрилагам PNG mockup.\n\nПоздрави`;
+      window.location.href = `mailto:${EMAIL}?subject=Поръчка%20сублимация%20—%20SAVOV%20PRO&body=${encodeURIComponent(body)}`;
+    });
+  </script>
+</body>
+</html>

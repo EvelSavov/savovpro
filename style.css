@@ -704,6 +704,10 @@ a.card:focus-visible {
   z-index: 1;
 }
 
+.card--service-sublimation {
+  background-image: url("assets/services/service-sublimation.png");
+}
+
 .card--service-vinyl {
   background-image: url("assets/services/service-vinyl-plotter-cutting.png");
 }
