@@ -93,6 +93,32 @@
         window.trackEvent('order_click_email');
       }
 
+      /* Phone number click */
+      var phoneLink = el.closest && el.closest('a[href^="tel:"]');
+      if (!phoneLink && el.tagName === 'A' && el.href && el.href.indexOf('tel:') === 0) {
+        phoneLink = el;
+      }
+      if (phoneLink) {
+        window.trackEvent('phone_click', { phone: phoneLink.href.replace('tel:', '') });
+      }
+
+      /* Social media link click */
+      var socialLink = el.closest && el.closest('a[href*="facebook.com"], a[href*="instagram.com"], a[href*="tiktok.com"]');
+      if (!socialLink && el.tagName === 'A') {
+        if (el.href && (el.href.indexOf('facebook.com') !== -1 ||
+                        el.href.indexOf('instagram.com') !== -1 ||
+                        el.href.indexOf('tiktok.com') !== -1)) {
+          socialLink = el;
+        }
+      }
+      if (socialLink) {
+        var network = 'unknown';
+        if (socialLink.href.indexOf('facebook.com') !== -1)  network = 'facebook';
+        if (socialLink.href.indexOf('instagram.com') !== -1) network = 'instagram';
+        if (socialLink.href.indexOf('tiktok.com') !== -1)    network = 'tiktok';
+        window.trackEvent('social_click', { network: network });
+      }
+
       /* Configurator download button */
       if (el.id === 'kc-download-order' || el.id === 'st-download' ||
           el.closest && el.closest('#kc-download-order, #st-download')) {
@@ -118,6 +144,35 @@
     }, true);
   }
 
+  /* ── Scroll depth — section visibility tracking ──────────────── */
+
+  function attachScrollTracking() {
+    if (!window.IntersectionObserver) return;
+
+    var sections = [
+      { selector: '#services', label: 'Услуги' },
+      { selector: '#gallery',  label: 'Галерия' },
+      { selector: '#about',    label: 'За нас' },
+      { selector: '#contact',  label: 'Контакт' },
+    ];
+
+    var seen = {};
+
+    var observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting && !seen[entry.target.id]) {
+          seen[entry.target.id] = true;
+          window.trackEvent('section_view', { section: entry.target.id });
+        }
+      });
+    }, { threshold: 0.3 });
+
+    sections.forEach(function (s) {
+      var el = document.querySelector(s.selector);
+      if (el) observer.observe(el);
+    });
+  }
+
   /* ── Init ──────────────────────────────────────────────────────── */
 
   function init() {
@@ -125,6 +180,7 @@
     loadClarity();
     loadGA4();
     attachAutoEvents();
+    attachScrollTracking();
   }
 
   /**
@@ -134,6 +190,7 @@
     loadClarity();
     loadGA4();
     attachAutoEvents();
+    attachScrollTracking();
   };
 
   /* Fire immediately if consent was already given in a previous visit */
