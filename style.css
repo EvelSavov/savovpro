@@ -791,33 +791,13 @@ a.card:focus-visible {
   z-index: 2;
 }
 
-.card--service-sublimation {
-  background-image: url("assets/services/service-sublimation.png");
-}
-
-.card--service-vinyl {
-  background-image: url("assets/services/service-vinyl-plotter-cutting.png");
-}
-
-.card--service-3d {
-  background-image: url("assets/services/service-3d-printing.png");
-}
-
-.card--service-laser {
-  background-image: url("assets/services/service-laser-engraving.png");
-}
-
-.card--service-promo {
-  background-image: url("assets/services/service-promotional-products.png");
-}
-
-.card--service-auto {
-  background-image: url("assets/services/service-automotive-accessories.png");
-}
-
-.card--service-vehicle {
-  background-image: url("assets/services/service-vehicle-branding.png");
-}
+.card--service-sublimation { --card-bg: url("assets/services/service-sublimation.png"); }
+.card--service-vinyl       { --card-bg: url("assets/services/service-vinyl-plotter-cutting.png"); }
+.card--service-3d          { --card-bg: url("assets/services/service-3d-printing.png"); }
+.card--service-laser       { --card-bg: url("assets/services/service-laser-engraving.png"); }
+.card--service-promo       { --card-bg: url("assets/services/service-promotional-products.png"); }
+.card--service-auto        { --card-bg: url("assets/services/service-automotive-accessories.png"); }
+.card--service-vehicle     { --card-bg: url("assets/services/service-vehicle-branding.png"); }
 
 .card h3 {
   margin: 0 0 0.55rem;
