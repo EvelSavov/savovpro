@@ -10,7 +10,8 @@
     "test:report": "playwright show-report",
     "build:vendor-potrace": "esbuild node_modules/@cadit-app/potrace-ts/dist/index.js --bundle --format=iife --global-name=PotraceTS --outfile=assets/js/vendor/potrace-ts.js",
     "build:vendor-vtracer": "cp node_modules/vtracer-webapp/vtracer_webapp_bg.wasm assets/js/vendor/vtracer_webapp_bg.wasm && esbuild node_modules/vtracer-webapp/vtracer_webapp_bg.js --bundle --format=iife --global-name=VTracerBg --outfile=assets/js/vendor/vtracer-webapp-bg.js",
-    "build:fonts": "bash scripts/build-configurator-fonts.sh"
+    "build:fonts": "bash scripts/build-configurator-fonts.sh",
+    "build:services": "python3 scripts/build-services.py"
   },
   "devDependencies": {
     "@cadit-app/potrace-ts": "^1.3.0",
