@@ -65,6 +65,17 @@ window.CONFIGURATOR_CATEGORIES = [
     comingSoon: false,
   },
   {
+    id: 'letter-lightbox',
+    title: '3D Буква с Надпис',
+    description: 'LED lightbox буква с персонализирано вградено име — изтегли готов STL файл.',
+    metaDescription: '3D LED lightbox буква с вградено персонализирано е — онлайн конфигуратор за 3D печат. SAVOV PRO.',
+    h1: '3D Буква с Надпис — LED Lightbox конфигуратор',
+    image: 'assets/services/heroes/3d-printing.jpg',
+    page: 'configurator-letter.html',
+    engine: 'letter-lightbox',
+    comingSoon: false,
+  },
+  {
     id: 'stickers',
     title: 'Стикери',
     description: 'Текстови стикери или собствен SVG дизайн с избор на размер.',

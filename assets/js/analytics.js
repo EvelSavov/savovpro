@@ -11,6 +11,11 @@
 (function () {
   'use strict';
 
+  // Never track on localhost / dev environments
+  var host = window.location.hostname;
+  if (host === 'localhost' || host === '127.0.0.1' || host === '' ||
+      host.endsWith('.local') || host.endsWith('.test')) return;
+
   var CLARITY_ID  = 'xj5e6k6fci';
   var GA4_ID      = 'G-4L6S5VSTF2';
   var CONSENT_KEY = 'savovpro-analytics-consent';

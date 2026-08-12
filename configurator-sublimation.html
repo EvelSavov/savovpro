@@ -13,11 +13,27 @@
     /* ── Layout ─────────────────────────────────────────────────── */
     *, *::before, *::after { box-sizing: border-box; }
 
+    /* Full-bleed shell: preview fills stage | controls right rail */
+    .sub-cfg-shell {
+      display: flex;
+      flex-direction: column;
+      height: calc(100dvh - var(--header-h, 64px));
+      overflow: hidden;
+      background: #080808;
+    }
+
+    .sub-mobile-tabs,
+    .sub-mobile-cta {
+      display: none;
+    }
+
     .sub-cfg-wrap {
       display: grid;
-      grid-template-columns: 340px 1fr;
+      grid-template-columns: minmax(0, 1fr) 320px;
       gap: 0;
-      height: calc(100dvh - var(--header-h, 64px));
+      flex: 1;
+      min-height: 0;
+      padding: 0;
       overflow: hidden;
     }
 
@@ -26,9 +42,12 @@
       display: flex;
       flex-direction: column;
       background: var(--bg-elevated, #141414);
-      border-right: 1px solid var(--border, rgba(255,255,255,0.08));
+      border: none;
+      border-left: 1px solid var(--border, rgba(255,255,255,0.08));
+      border-radius: 0;
       overflow-y: auto;
       overflow-x: hidden;
+      min-height: 0;
     }
 
     .sub-panel-inner {
@@ -211,7 +230,7 @@
       gap: 0.5rem;
     }
 
-    /* ── 3D Canvas area ──────────────────────────────────────────── */
+    /* ── 3D Canvas area — full stage ─────────────────────────────── */
     .sub-viewport {
       position: relative;
       background: #e8e8ea;
@@ -219,6 +238,11 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
+      border: none;
+      border-radius: 0;
+      overflow: hidden;
+      min-height: 0;
+      height: 100%;
     }
 
     #three-canvas {
@@ -270,25 +294,94 @@
       background: rgba(255,255,255,0.04);
     }
 
-    /* ── Mobile ─────────────────────────────────────────────────── */
-    @media (max-width: 720px) {
-      .sub-cfg-wrap {
-        grid-template-columns: 1fr;
-        grid-template-rows: 1fr auto;
+    /* ── Mobile — same tab + sticky CTA pattern as other configurators ── */
+    @media (max-width: 860px) {
+      .sub-cfg-shell {
         height: auto;
-        min-height: calc(100dvh - 56px);
+        min-height: calc(100dvh - var(--header-h, 56px));
+        overflow: auto;
+        padding-bottom: calc(72px + env(safe-area-inset-bottom));
       }
 
-      .sub-viewport {
-        order: -1;
-        height: 55vw;
-        min-height: 220px;
+      .sub-mobile-tabs {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.35rem;
+        position: sticky;
+        top: 0;
+        z-index: 60;
+        margin: 0.5rem 0.65rem 0;
+        padding: 0.35rem;
+        border: 1px solid var(--border, rgba(255,255,255,0.1));
+        border-radius: 10px;
+        background: rgba(8, 8, 8, 0.94);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+      }
+
+      .sub-mobile-tab {
+        min-height: 44px;
+        padding: 0.45rem 0.35rem;
+        border: 1px solid transparent;
+        border-radius: 999px;
+        background: transparent;
+        color: rgba(255, 255, 255, 0.72);
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+
+      .sub-mobile-tab.is-active {
+        color: var(--gold, #c9a227);
+        border-color: rgba(201, 162, 39, 0.45);
+        background: rgba(201, 162, 39, 0.1);
+      }
+
+      .sub-cfg-wrap {
+        grid-template-columns: 1fr;
+        height: auto;
+        overflow: visible;
+        padding: 0;
+        gap: 0;
+      }
+
+      .sub-cfg-shell.sub-tab-design .sub-viewport {
+        height: calc(100dvh - var(--header-h, 56px) - 5.5rem - 72px);
+        min-height: 280px;
       }
 
       .sub-panel {
-        border-right: none;
-        border-top: 1px solid var(--border, rgba(255,255,255,0.08));
+        max-height: none;
+        border-left: none;
+        min-height: calc(100dvh - var(--header-h, 56px) - 5.5rem - 72px);
       }
+
+      .sub-mobile-cta {
+        display: flex;
+        position: fixed;
+        bottom: 0; left: 0; right: 0;
+        z-index: 200;
+        gap: 0.5rem;
+        padding: 0.65rem 0.85rem calc(0.65rem + env(safe-area-inset-bottom));
+        background: rgba(18, 18, 20, 0.96);
+        border-top: 1px solid var(--border, rgba(255,255,255,0.1));
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+      }
+
+      .sub-mobile-cta .btn {
+        flex: 1;
+        min-height: 48px;
+        justify-content: center;
+      }
+
+      .sub-cfg-shell.sub-tab-design .sub-panel { display: none; }
+      .sub-cfg-shell.sub-tab-edit .sub-viewport,
+      .sub-cfg-shell.sub-tab-order .sub-viewport { display: none; }
+      .sub-cfg-shell.sub-tab-edit .sub-actions { display: none; }
+      .sub-cfg-shell.sub-tab-order .sub-panel-inner { display: none; }
     }
   </style>
 </head>
@@ -306,9 +399,23 @@
   </header>
 
   <main>
+    <div class="sub-cfg-shell sub-tab-design" id="sub-shell">
+      <nav class="sub-mobile-tabs" id="sub-mobile-tabs" role="tablist" aria-label="Навигация">
+        <button type="button" role="tab" class="sub-mobile-tab is-active" data-sub-tab="design" aria-selected="true">Преглед</button>
+        <button type="button" role="tab" class="sub-mobile-tab" data-sub-tab="edit" aria-selected="false">Настройки</button>
+        <button type="button" role="tab" class="sub-mobile-tab" data-sub-tab="order" aria-selected="false">Поръчка</button>
+      </nav>
+
     <div class="sub-cfg-wrap">
 
-      <!-- ── Side panel ── -->
+      <!-- ── 3D Viewport (LEFT on desktop — unified layout) ── -->
+      <div class="sub-viewport">
+        <canvas id="three-canvas"></canvas>
+        <p class="sub-viewport-hint">Задръж и влачи за завъртане • Скролирай за zoom</p>
+        <span class="sub-watermark">SAVOV PRO</span>
+      </div>
+
+      <!-- ── Side panel (RIGHT) ── -->
       <aside class="sub-panel" aria-label="Настройки на дизайна">
         <div class="sub-panel-inner">
 
@@ -418,14 +525,13 @@
         </div>
       </aside>
 
-      <!-- ── 3D Viewport ── -->
-      <div class="sub-viewport">
-        <canvas id="three-canvas"></canvas>
-        <p class="sub-viewport-hint">Задръж и влачи за завъртане • Скролирай за zoom</p>
-        <span class="sub-watermark">SAVOV PRO</span>
-      </div>
+    </div><!-- /sub-cfg-wrap -->
 
-    </div>
+      <div class="sub-mobile-cta" aria-label="Поръчай">
+        <a class="btn btn-primary" id="btn-whatsapp-mobile" href="#" target="_blank" rel="noopener noreferrer">WhatsApp</a>
+        <button type="button" class="btn btn-outline" id="sub-tab-toggle">Настройки</button>
+      </div>
+    </div><!-- /sub-cfg-shell -->
   </main>
 
   <!-- Three.js from CDN -->
@@ -547,14 +653,17 @@
       link.click();
     });
 
-    document.getElementById('btn-whatsapp').addEventListener('click', e => {
+    function openWhatsAppOrder(e) {
       e.preventDefault();
       const product = document.querySelector('.product-tab.active').textContent;
       const txt     = state.text    ? `\nТекст: "${state.text}"` : '';
       const hasImg  = state.userImage ? '\nИзображение: да (прилагам PNG)' : '';
       const msg     = `Здравейте! Искам да поръчам персонализиран сублимационен продукт:\n\nПродукт: ${product}\nЦвят: ${state.bodyColor}${txt}${hasImg}\n\nМоля, изпратете ми оферта. Прилагам PNG mockup.`;
       window.open(`https://wa.me/${PHONE.replace(/\D/g, '')}?text=${encodeURIComponent(msg)}`, '_blank');
-    });
+    }
+
+    document.getElementById('btn-whatsapp').addEventListener('click', openWhatsAppOrder);
+    document.getElementById('btn-whatsapp-mobile').addEventListener('click', openWhatsAppOrder);
 
     document.getElementById('btn-email').addEventListener('click', e => {
       e.preventDefault();
@@ -563,6 +672,31 @@
       const hasImg  = state.userImage ? '\nИзображение: прилагам PNG' : '';
       const body    = `Здравейте,\n\nИскам да поръчам персонализиран сублимационен продукт:\n\nПродукт: ${product}\nЦвят: ${state.bodyColor}${txt}${hasImg}\n\nПрилагам PNG mockup.\n\nПоздрави`;
       window.location.href = `mailto:${EMAIL}?subject=Поръчка%20сублимация%20—%20SAVOV%20PRO&body=${encodeURIComponent(body)}`;
+    });
+
+    /* Phone tabs — same UX as sticker / engrave / letter */
+    const shell = document.getElementById('sub-shell');
+    const tabsNav = document.getElementById('sub-mobile-tabs');
+    const tabToggle = document.getElementById('sub-tab-toggle');
+    function setSubTab(tab) {
+      if (!shell) return;
+      if (tab !== 'design' && tab !== 'edit' && tab !== 'order') tab = 'design';
+      shell.classList.remove('sub-tab-design', 'sub-tab-edit', 'sub-tab-order');
+      shell.classList.add('sub-tab-' + tab);
+      tabsNav?.querySelectorAll('.sub-mobile-tab').forEach((btn) => {
+        const on = btn.getAttribute('data-sub-tab') === tab;
+        btn.classList.toggle('is-active', on);
+        btn.setAttribute('aria-selected', String(on));
+      });
+      if (tabToggle) tabToggle.textContent = tab === 'edit' ? 'Преглед' : 'Настройки';
+      window.dispatchEvent(new Event('resize'));
+    }
+    tabsNav?.querySelectorAll('.sub-mobile-tab').forEach((btn) => {
+      btn.addEventListener('click', () => setSubTab(btn.getAttribute('data-sub-tab')));
+    });
+    tabToggle?.addEventListener('click', () => {
+      const onEdit = shell?.classList.contains('sub-tab-edit');
+      setSubTab(onEdit ? 'design' : 'edit');
     });
   </script>
 </body>

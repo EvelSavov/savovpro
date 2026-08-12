@@ -42,7 +42,7 @@
     tour.src = 'assets/js/configurator/engrave-tour.js?v=20260706a';
     tour.onload = function () {
       var core = document.createElement('script');
-      core.src = 'assets/js/configurator/core.js?v=20260706a';
+      core.src = 'assets/js/configurator/core.js?v=20260812e';
       core.onerror = function () {
         showBootError('Неуспешно зареждане на конфигуратора. Провери интернет връзката и опитай отново.');
       };
@@ -51,7 +51,7 @@
     tour.onerror = function () {
       /* tour failed to load — boot core anyway without tour */
       var core = document.createElement('script');
-      core.src = 'assets/js/configurator/core.js?v=20260706a';
+      core.src = 'assets/js/configurator/core.js?v=20260812e';
       document.body.appendChild(core);
     };
     document.body.appendChild(tour);

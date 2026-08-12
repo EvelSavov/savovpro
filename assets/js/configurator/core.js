@@ -72,11 +72,25 @@
     var yEl = document.getElementById('year');
     if (yEl) yEl.textContent = String(new Date().getFullYear());
 
-    /* ── Canvas setup ── */
+    /* ── Canvas setup ──
+       Logical coords stay 440×440 (sliders, drafts, hit-testing).
+       Backing store is RENDER_SCALE× larger so CSS zoom stays sharp. */
     var canvas = document.getElementById('kc-canvas');
-    var ctx = canvas.getContext('2d');
-    var CW = canvas.width;   // 440
-    var CH = canvas.height;  // 440
+    var CW = 440;
+    var CH = 440;
+    /* Match .cfg-preview stage so the square canvas doesn't read as a black box */
+    var STAGE_BG = '#080808';
+    var RENDER_SCALE = Math.min(3, Math.max(2, (window.devicePixelRatio || 1) * 1.25));
+    canvas.width = Math.round(CW * RENDER_SCALE);
+    canvas.height = Math.round(CH * RENDER_SCALE);
+    var ctx = canvas.getContext('2d', { alpha: false });
+
+    function prepCtx(c) {
+      c.setTransform(RENDER_SCALE, 0, 0, RENDER_SCALE, 0, 0);
+      c.imageSmoothingEnabled = true;
+      if ('imageSmoothingQuality' in c) c.imageSmoothingQuality = 'high';
+    }
+    prepCtx(ctx);
 
     /* ── Viewport zoom ──
        Uses CSS transform: scale() on the canvas.
@@ -566,6 +580,78 @@
       if (advBtn) advBtn.addEventListener('click', function () { setUiMode('advanced'); });
     }
 
+    /**
+     * Phone-first tabs (Дизайн | Редакция | Поръчка) — same shell as sticker.
+     * Injected for engrave pages that don't ship tabs in HTML.
+     */
+    function initMobileTabs() {
+      var layout = document.getElementById('kc-layout');
+      if (!layout || !layout.classList.contains('st-layout')) return;
+      if (document.getElementById('st-mobile-tabs') || document.getElementById('cfg-mobile-tabs')) return;
+
+      var parent = layout.parentNode;
+      if (!parent) return;
+
+      var priceRow = layout.querySelector('.cfg-price-row');
+      if (priceRow && !layout.querySelector('.cfg-order-block')) {
+        var block = document.createElement('div');
+        block.className = 'cfg-order-block st-mobile-panel-order';
+        var controls = layout.querySelector('.cfg-controls');
+        if (controls) {
+          var node = priceRow;
+          while (node) {
+            var next = node.nextElementSibling;
+            block.appendChild(node);
+            node = next;
+          }
+          controls.appendChild(block);
+        }
+      }
+
+      var nav = document.createElement('nav');
+      nav.className = 'st-mobile-tabs cfg-mobile-tabs';
+      nav.id = 'cfg-mobile-tabs';
+      nav.setAttribute('role', 'tablist');
+      nav.setAttribute('aria-label', 'Навигация');
+      nav.innerHTML =
+        '<button type="button" role="tab" class="st-mobile-tab is-active" data-cfg-tab="design" aria-selected="true">Дизайн</button>' +
+        '<button type="button" role="tab" class="st-mobile-tab" data-cfg-tab="edit" aria-selected="false">Редакция</button>' +
+        '<button type="button" role="tab" class="st-mobile-tab" data-cfg-tab="order" aria-selected="false">Поръчка</button>';
+      parent.insertBefore(nav, layout);
+
+      var TAB_KEY = 'savovpro-cfg-mobile-tab';
+      function setTab(tab) {
+        if (tab !== 'design' && tab !== 'edit' && tab !== 'order') tab = 'design';
+        layout.classList.remove('st-mobile-tab-design', 'st-mobile-tab-edit', 'st-mobile-tab-order');
+        layout.classList.add('st-mobile-tab-' + tab);
+        nav.querySelectorAll('.st-mobile-tab').forEach(function (btn) {
+          var on = btn.getAttribute('data-cfg-tab') === tab;
+          btn.classList.toggle('is-active', on);
+          btn.setAttribute('aria-selected', String(on));
+        });
+        try { localStorage.setItem(TAB_KEY, tab); } catch (e) { /* ignore */ }
+        if (tab === 'design' && typeof window.dispatchEvent === 'function') {
+          window.dispatchEvent(new Event('resize'));
+        }
+      }
+
+      nav.querySelectorAll('.st-mobile-tab').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          setTab(btn.getAttribute('data-cfg-tab'));
+        });
+      });
+
+      var initial = 'design';
+      // Only restore a saved tab on phone widths — desktop always shows the stage.
+      if (window.matchMedia && window.matchMedia('(max-width: 860px)').matches) {
+        try {
+          var savedTab = localStorage.getItem(TAB_KEY);
+          if (savedTab === 'design' || savedTab === 'edit' || savedTab === 'order') initial = savedTab;
+        } catch (e) { /* ignore */ }
+      }
+      setTab(initial);
+    }
+
     function restoreDraftFromStorage() {
       var raw;
       try {
@@ -910,8 +996,9 @@
       var m = MODELS[state.model];
 
       function doRender(img, maskImg) {
+          prepCtx(ctx);
           ctx.clearRect(0, 0, CW, CH);
-          ctx.fillStyle = '#000';
+          ctx.fillStyle = STAGE_BG;
           ctx.fillRect(0, 0, CW, CH);
           if (!img) return;
 
@@ -929,10 +1016,12 @@
           /* 1. Draw the product */
           ctx.drawImage(img, ix, iy, iw, ih);
 
-          /* 2. Offscreen layer for all decoration */
+          /* 2. Offscreen layer for all decoration (same HiDPI scale as main canvas) */
           var offscreen = document.createElement('canvas');
-          offscreen.width = CW; offscreen.height = CH;
+          offscreen.width = canvas.width;
+          offscreen.height = canvas.height;
           var lc = offscreen.getContext('2d');
+          prepCtx(lc);
           var maxW = iw * m.textMaxW;
           var centerX = ix + iw * 0.5;
           var centerY = iy + ih * m.textCY;
@@ -976,7 +1065,7 @@
             ctx.filter = 'blur(0.7px)';
             ctx.globalCompositeOperation = 'multiply';
           }
-          ctx.drawImage(offscreen, 0, 0);
+          ctx.drawImage(offscreen, 0, 0, CW, CH);
           ctx.filter = 'none';
           ctx.globalCompositeOperation = 'source-over';
 
@@ -1992,6 +2081,8 @@
 
     /* ── Zoom controls ── */
     (function () {
+      var kcViewport = document.querySelector('.kc-canvas-viewport');
+
       /* Toolbar +/− buttons */
       var zIn   = document.getElementById('kc-zoom-in');
       var zOut  = document.getElementById('kc-zoom-out');
@@ -2379,6 +2470,7 @@
     renderModelGrid();
     initStartOverButton();
     initUiModeToggle();
+    initMobileTabs();
     initKcDraftResumeDialog();
     initKcWizard();
     initKcHelpButton();

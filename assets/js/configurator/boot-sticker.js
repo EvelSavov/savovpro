@@ -54,7 +54,7 @@
           loadScript('assets/js/configurator/sticker-trace.js?v=20260703', function () {
             loadScript('assets/js/configurator/sticker-vector.js?v=20260703g', function () {
               loadScript('assets/js/configurator/sticker-tour.js?v=20260703c', function () {
-                loadScript('assets/js/configurator/sticker-core.js?v=20260703x', function () {});
+                loadScript('assets/js/configurator/sticker-core.js?v=20260812d', function () {});
               });
               });
             });

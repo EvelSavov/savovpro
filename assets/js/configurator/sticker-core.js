@@ -7,9 +7,21 @@
   var canvas = document.getElementById('st-canvas');
   if (!canvas) return;
 
+  /* Logical coords stay at the HTML size (hit-testing, drafts, zoom math).
+     Backing store is RENDER_SCALE× larger so zoom stays sharp. */
+  var CW = canvas.width || 520;
+  var CH = canvas.height || 520;
+  var RENDER_SCALE = Math.min(3, Math.max(2, (window.devicePixelRatio || 1) * 1.25));
+  canvas.width = Math.round(CW * RENDER_SCALE);
+  canvas.height = Math.round(CH * RENDER_SCALE);
   var ctx = canvas.getContext('2d');
-  var CW = canvas.width;
-  var CH = canvas.height;
+
+  function prepCtx(c) {
+    c.setTransform(RENDER_SCALE, 0, 0, RENDER_SCALE, 0, 0);
+    c.imageSmoothingEnabled = true;
+    if ('imageSmoothingQuality' in c) c.imageSmoothingQuality = 'high';
+  }
+  prepCtx(ctx);
 
   var layers = [];
   var selectedLayerId = null;
@@ -1278,7 +1290,7 @@
       btn.className = 'st-pill-btn';
       btn.dataset.w = String(sz.w);
       btn.dataset.h = String(sz.h);
-      btn.textContent = sz.label + ' cm';
+      btn.textContent = /cm\s*$/i.test(sz.label) ? sz.label : (sz.label + ' cm');
       btn.addEventListener('click', function () {
         setupWizardState.widthCm = sz.w;
         setupWizardState.heightCm = sz.h;
@@ -3262,6 +3274,7 @@
     elementBoxes = {};
     var elementInkBoxes = {};
     clearTextMetricsCache();
+    prepCtx(ctx);
     ctx.clearRect(0, 0, CW, CH);
     ctx.save();
     applyViewTransform();
@@ -5305,7 +5318,7 @@
       btn.className = 'st-pill-btn';
       btn.dataset.w = String(sz.w);
       btn.dataset.h = String(sz.h);
-      btn.textContent = sz.label + ' cm';
+      btn.textContent = /cm\s*$/i.test(sz.label) ? sz.label : (sz.label + ' cm');
       btn.addEventListener('click', function () {
         applyStickerSize(sz.w, sz.h);
       });

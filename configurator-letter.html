@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0a0a0a" />
+  <meta name="description" content="3D буква с вградено персонализирано име — LED lightbox конфигуратор за 3D печат. Изтегли STL файл директно от браузъра. SAVOV PRO." />
+  <meta name="keywords" content="3D буква с надпис, LED lightbox 3D принтиране, персонализирана 3D буква, STL конфигуратор, 3D печат по поръчка" />
+  <link rel="canonical" href="https://savovpro.com/configurator-letter.html" />
+  <meta property="og:type" content="website" />
+  <meta property="og:locale" content="bg_BG" />
+  <meta property="og:url" content="https://savovpro.com/configurator-letter.html" />
+  <meta property="og:title" content="SAVOV PRO — 3D Буква с Надпис, LED Lightbox конфигуратор" />
+  <meta property="og:description" content="3D буква с вградено персонализирано име — LED lightbox за 3D печат. Изтегли STL от браузъра. SAVOV PRO." />
+  <meta property="og:image" content="https://savovpro.com/assets/services/heroes/3d-printing.jpg" />
+  <meta property="og:site_name" content="SAVOV PRO Ltd." />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="SAVOV PRO — 3D Буква с Надпис" />
+  <meta name="twitter:description" content="3D буква с вградено персонализирано ime — LED lightbox за 3D печат." />
+  <meta name="twitter:image" content="https://savovpro.com/assets/services/heroes/3d-printing.jpg" />
+  <title>3D Буква с Надпис — LED Lightbox конфигуратор | SAVOV PRO</title>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebApplication",
+        "@id": "https://savovpro.com/configurator-letter.html#webapp",
+        "name": "SAVOV PRO — 3D Буква с Надпис конфигуратор",
+        "description": "3D LED lightbox буква с персонализирано вградено име — онлайн конфигуратор за 3D печат.",
+        "url": "https://savovpro.com/configurator-letter.html",
+        "applicationCategory": "DesignApplication",
+        "operatingSystem": "Web",
+        "isPartOf": { "@id": "https://savovpro.com/#website" }
+      },
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Начало", "item": "https://savovpro.com/" },
+          { "@type": "ListItem", "position": 2, "name": "Конфигуратор", "item": "https://savovpro.com/configurator.html" },
+          { "@type": "ListItem", "position": 3, "name": "3D Буква с Надпис", "item": "https://savovpro.com/configurator-letter.html" }
+        ]
+      }
+    ]
+  }
+  </script>
+
+  <link rel="icon" href="assets/logo/logo-mark.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="assets/logo/logo-mark.png" />
+  <link rel="stylesheet" href="style.css" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      height: 100dvh;
+      overflow: hidden;
+    }
+
+    .site-header { flex-shrink: 0; }
+
+    .letter-cfg-frame-wrap {
+      flex: 1;
+      min-height: 0;
+      position: relative;
+      overflow: hidden;
+      background: #0a0a0a;
+    }
+
+    .letter-cfg-frame-wrap iframe {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: #0a0a0a;
+    }
+
+    /* Loading state */
+    .letter-cfg-loading {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      background: #0a0a0a;
+      color: rgba(244,244,245,0.45);
+      font-size: 0.9rem;
+      pointer-events: none;
+      transition: opacity 0.35s;
+    }
+
+    .letter-cfg-loading.hidden {
+      opacity: 0;
+    }
+
+    .letter-cfg-spinner {
+      width: 36px;
+      height: 36px;
+      border: 3px solid rgba(255,255,255,0.08);
+      border-top-color: #c9a227;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-bottom: 0.85rem;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="site-header-backdrop" aria-hidden="true"></div>
+    <div class="container header-inner cfg-header-inner">
+      <a class="logo-link" href="index.html" aria-label="SAVOV PRO Ltd. — начало">
+        <img
+          class="logo-svg"
+          src="assets/logo/logo-full.svg"
+          width="140"
+          height="40"
+          alt="SAVOV PRO"
+          loading="eager"
+          decoding="async"
+        />
+      </a>
+      <h1 class="sr-only">3D Буква с Надпис — LED Lightbox конфигуратор</h1>
+      <span class="cfg-header-title" aria-hidden="true">3D Буква с Надпис</span>
+      <a class="cfg-header-back" href="configurator.html">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+        <span class="cfg-header-back-label">Категории</span>
+      </a>
+    </div>
+  </header>
+
+  <div class="letter-cfg-frame-wrap" style="position:relative;">
+    <div class="letter-cfg-loading" id="lc-loading">
+      <div>
+        <div class="letter-cfg-spinner"></div>
+        <p style="margin:0;text-align:center;">Зарежда 3D двигател…</p>
+      </div>
+    </div>
+    <iframe
+      id="lc-iframe"
+      src="letter-configurator/dist/index.html"
+      title="3D Буква с Надпис конфигуратор"
+      allow="cross-origin-isolated"
+      loading="eager"
+    ></iframe>
+  </div>
+
+  <script>
+  (function () {
+    'use strict';
+    var iframe  = document.getElementById('lc-iframe');
+    var loading = document.getElementById('lc-loading');
+    iframe.addEventListener('load', function () {
+      loading.classList.add('hidden');
+      setTimeout(function () { loading.style.display = 'none'; }, 400);
+    });
+  })();
+  </script>
+
+  <script src="assets/js/analytics.js" defer></script>
+  <script src="assets/js/cookie-consent.js" defer></script>
+</body>
+</html>
