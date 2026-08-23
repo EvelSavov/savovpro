@@ -65,6 +65,12 @@ export interface NameSignParams {
   /** Bridge dots (i, j, й) and nearby separate letter islands into one piece */
   autoConnect: boolean;
   bridgeThickness: number;
+  /**
+   * Contact area (mm²) a glyph must share with the letter body to count as
+   * held by its own pocket. Anything at or above this gets no bridge; below it
+   * the glyph is treated as floating. 0 = any touch counts.
+   */
+  minContactArea: number;
 
   /** Segments per bezier curve — controls smoothness */
   curveSegments: number;

@@ -31,6 +31,7 @@ export async function generateNameSign(
     raisedInlay,
     autoConnect,
     bridgeThickness,
+    minContactArea,
     curveSegments,
   } = params;
 
@@ -80,7 +81,8 @@ export async function generateNameSign(
       const nameResult = await textToContours(nameText, {
         height: nameHeight,
         fontUrl: nameFontUrl,
-        curveSegments,
+        // Smaller script glyphs need denser curves than the big letter.
+        curveSegments: Math.min(128, Math.max(curveSegments * 2, 64)),
         maxWidth: letterWidth * 1.05,
         offsetX: nameX,
         offsetY: nameY,
@@ -145,7 +147,23 @@ export async function generateNameSign(
 
     if (combined) {
       if (autoConnect && hasText) {
-        const bridgeRects = findBridgeContours(textContourList, bridgeThickness);
+        // A glyph touching the letter is held by its own pocket, so it needs no
+        // bar to its neighbours. Only glyphs floating over the letter's counter
+        // (or off the letter entirely) get bridged.
+        const minContact = Math.max(0, minContactArea);
+        const restsOnLetter = (contour: Contour): boolean => {
+          const cs = new CrossSection([contour], 'NonZero');
+          if (cs.isEmpty()) { cs.delete(); return false; }
+          const overlap = letterCs.intersect(cs);
+          const shared = overlap.isEmpty() ? 0 : Math.abs(overlap.area());
+          overlap.delete();
+          cs.delete();
+          return shared > 1e-6 && shared >= minContact;
+        };
+
+        const bridgeRects = findBridgeContours(
+          textContourList, bridgeThickness, restsOnLetter,
+        );
         for (const rect of bridgeRects) {
           const bCs = new CrossSection([rect], 'EvenOdd');
           const next = combined.add(bCs);
@@ -153,10 +171,11 @@ export async function generateNameSign(
         }
       }
 
-      let rawNameCs = combined.simplify(0.05);
+      const nameSimplify = 0.012;
+      let rawNameCs = combined.simplify(nameSimplify);
       combined.delete();
 
-      let cavityCs = rawNameCs.simplify(0.05);
+      let cavityCs = rawNameCs.simplify(nameSimplify);
       rawNameCs.delete();
 
       if (!cavityCs.isEmpty()) {
@@ -165,8 +184,8 @@ export async function generateNameSign(
         cavityManifold.delete();
 
         let nameCs = tolerance > 0.01
-          ? cavityCs.offset(-tolerance, 'Round').simplify(0.05)
-          : cavityCs.simplify(0.05);
+          ? cavityCs.offset(-tolerance, 'Round').simplify(nameSimplify)
+          : cavityCs.simplify(nameSimplify);
         cavityCs.delete();
 
         if (!nameCs.isEmpty()) {
@@ -182,8 +201,8 @@ export async function generateNameSign(
           if (hasSymbols && raisedInlay > 0.5 && allSymbolContours.length > 0) {
             const rawSym = new CrossSection(allSymbolContours, 'NonZero');
             const symFitCs = tolerance > 0.01
-              ? rawSym.offset(-tolerance, 'Round').simplify(0.05)
-              : rawSym.simplify(0.05);
+              ? rawSym.offset(-tolerance, 'Round').simplify(nameSimplify)
+              : rawSym.simplify(nameSimplify);
             rawSym.delete();
 
             if (!symFitCs.isEmpty()) {

@@ -17,48 +17,63 @@ export async function loadFont(url: string): Promise<opentype.Font> {
   return font;
 }
 
-function lerp(a: number, b: number, t: number): number {
-  return a + (b - a) * t;
+function lerp2(a: Vec2, b: Vec2, t: number): Vec2 {
+  return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
 }
 
+function distPointToSeg(p: Vec2, a: Vec2, b: Vec2): number {
+  const dx = b[0] - a[0];
+  const dy = b[1] - a[1];
+  const len2 = dx * dx + dy * dy;
+  if (len2 < 1e-12) return Math.hypot(p[0] - a[0], p[1] - a[1]);
+  const t = Math.max(0, Math.min(1, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / len2));
+  return Math.hypot(p[0] - (a[0] + t * dx), p[1] - (a[1] + t * dy));
+}
+
+/** Subdivide a quadratic until the control point sits within maxErr of the chord. */
 function sampleQuadratic(
   p0: Vec2,
   p1: Vec2,
   p2: Vec2,
-  segments: number,
+  maxErr: number,
   out: Contour,
+  depth = 0,
 ): void {
-  for (let i = 1; i <= segments; i++) {
-    const t = i / segments;
-    const x = (1 - t) * (1 - t) * p0[0] + 2 * (1 - t) * t * p1[0] + t * t * p2[0];
-    const y = (1 - t) * (1 - t) * p0[1] + 2 * (1 - t) * t * p1[1] + t * t * p2[1];
-    out.push([x, y]);
+  const err = distPointToSeg(p1, p0, p2);
+  if (depth >= 8 || err <= maxErr) {
+    out.push(p2);
+    return;
   }
+  const p01 = lerp2(p0, p1, 0.5);
+  const p12 = lerp2(p1, p2, 0.5);
+  const mid = lerp2(p01, p12, 0.5);
+  sampleQuadratic(p0, p01, mid, maxErr, out, depth + 1);
+  sampleQuadratic(mid, p12, p2, maxErr, out, depth + 1);
 }
 
+/** Subdivide a cubic until both control points sit within maxErr of the chord. */
 function sampleCubic(
   p0: Vec2,
   p1: Vec2,
   p2: Vec2,
   p3: Vec2,
-  segments: number,
+  maxErr: number,
   out: Contour,
+  depth = 0,
 ): void {
-  for (let i = 1; i <= segments; i++) {
-    const t = i / segments;
-    const mt = 1 - t;
-    const x =
-      mt * mt * mt * p0[0] +
-      3 * mt * mt * t * p1[0] +
-      3 * mt * t * t * p2[0] +
-      t * t * t * p3[0];
-    const y =
-      mt * mt * mt * p0[1] +
-      3 * mt * mt * t * p1[1] +
-      3 * mt * t * t * p2[1] +
-      t * t * t * p3[1];
-    out.push([x, y]);
+  const err = Math.max(distPointToSeg(p1, p0, p3), distPointToSeg(p2, p0, p3));
+  if (depth >= 8 || err <= maxErr) {
+    out.push(p3);
+    return;
   }
+  const p01 = lerp2(p0, p1, 0.5);
+  const p12 = lerp2(p1, p2, 0.5);
+  const p23 = lerp2(p2, p3, 0.5);
+  const p012 = lerp2(p01, p12, 0.5);
+  const p123 = lerp2(p12, p23, 0.5);
+  const mid = lerp2(p012, p123, 0.5);
+  sampleCubic(p0, p01, p012, mid, maxErr, out, depth + 1);
+  sampleCubic(mid, p123, p23, p3, maxErr, out, depth + 1);
 }
 
 /** Convert opentype path commands into closed contours (font Y-down → Y-up). */
@@ -66,6 +81,9 @@ export function pathToContours(
   path: opentype.Path,
   curveSegments: number,
 ): Contour[] {
+  // Paths are built at tempSize=1000, then scaled to mm. Treat curveSegments
+  // as a quality knob: more segments → smaller allowed chord error.
+  const maxErr = 80 / Math.max(curveSegments, 4);
   const contours: Contour[] = [];
   let current: Contour = [];
   let cx = 0;
@@ -104,7 +122,7 @@ export function pathToContours(
         const p1: Vec2 = [cmd.x1, cmd.y1];
         const p2: Vec2 = [cmd.x, cmd.y];
         const tmp: Contour = [];
-        sampleQuadratic(p0, p1, p2, curveSegments, tmp);
+        sampleQuadratic(p0, p1, p2, maxErr, tmp);
         for (const [x, y] of tmp) pushPoint(x, y);
         cx = cmd.x;
         cy = cmd.y;
@@ -116,7 +134,7 @@ export function pathToContours(
         const p2: Vec2 = [cmd.x2, cmd.y2];
         const p3: Vec2 = [cmd.x, cmd.y];
         const tmp: Contour = [];
-        sampleCubic(p0, p1, p2, p3, curveSegments, tmp);
+        sampleCubic(p0, p1, p2, p3, maxErr, tmp);
         for (const [x, y] of tmp) pushPoint(x, y);
         cx = cmd.x;
         cy = cmd.y;
@@ -234,38 +252,127 @@ function closestOnSegment(p: Vec2, a: Vec2, b: Vec2): Vec2 {
   return [a[0] + abx * t, a[1] + aby * t];
 }
 
-/** Closest points + distance between two polygon outlines. */
+/** Distance between two segments; 0 with the crossing point when they intersect. */
+function segmentDistance(
+  p1: Vec2,
+  p2: Vec2,
+  q1: Vec2,
+  q2: Vec2,
+): { dist: number; pa: Vec2; pb: Vec2 } {
+  const d1x = p2[0] - p1[0];
+  const d1y = p2[1] - p1[1];
+  const d2x = q2[0] - q1[0];
+  const d2y = q2[1] - q1[1];
+  const denom = d1x * d2y - d1y * d2x;
+
+  if (Math.abs(denom) > 1e-12) {
+    const sx = q1[0] - p1[0];
+    const sy = q1[1] - p1[1];
+    const t = (sx * d2y - sy * d2x) / denom;
+    const u = (sx * d1y - sy * d1x) / denom;
+    if (t >= 0 && t <= 1 && u >= 0 && u <= 1) {
+      const hit: Vec2 = [p1[0] + d1x * t, p1[1] + d1y * t];
+      return { dist: 0, pa: hit, pb: hit };
+    }
+  }
+
+  let dist = Infinity;
+  let pa: Vec2 = p1;
+  let pb: Vec2 = q1;
+  const check = (from: Vec2, s1: Vec2, s2: Vec2, fromA: boolean) => {
+    const q = closestOnSegment(from, s1, s2);
+    const d = Math.hypot(q[0] - from[0], q[1] - from[1]);
+    if (d < dist) {
+      dist = d;
+      if (fromA) { pa = from; pb = q; } else { pa = q; pb = from; }
+    }
+  };
+  check(p1, q1, q2, true);
+  check(p2, q1, q2, true);
+  check(q1, p1, p2, false);
+  check(q2, p1, p2, false);
+  return { dist, pa, pb };
+}
+
+/**
+ * Closest points + distance between two polygon outlines.
+ *
+ * Two passes: a strided sweep locates the closest segment pair, then a
+ * stride-free sweep of that neighbourhood refines it. A single strided pass
+ * badly overestimates the gap between overlapping script glyphs, which used to
+ * produce long diagonal bars between letters that already touch.
+ */
 function closestBetweenContours(
   a: Contour,
   b: Contour,
 ): { dist: number; pa: Vec2; pb: Vec2 } {
-  let dist = Infinity;
-  let pa: Vec2 = a[0];
-  let pb: Vec2 = b[0];
-  // Sample: for each vertex of A, closest on B edges; then swap
-  const consider = (p: Vec2, c: Contour, fromA: boolean) => {
-    for (let k = 0; k < c.length; k++) {
-      const q = closestOnSegment(p, c[k], c[(k + 1) % c.length]);
-      const d = Math.hypot(q[0] - p[0], q[1] - p[1]);
-      if (d < dist) {
-        dist = d;
-        if (fromA) { pa = p; pb = q; } else { pa = q; pb = p; }
+  const na = a.length;
+  const nb = b.length;
+  const stepA = Math.max(1, Math.floor(na / 160));
+  const stepB = Math.max(1, Math.floor(nb / 160));
+
+  let best = { dist: Infinity, pa: a[0], pb: b[0] };
+  let bestIa = 0;
+  let bestIb = 0;
+
+  for (let i = 0; i < na; i += stepA) {
+    const a1 = a[i];
+    const a2 = a[(i + 1) % na];
+    for (let j = 0; j < nb; j += stepB) {
+      const r = segmentDistance(a1, a2, b[j], b[(j + 1) % nb]);
+      if (r.dist < best.dist) {
+        best = r;
+        bestIa = i;
+        bestIb = j;
       }
+      if (best.dist === 0) return best;
     }
-  };
-  // Stride for long contours to keep this cheap
-  const stepA = Math.max(1, Math.floor(a.length / 80));
-  const stepB = Math.max(1, Math.floor(b.length / 80));
-  for (let i = 0; i < a.length; i += stepA) consider(a[i], b, true);
-  for (let i = 0; i < b.length; i += stepB) consider(b[i], a, false);
-  return { dist, pa, pb };
+  }
+
+  if (stepA === 1 && stepB === 1) return best;
+
+  for (let di = -stepA; di <= stepA; di++) {
+    const i = ((bestIa + di) % na + na) % na;
+    const a1 = a[i];
+    const a2 = a[(i + 1) % na];
+    for (let dj = -stepB; dj <= stepB; dj++) {
+      const j = ((bestIb + dj) % nb + nb) % nb;
+      const r = segmentDistance(a1, a2, b[j], b[(j + 1) % nb]);
+      if (r.dist < best.dist) best = r;
+      if (best.dist === 0) return best;
+    }
+  }
+
+  return best;
+}
+
+function contourHeight(c: Contour): number {
+  let minY = Infinity;
+  let maxY = -Infinity;
+  for (const [, y] of c) {
+    if (y < minY) minY = y;
+    if (y > maxY) maxY = y;
+  }
+  return maxY - minY;
+}
+
+function median(values: number[]): number {
+  if (!values.length) return 0;
+  const sorted = values.slice().sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
 }
 
 /**
  * Find bridges for disconnected OUTER contours:
  *  - floating dots (i, j, й) → nearest large island
- *  - separate letters (e.g. capital D vs "alia") → nearest neighbor MST
+ *  - separate letters only when there is a real gap (e.g. capital D vs "alia")
+ *    Script letters that already overlap or nearly touch are left alone.
  * Returns ONLY the bridge rectangles — caller applies them via union.
+ *
+ * `isAnchored` reports islands that sit on the solid body of the big letter.
+ * The letter already holds those, so they count as one component and never get
+ * a bar — neither between themselves nor to a dot resting on the letter.
  *
  * Islands vs holes are classified by nesting (centroid inside a larger
  * contour), not by winding sign — font Y-flip inverts shoelace signs.
@@ -273,6 +380,7 @@ function closestBetweenContours(
 export function findBridgeContours(
   contours: Contour[],
   bridgeThickness: number,
+  isAnchored?: (contour: Contour) => boolean,
 ): Contour[] {
   if (contours.length <= 1) return [];
 
@@ -302,9 +410,14 @@ export function findBridgeContours(
   const width = Math.max(bridgeThickness, 0.5);
   const bridges: Contour[] = [];
 
+  // Islands resting on the big letter are held by it — no bar needed.
+  const anchored = contours.map((c, i) =>
+    !hole[i] && !!isAnchored && isAnchored(c),
+  );
+
   // ── 1) Small islands (dots) → nearest large island ──────────────────
   for (let i = 0; i < contours.length; i++) {
-    if (!isSmallOuter[i]) continue;
+    if (!isSmallOuter[i] || anchored[i]) continue;
     const sc = contours[i];
     const scCenter = centroid(sc);
 
@@ -337,27 +450,17 @@ export function findBridgeContours(
     if (bridge.length >= 3) bridges.push(bridge);
   }
 
-  // ── 2) Large islands (separate letters) → MST of near neighbors ─────
-  // Connects e.g. capital "D" to script "alia" when the gap is modest.
+  // ── 2) Large islands — only a real hole, not script micro-gaps ──────
+  // Script "lia" often has 0.3–3 mm gaps at the stems; those already look
+  // connected and must not get a visible bar. Capital "D" + "alia" has a
+  // genuine hole (several mm) and should still get one MST bar.
   const largeIdx = contours.map((_, i) => i).filter((i) => isLargeOuter[i]);
   if (largeIdx.length >= 2) {
-    // Max gap scales with letter size; thicker bridge → allow slightly larger gap
-    const charScale = Math.sqrt(maxArea);
-    const maxGap = Math.max(width * 14, charScale * 0.45);
-
-    type Edge = { i: number; j: number; dist: number; pa: Vec2; pb: Vec2 };
-    const edges: Edge[] = [];
-    for (let a = 0; a < largeIdx.length; a++) {
-      for (let b = a + 1; b < largeIdx.length; b++) {
-        const ia = largeIdx[a];
-        const ib = largeIdx[b];
-        const { dist, pa, pb } = closestBetweenContours(contours[ia], contours[ib]);
-        if (dist > width * 0.15 && dist <= maxGap) {
-          edges.push({ i: ia, j: ib, dist, pa, pb });
-        }
-      }
-    }
-    edges.sort((e1, e2) => e1.dist - e2.dist);
+    const letterH = median(largeIdx.map((i) => contourHeight(contours[i])));
+    // Glyphs that overlap measure 0 and glyphs that graze measure a few tenths
+    // of a mm — both already print as one piece, so they get no bar.
+    const touchGap = Math.max(width * 0.5, 0.3);
+    const maxGap = Math.max(width * 16, letterH * 0.7);
 
     // Union-Find — only bridge when components are still separate
     const parent = new Map<number, number>();
@@ -374,6 +477,33 @@ export function findBridgeContours(
       return true;
     };
     for (const id of largeIdx) parent.set(id, id);
+
+    // Virtual node for the big letter: everything sitting on it is one piece,
+    // so two anchored glyphs never need a bar between them.
+    const LETTER_NODE = -1;
+    parent.set(LETTER_NODE, LETTER_NODE);
+    for (const id of largeIdx) {
+      if (anchored[id]) unite(id, LETTER_NODE);
+    }
+
+    type Edge = { i: number; j: number; dist: number; pa: Vec2; pb: Vec2 };
+    const edges: Edge[] = [];
+    for (let a = 0; a < largeIdx.length; a++) {
+      for (let b = a + 1; b < largeIdx.length; b++) {
+        const ia = largeIdx[a];
+        const ib = largeIdx[b];
+        if (find(ia) === find(ib)) continue;
+        const { dist, pa, pb } = closestBetweenContours(contours[ia], contours[ib]);
+        if (dist <= touchGap) {
+          // Already one solid piece — merging the components here stops a long
+          // bar being drawn later across glyphs that only look disconnected.
+          unite(ia, ib);
+        } else if (dist <= maxGap) {
+          edges.push({ i: ia, j: ib, dist, pa, pb });
+        }
+      }
+    }
+    edges.sort((e1, e2) => e1.dist - e2.dist);
 
     for (const e of edges) {
       if (!unite(e.i, e.j)) continue;
@@ -486,5 +616,3 @@ export async function letterToContours(
   }
   return contours;
 }
-
-void lerp;

@@ -14,7 +14,7 @@ import {
   downloadSTL,
   meshToBinarySTL,
 } from './export/exportSTL';
-import { Viewer3D } from './components/Viewer3D';
+import { Viewer3D, type Viewer3DHandle } from './components/Viewer3D';
 import { SYMBOLS } from './geometry/symbols';
 import { SYMBOL_PRESETS } from './geometry/symbolPresets';
 import type { NameSignResult, SymbolGroup } from './types/geometry';
@@ -89,6 +89,7 @@ export default function App() {
   // Auto-connect
   const [autoConnect,     setAutoConnect]     = useState(true);
   const [bridgeThickness, setBridgeThickness] = useState(0.7);
+  const [minContactArea,  setMinContactArea]  = useState(1);
 
   // Raised inlay
   const [raisedInlay, setRaisedInlay] = useState(0.3);
@@ -102,62 +103,72 @@ export default function App() {
   const nextSymUid = useRef(0);
 
   // Preview colors
-  const [letterColor, setLetterColor] = useState('#2a2a2e');
+  const [letterColor, setLetterColor] = useState('#d4d0cb');
   const [nameColor,   setNameColor]   = useState('#f472b6');
 
   // State
   const [result, setResult] = useState<NameSignResult | null>(null);
   const [busy,   setBusy]   = useState(false);
+  const [exporting, setExporting] = useState(false);
   const [error,  setError]  = useState<string | null>(null);
   const genId = useRef(0);
+  const viewerRef = useRef<Viewer3DHandle>(null);
+
+  const buildParams = useCallback((curveSegments: number) => {
+    const symbolGroups: SymbolGroup[] = symInstances.flatMap((inst) => {
+      const def = SYMBOLS.find((s) => s.id === inst.id);
+      if (!def) return [];
+
+      if (def.modelPath) {
+        return [{
+          label: `${def.emoji} ${def.labelBg}`,
+          contours: [],
+          modelUrl: import.meta.env.BASE_URL + def.modelPath,
+          modelSizeMm: inst.size,
+          modelX: inst.x,
+          modelY: inst.y,
+        }];
+      }
+
+      const raw = def.generate(inst.size);
+      const contours = raw.map((c) =>
+        c.map(([x, y]): [number, number] => [x + inst.x, y + inst.y]),
+      );
+      return [{ label: `${def.emoji} ${def.labelBg}`, contours }];
+    });
+
+    return {
+      letter,
+      name,
+      letterFontUrl: FONTS[letterFont].url,
+      nameFontUrl:   FONTS[nameFont].url,
+      letterHeight,
+      nameHeight,
+      depth,
+      inlayDepth,
+      tolerance,
+      nameX,
+      nameY,
+      raisedInlay,
+      autoConnect,
+      bridgeThickness,
+      minContactArea,
+      curveSegments,
+      symbolGroups,
+    };
+  }, [
+    letter, name, letterFont, nameFont,
+    letterHeight, nameHeight, depth, inlayDepth, tolerance,
+    nameX, nameY, raisedInlay, autoConnect, bridgeThickness, minContactArea,
+    symInstances,
+  ]);
 
   const generate = useCallback(async () => {
     const id = ++genId.current;
     setBusy(true);
     setError(null);
     try {
-      // Build one SymbolGroup per instance
-      const symbolGroups: SymbolGroup[] = symInstances.flatMap((inst) => {
-        const def = SYMBOLS.find((s) => s.id === inst.id);
-        if (!def) return [];
-
-        // 3D model symbol — pass modelUrl, skip 2D contour generation
-        if (def.modelPath) {
-          return [{
-            label: `${def.emoji} ${def.labelBg}`,
-            contours: [],
-            modelUrl: import.meta.env.BASE_URL + def.modelPath,
-            modelSizeMm: inst.size,
-            modelX: inst.x,
-            modelY: inst.y,
-          }];
-        }
-
-        const raw = def.generate(inst.size);
-        const contours = raw.map((c) =>
-          c.map(([x, y]): [number, number] => [x + inst.x, y + inst.y]),
-        );
-        return [{ label: `${def.emoji} ${def.labelBg}`, contours }];
-      });
-
-      const out = await generateNameSign({
-        letter,
-        name,
-        letterFontUrl: FONTS[letterFont].url,
-        nameFontUrl:   FONTS[nameFont].url,
-        letterHeight,
-        nameHeight,
-        depth,
-        inlayDepth,
-        tolerance,
-        nameX,
-        nameY,
-        raisedInlay,
-        autoConnect,
-        bridgeThickness,
-        curveSegments: QUALITY_SEGS[quality],
-        symbolGroups,
-      });
+      const out = await generateNameSign(buildParams(QUALITY_SEGS[quality]));
       if (id !== genId.current) return;
       setResult(out);
     } catch (e) {
@@ -168,12 +179,7 @@ export default function App() {
     } finally {
       if (id === genId.current) setBusy(false);
     }
-  }, [
-    letter, name, letterFont, nameFont,
-    letterHeight, nameHeight, depth, inlayDepth, tolerance,
-    nameX, nameY, raisedInlay, autoConnect, bridgeThickness, quality,
-    symInstances,
-  ]);
+  }, [buildParams, quality]);
 
   // Debounced live update
   useEffect(() => {
@@ -223,7 +229,7 @@ export default function App() {
     setSymInstances([]);
     setNameX(0);
     setNameY(-8);
-    setLetterColor('#2a2a2e');
+    setLetterColor('#d4d0cb');
     setNameColor('#f472b6');
     setAutoConnect(true);
     setQuality('high');
@@ -231,12 +237,29 @@ export default function App() {
 
   const isBasic = uiMode === 'basic';
 
-  const downloadStl = () => {
-    if (!result) return;
-    if (result.name) {
-      downloadCombinedSTL(result.letter, result.name, stem);
-    } else {
-      downloadSTL(result.letter, `${stem}_LETTER.stl`);
+  const downloadAtExportQuality = async (mode: 'combined' | 'zip') => {
+    if (exporting) return;
+    setExporting(true);
+    setError(null);
+    try {
+      const out = await generateNameSign(buildParams(QUALITY_SEGS.ultra));
+      if (mode === 'zip') {
+        const previewPng = await viewerRef.current?.capturePreview() ?? null;
+        await downloadSeparateZIP(
+          out.letter, out.name, stem, out.models3d, previewPng, letterColor, nameColor,
+        );
+        return;
+      }
+      if (out.name) {
+        downloadCombinedSTL(out.letter, out.name, stem, letterColor, nameColor);
+      } else {
+        downloadSTL(out.letter, `${stem}_LETTER.stl`, letterColor);
+      }
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      setError(msg);
+    } finally {
+      setExporting(false);
     }
   };
 
@@ -279,6 +302,7 @@ export default function App() {
         <section className="panel panel-viewer" aria-label="3D преглед">
           <div className="viewer-card">
             <Viewer3D
+              ref={viewerRef}
               meshes={
                 result
                   ? { letter: result.letter, name: result.name, models3d: result.models3d, depth, inlayDepth }
@@ -519,6 +543,13 @@ export default function App() {
                 <SliderRow label="Височина надпис" value={nameHeight} min={8} max={100} step={1} onChange={setNameHeight} />
                 <SliderRow label="Дълбочина" value={depth} min={4} max={20} step={0.5} onChange={setDepth} />
                 <SliderRow label="Дълбочина inlay" value={inlayDepth} min={0.8} max={Math.max(1, depth - 0.5)} step={0.1} onChange={setInlayDepth} />
+                <SliderRow
+                  label="Raised Inlay"
+                  value={raisedInlay}
+                  min={0} max={1} step={0.05}
+                  onChange={setRaisedInlay}
+                />
+                <p className="hint">Колко мм надписът стърчи над лицето. 0.3 мм (1–2 слоя) е стандартът — достатъчно за слайсера, без да изглежда като стикер.</p>
                 <SliderRow label="Tolerance" value={tolerance} min={0.05} max={0.5} step={0.05} onChange={setTolerance} />
               </div>
 
@@ -546,19 +577,25 @@ export default function App() {
                   <input type="checkbox" checked={autoConnect} onChange={(e) => setAutoConnect(e.target.checked)} />
                 </label>
                 {autoConnect && (
-                  <SliderRow
-                    label="Дебелина на моста"
-                    value={bridgeThickness}
-                    min={0.4} max={2} step={0.1}
-                    onChange={setBridgeThickness}
-                  />
+                  <>
+                    <SliderRow
+                      label="Дебелина на моста"
+                      value={bridgeThickness}
+                      min={0.4} max={2} step={0.1}
+                      onChange={setBridgeThickness}
+                    />
+                    <SliderRow
+                      label="Праг на допир (мм²)"
+                      value={minContactArea}
+                      min={0} max={50} step={0.5}
+                      onChange={setMinContactArea}
+                    />
+                    <p className="hint">
+                      Колко трябва да лежи буквата върху главната буква, за да я държи без мост.
+                      По-малка стойност → по-малко мостове.
+                    </p>
+                  </>
                 )}
-                <SliderRow
-                  label="Raised Inlay"
-                  value={raisedInlay}
-                  min={0} max={1} step={0.05}
-                  onChange={setRaisedInlay}
-                />
               </div>
 
               <div className="group">
@@ -578,17 +615,17 @@ export default function App() {
             <button
               type="button"
               className="btn-primary btn-full"
-              disabled={!result || busy}
-              onClick={downloadStl}
+              disabled={!result || busy || exporting}
+              onClick={() => void downloadAtExportQuality('combined')}
             >
-              Свали STL
+              {exporting ? 'Подготвя STL…' : 'Свали STL'}
             </button>
-            <p className="hint" style={{ marginTop: '0.5rem' }}>ZIP с отделни STL файлове (печат и лепене).</p>
+            <p className="hint" style={{ marginTop: '0.5rem' }}>ZIP с отделни STL в избраните цветове и фронтална снимка.</p>
             <button
               type="button"
               className="btn-outline btn-full"
-              disabled={!result || busy}
-              onClick={() => result && void downloadSeparateZIP(result.letter, result.name, stem, result.models3d)}
+              disabled={!result || busy || exporting}
+              onClick={() => void downloadAtExportQuality('zip')}
             >
               Свали части (ZIP)
             </button>
@@ -602,8 +639,8 @@ export default function App() {
         <button
           type="button"
           className="btn-primary"
-          disabled={!result || busy}
-          onClick={downloadStl}
+          disabled={!result || busy || exporting}
+          onClick={() => void downloadAtExportQuality('combined')}
         >
           Свали STL
         </button>
@@ -616,7 +653,11 @@ export default function App() {
         </button>
       </div>
 
-      {busy && <div className="generating-bar">Генерира…</div>}
+      {(busy || exporting) && (
+        <div className="generating-bar">
+          {exporting ? 'Подготвя STL в максимално качество…' : 'Генерира…'}
+        </div>
+      )}
     </div>
   );
 }

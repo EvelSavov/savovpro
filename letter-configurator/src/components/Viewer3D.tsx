@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { mergeVertices, toCreasedNormals } from 'three/addons/utils/BufferGeometryUtils.js';
@@ -18,16 +18,18 @@ interface Props {
   nameColor?: string;
 }
 
-function toGeo(data: MeshData): THREE.BufferGeometry {
+export type Viewer3DHandle = {
+  capturePreview: () => Promise<Blob | null>;
+};
+
+function toGeo(data: MeshData, creaseDeg = 40): THREE.BufferGeometry {
   const src = new THREE.BufferGeometry();
   src.setAttribute('position', new THREE.BufferAttribute(data.positions, 3));
   src.setIndex(new THREE.BufferAttribute(data.indices, 1));
 
   // toCreasedNormals: smooth shading within flat/gently-curved regions,
   // sharp crease only at actual geometric corners (e.g. top face → side wall).
-  // 40° threshold — smaller than the 90° top/side angle but larger than
-  // the tessellation angles inside a flat face, so triangulation seams vanish.
-  const geo = toCreasedNormals(src, THREE.MathUtils.degToRad(40));
+  const geo = toCreasedNormals(src, THREE.MathUtils.degToRad(creaseDeg));
   src.dispose();
   return geo;
 }
@@ -54,18 +56,87 @@ type SceneCtx = {
   depth: number;
   inlayDepth: number;
   frame: number;
+  framedOnce: boolean;
+  lastCenter: THREE.Vector3;
 };
 
-export function Viewer3D({
+export const Viewer3D = forwardRef<Viewer3DHandle, Props>(function Viewer3D({
   meshes,
-  letterColor = '#2a2a2e',
+  letterColor = '#d4d0cb',
   nameColor = '#f472b6',
-}: Props) {
+}, ref) {
   const hostRef = useRef<HTMLDivElement>(null);
   const ctxRef = useRef<SceneCtx | null>(null);
   const [showLetter, setShowLetter] = useState(true);
   const [showName, setShowName] = useState(true);
   const [separated, setSeparated] = useState(false);
+
+  useImperativeHandle(ref, () => ({
+    capturePreview: () => new Promise<Blob | null>((resolve) => {
+      const ctx = ctxRef.current;
+      const host = hostRef.current;
+      if (!ctx?.letterMesh) {
+        resolve(null);
+        return;
+      }
+
+      const liveW = host?.clientWidth ?? 0;
+      const liveH = host?.clientHeight ?? 0;
+      const hidden = liveW < 2 || liveH < 2;
+      const savedCam = ctx.camera.position.clone();
+      const savedTarget = ctx.controls.target.clone();
+      const savedUp = ctx.camera.up.clone();
+      const savedNamePos = ctx.nameMesh?.position.clone();
+      const letterVis = ctx.letterMesh.visible;
+      const nameVis = ctx.nameMesh?.visible ?? true;
+
+      if (hidden) {
+        ctx.camera.aspect = 16 / 10;
+        ctx.camera.updateProjectionMatrix();
+        ctx.renderer.setSize(1280, 800, false);
+      }
+
+      ctx.letterMesh.visible = true;
+      if (ctx.nameMesh) {
+        ctx.nameMesh.visible = true;
+        ctx.nameMesh.position.set(0, 0, 0);
+      }
+
+      const box = new THREE.Box3().setFromObject(ctx.letterMesh);
+      if (ctx.nameMesh) box.union(new THREE.Box3().setFromObject(ctx.nameMesh));
+      const size = box.getSize(new THREE.Vector3());
+      const center = box.getCenter(new THREE.Vector3());
+      const dist = Math.max(size.x, size.y, size.z, 1) * 2.2;
+      ctx.controls.target.copy(center);
+      ctx.camera.up.set(0, 1, 0);
+      ctx.camera.position.set(center.x, center.y, center.z + dist);
+      ctx.camera.lookAt(center);
+      ctx.controls.update();
+      ctx.renderer.render(ctx.scene, ctx.camera);
+
+      ctx.renderer.domElement.toBlob((blob) => {
+        ctx.camera.position.copy(savedCam);
+        ctx.camera.up.copy(savedUp);
+        ctx.controls.target.copy(savedTarget);
+        if (ctx.letterMesh) ctx.letterMesh.visible = letterVis;
+        if (ctx.nameMesh) {
+          ctx.nameMesh.visible = nameVis;
+          if (savedNamePos) ctx.nameMesh.position.copy(savedNamePos);
+        }
+        ctx.controls.update();
+        if (hidden && host) {
+          const w = host.clientWidth;
+          const h = host.clientHeight;
+          if (w >= 2 && h >= 2) {
+            ctx.camera.aspect = w / h;
+            ctx.camera.updateProjectionMatrix();
+            ctx.renderer.setSize(w, h, false);
+          }
+        }
+        resolve(blob);
+      }, 'image/png');
+    }),
+  }), []);
 
   const resetCamera = () => {
     const ctx = ctxRef.current;
@@ -94,7 +165,7 @@ export function Viewer3D({
     const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 5000);
     camera.position.set(150, 100, 260);
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.shadowMap.enabled = true;
@@ -127,6 +198,8 @@ export function Viewer3D({
       depth: 8,
       inlayDepth: 1.5,
       frame: 0,
+      framedOnce: false,
+      lastCenter: new THREE.Vector3(),
     };
     ctxRef.current = ctx;
 
@@ -197,7 +270,7 @@ export function Viewer3D({
 
     if (meshes.name) {
       const nm = new THREE.Mesh(
-        toGeo(meshes.name),
+        toGeo(meshes.name, 55),
         new THREE.MeshStandardMaterial({
           color: new THREE.Color(nameColor),
           metalness: 0.05,
@@ -223,19 +296,40 @@ export function Viewer3D({
       ctx.model3dMeshes.push(m3d);
     }
 
-    // Auto-fit camera — slightly angled front view so name cavity is clearly visible
     const box = new THREE.Box3().setFromObject(lm);
-    const size = box.getSize(new THREE.Vector3());
     const center = box.getCenter(new THREE.Vector3());
-    const maxDim = Math.max(size.x, size.y, size.z, 1);
-    ctx.controls.target.copy(center);
-    ctx.camera.position.set(
-      center.x + maxDim * 0.4,
-      center.y + maxDim * 0.35,
-      center.z + maxDim * 1.8,
-    );
-    ctx.controls.update();
-  }, [meshes, letterColor, nameColor]);
+
+    // Keep the user's orbit. Only frame the first model; later just
+    // slide the camera with the letter if its center moves.
+    if (!ctx.framedOnce) {
+      resetCamera();
+      ctx.framedOnce = true;
+    } else {
+      const delta = center.clone().sub(ctx.lastCenter);
+      if (delta.lengthSq() > 1e-6) {
+        ctx.camera.position.add(delta);
+        ctx.controls.target.add(delta);
+        ctx.controls.update();
+      }
+    }
+    ctx.lastCenter.copy(center);
+  }, [meshes]);
+
+  // Recolor without rebuilding geometry or resetting the camera
+  useEffect(() => {
+    const ctx = ctxRef.current;
+    if (!ctx) return;
+    const setColor = (mesh: THREE.Mesh | null, hex: string) => {
+      if (!mesh) return;
+      const mat = mesh.material;
+      if (!Array.isArray(mat) && 'color' in mat) {
+        (mat as THREE.MeshStandardMaterial).color.set(hex);
+      }
+    };
+    setColor(ctx.letterMesh, letterColor);
+    setColor(ctx.nameMesh, nameColor);
+    ctx.model3dMeshes.forEach((m) => setColor(m, nameColor));
+  }, [letterColor, nameColor, meshes]);
 
   // Toggle visibility / separated mode
   useEffect(() => {
@@ -279,4 +373,4 @@ export function Viewer3D({
       {!meshes && <p className="viewer-empty">Генерирай модел за 3D превю</p>}
     </div>
   );
-}
+});
