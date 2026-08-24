@@ -219,13 +219,23 @@ a:hover {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: linear-gradient(
-    95deg,
-    rgba(10, 10, 10, 0.32) 0%,
-    rgba(10, 10, 10, 0.14) 28%,
-    rgba(10, 10, 10, 0.04) 46%,
-    transparent 62%
-  );
+  /* Strong left vignette for text contrast + soft fade into the black page below. */
+  background:
+    linear-gradient(
+      to top,
+      var(--bg) 0%,
+      rgba(10, 10, 10, 0.92) 8%,
+      rgba(10, 10, 10, 0.45) 22%,
+      transparent 48%
+    ),
+    linear-gradient(
+      100deg,
+      rgba(10, 10, 10, 0.88) 0%,
+      rgba(10, 10, 10, 0.72) 18%,
+      rgba(10, 10, 10, 0.42) 36%,
+      rgba(10, 10, 10, 0.12) 52%,
+      transparent 68%
+    );
 }
 
 .hero-photo {
@@ -241,7 +251,7 @@ a:hover {
 .hero-content {
   position: relative;
   z-index: 2;
-  width: min(26rem, 34%);
+  width: min(28rem, 40%);
   margin-inline: max(1.25rem, env(safe-area-inset-left, 0px), 5vw) auto;
   padding-block: clamp(2.25rem, 7vw, 4.5rem);
 }
@@ -272,11 +282,15 @@ a:hover {
 .hero h1 {
   margin: 0;
   font-family: var(--font-heading);
-  font-size: clamp(2.4rem, 6.4vw, 4.1rem);
+  font-size: clamp(1.85rem, 4.6vw, 3.05rem);
   font-weight: 700;
-  line-height: 0.92;
-  letter-spacing: 0.04em;
-  text-shadow: 0 2px 28px rgba(0, 0, 0, 0.55);
+  line-height: 1.08;
+  letter-spacing: 0.02em;
+  hyphens: none;
+  -webkit-hyphens: none;
+  overflow-wrap: normal;
+  word-break: keep-all;
+  text-shadow: 0 2px 28px rgba(0, 0, 0, 0.7);
   animation: hero-rise 0.95s ease 0.28s both;
 }
 
@@ -294,9 +308,9 @@ a:hover {
 .hero-lead {
   margin: 0 0 1.6rem;
   font-size: clamp(1.02rem, 2vw, 1.18rem);
-  color: rgba(244, 244, 245, 0.94);
-  text-shadow: 0 1px 16px rgba(0, 0, 0, 0.45);
-  max-width: 36ch;
+  color: rgba(244, 244, 245, 0.96);
+  text-shadow: 0 1px 18px rgba(0, 0, 0, 0.65);
+  max-width: 38ch;
   animation: hero-rise 0.95s ease 0.42s both;
 }
 
@@ -310,6 +324,19 @@ a:hover {
 .hero-actions .btn {
   padding: 0.85rem 1.7rem;
   font-size: 0.98rem;
+}
+
+.hero-btn-secondary {
+  border-color: rgba(255, 255, 255, 0.45);
+  color: #fff;
+  background: rgba(10, 10, 10, 0.35);
+  backdrop-filter: blur(8px);
+}
+
+.hero-btn-secondary:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+  background: rgba(10, 10, 10, 0.5);
 }
 
 @keyframes hero-kenburns {
@@ -336,7 +363,9 @@ a:hover {
   }
 
   .hero-media::after {
-    background: linear-gradient(to bottom, transparent 62%, var(--bg));
+    background:
+      linear-gradient(to bottom, rgba(10, 10, 10, 0.35) 0%, transparent 28%),
+      linear-gradient(to top, var(--bg) 0%, rgba(10, 10, 10, 0.75) 28%, transparent 55%);
   }
 
   .hero-photo {
@@ -393,6 +422,22 @@ a:hover {
   border-top: 1px solid var(--border);
 }
 
+#services {
+  position: relative;
+  z-index: 1;
+  border-top: none;
+  background: var(--bg);
+}
+
+#services.section-tight {
+  padding-top: clamp(2rem, 4.5vw, 2.75rem);
+  padding-bottom: clamp(1.25rem, 3vw, 2rem);
+}
+
+#services .section-intro {
+  max-width: 52ch;
+}
+
 #process-engraving {
   z-index: 1;
 }
@@ -403,6 +448,10 @@ a:hover {
 
 #process-stickers {
   z-index: 3;
+}
+
+#process-3d {
+  z-index: 4;
 }
 
 .process-track {
@@ -420,16 +469,32 @@ a:hover {
   overflow-x: clip;
 }
 
+#process-sublimation .process-layout {
+  overflow: visible;
+}
+
+#process-sublimation .process-visual,
+#process-sublimation .process-frame--mug,
+#process-3d .process-layout,
+#process-3d .process-visual,
+#process-3d .process-frame--print3d {
+  overflow: visible;
+}
+
 @media (min-width: 880px) {
   #process-engraving .process-track {
-    height: 340vh;
+    height: 280vh;
   }
 
   #process-sublimation .process-track {
-    height: 180vh;
+    height: 260vh;
   }
 
   #process-stickers .process-track {
+    height: 200vh;
+  }
+
+  #process-3d .process-track {
     height: 180vh;
   }
 
@@ -439,8 +504,8 @@ a:hover {
     min-height: calc(100vh - var(--header-h));
     min-height: calc(100svh - var(--header-h));
     display: grid;
-    align-items: center;
-    padding-block: 2rem;
+    align-items: start;
+    padding-block: clamp(1.25rem, 3vw, 2rem) 2rem;
   }
 
   .process-layout {
@@ -662,6 +727,7 @@ a:hover {
   top: calc(var(--process-reveal, 0) * 100%);
   height: 0;
   opacity: 0;
+  pointer-events: none;
 }
 
 .process-product.is-engraving .process-beam {
@@ -673,28 +739,162 @@ a:hover {
   left: 0;
   right: 0;
   top: 0;
-  border-top: 1.5px solid #f0d48a;
-  box-shadow: 0 0 8px rgba(201, 162, 39, 0.85);
+  border-top: 1px solid rgba(240, 212, 138, 0.55);
+  box-shadow: 0 0 6px rgba(201, 162, 39, 0.45);
   transform: translateY(-50%);
+}
+
+.process-laser {
+  position: absolute;
+  top: 0;
+  left: var(--process-scan-x, 50%);
+  width: 0;
+  height: 0;
+  transform: translate(-50%, -50%);
+}
+
+.process-laser-head {
+  position: absolute;
+  left: 50%;
+  bottom: 14px;
+  width: 18px;
+  height: 22px;
+  transform: translateX(-50%);
+  background:
+    linear-gradient(180deg, #3a3a3a 0%, #1a1a1a 55%, #0d0d0d 100%);
+  border-radius: 4px 4px 2px 2px;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 4px 10px rgba(0, 0, 0, 0.45);
+}
+
+.process-laser-head::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 3px;
+  width: 12px;
+  height: 7px;
+  transform: translateX(-50%);
+  border-radius: 2px;
+  background: linear-gradient(180deg, #6a6a6a, #2c2c2c);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+.process-laser-head::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -7px;
+  width: 8px;
+  height: 8px;
+  transform: translateX(-50%);
+  background: linear-gradient(180deg, #d4af37, #8a7018);
+  clip-path: polygon(18% 0, 82% 0, 100% 100%, 0 100%);
+  box-shadow: 0 0 8px rgba(255, 200, 80, 0.55);
+}
+
+.process-laser-ray {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 2px;
+  height: 14px;
+  transform: translate(-50%, 0);
+  background: linear-gradient(180deg, rgba(255, 246, 210, 0.15), #fff6d2 70%, #f0d48a);
+  box-shadow: 0 0 8px rgba(255, 220, 120, 0.95);
+  border-radius: 1px;
 }
 
 .process-beam-dot {
   position: absolute;
   top: 0;
-  left: var(--process-scan-x, 50%);
-  width: 9px;
-  height: 9px;
+  left: 50%;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
-  background: #fff6d2;
-  border: 1px solid var(--gold);
-  box-shadow: 0 0 12px rgba(255, 220, 120, 0.95);
+  background: #fff8e0;
+  box-shadow:
+    0 0 10px rgba(255, 230, 140, 1),
+    0 0 18px rgba(201, 162, 39, 0.85);
   transform: translate(-50%, -50%);
 }
 
+.process-sparks {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 22px;
+  height: 22px;
+  transform: translate(-50%, -50%);
+  animation: process-spark-flicker 0.28s steps(2) infinite;
+}
+
+.process-sparks i {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 1.5px;
+  height: 7px;
+  margin: -3.5px 0 0 -0.75px;
+  background: linear-gradient(180deg, #fff6d2, rgba(201, 162, 39, 0.15));
+  border-radius: 1px;
+  transform-origin: 50% 50%;
+  box-shadow: 0 0 4px rgba(255, 210, 100, 0.8);
+}
+
+.process-sparks i:nth-child(1) { transform: rotate(0deg) translateY(-8px); height: 8px; }
+.process-sparks i:nth-child(2) { transform: rotate(45deg) translateY(-7px); height: 6px; }
+.process-sparks i:nth-child(3) { transform: rotate(90deg) translateY(-8px); height: 7px; }
+.process-sparks i:nth-child(4) { transform: rotate(135deg) translateY(-6px); height: 5px; }
+.process-sparks i:nth-child(5) { transform: rotate(180deg) translateY(-7px); height: 6px; }
+.process-sparks i:nth-child(6) { transform: rotate(225deg) translateY(-8px); height: 7px; }
+.process-sparks i:nth-child(7) { transform: rotate(270deg) translateY(-6px); height: 5px; }
+.process-sparks i:nth-child(8) { transform: rotate(315deg) translateY(-7px); height: 6px; }
+
+@keyframes process-spark-flicker {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    opacity: 0.55;
+    transform: translate(-50%, -50%) scale(0.86);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.08);
+  }
+}
+
 .process-frame--mug::before {
-  top: 56%;
-  width: 50%;
-  height: 58%;
+  top: 58%;
+  width: 52%;
+  height: 56%;
+}
+
+.process-frame--mug[data-active="bottle"]::before {
+  top: 54%;
+  width: 42%;
+  height: 62%;
+}
+
+.process-mug-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  opacity: 0;
+}
+
+.process-frame--mug.is-3d .process-mug-canvas {
+  opacity: 1;
+}
+
+.process-frame--mug.is-3d .process-mug-fallback {
+  opacity: 0;
+  pointer-events: none;
 }
 
 .process-print {
@@ -751,43 +951,154 @@ a:hover {
 }
 
 .process-frame--sticker::before {
-  top: 50%;
-  width: 78%;
-  height: 42%;
+  top: 60%;
+  width: 64%;
+  height: 48%;
 }
 
-.process-sticker {
+.process-vinyl {
+  position: absolute;
+  inset: 8% 7% 6%;
+  display: grid;
+  grid-template-columns: 16.25% 1fr 10.6%;
+  grid-template-rows: auto 1fr;
+}
+
+.process-vinyl-spool {
+  position: relative;
+  z-index: 3;
+  grid-column: 1 / -1;
+  grid-row: 1;
+  width: 100%;
+  aspect-ratio: 160 / 72;
+  opacity: calc(1 - max(0, var(--sticker-weed, 0) - 0.88) / 0.12);
+  transform-origin: 80% 0;
+  transform: translate3d(var(--weed-x, 0px), var(--weed-y, 0px), 0)
+    rotate(calc(var(--sticker-weed, 0) * -5deg));
+  filter: drop-shadow(0 10px 14px rgba(0, 0, 0, 0.45));
+  will-change: transform;
+}
+
+.process-vinyl-spool-end {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.process-vinyl-sheet {
+  position: relative;
+  z-index: 1;
+  grid-column: 2;
+  grid-row: 2;
+  margin-top: -2.5%;
+  overflow: hidden;
+  border-radius: 0 0 12px 12px;
+  clip-path: inset(0 0 calc((1 - var(--vinyl-unroll, 0)) * 100%) 0);
+}
+
+.process-frame--sticker.is-weeding .process-vinyl-sheet {
+  overflow: visible;
+  clip-path: none;
+}
+
+#process-stickers .process-layout,
+#process-stickers .process-visual,
+#process-stickers .process-frame--sticker {
+  overflow: visible;
+}
+
+.process-vinyl-foil {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      180deg,
+      #a07a22 0%,
+      #d4af37 14%,
+      #e8c85a 42%,
+      #f0d56a 100%
+    );
+  box-shadow:
+    inset 1px 0 0 rgba(255, 236, 180, 0.18),
+    inset -1px 0 0 rgba(50, 34, 6, 0.28),
+    inset 0 10px 14px rgba(40, 28, 6, 0.28),
+    0 16px 22px rgba(0, 0, 0, 0.3);
+  opacity: calc(1 - max(0, var(--sticker-weed, 0) - 0.88) / 0.12);
+  transform-origin: 80% 0;
+  transform: translate3d(var(--weed-x, 0px), var(--weed-y, 0px), 0)
+    rotate(calc(var(--sticker-weed, 0) * -5deg));
+  will-change: transform;
+}
+
+.process-frame--sticker.is-punched .process-vinyl-foil,
+.process-frame--sticker.is-weeding .process-vinyl-foil {
+  -webkit-mask-image:
+    url("assets/logo/logo-vinyl-mask.svg"),
+    linear-gradient(#fff 0 0);
+  -webkit-mask-size: var(--hole-w, 86%) var(--hole-h, auto), 100% 100%;
+  -webkit-mask-position: var(--hole-x, 0px) var(--hole-y, 0px), 0 0;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-composite: xor;
+  mask-image:
+    url("assets/logo/logo-vinyl-mask.svg"),
+    linear-gradient(#fff 0 0);
+  mask-mode: alpha, alpha;
+  mask-size: var(--hole-w, 86%) var(--hole-h, auto), 100% 100%;
+  mask-position: var(--hole-x, 0px) var(--hole-y, 0px), 0 0;
+  mask-repeat: no-repeat;
+  mask-composite: exclude;
+}
+
+.process-sticker-mark {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 68%;
-  transform: translate(-50%, calc(-50% + var(--sticker-lift, 8px)));
-  filter: drop-shadow(0 10px 18px rgba(0, 0, 0, calc(0.45 * var(--sticker-fill, 0))));
+  z-index: 2;
+  width: 86%;
+  aspect-ratio: 976 / 429;
+  transform: translate(-50%, calc(-50% + var(--sticker-lift, 0px)));
 }
 
-.process-sticker-fill {
-  display: block;
-  width: 100%;
-  height: auto;
-  opacity: var(--sticker-fill, 0);
-}
-
+.process-sticker-fill,
 .process-sticker-cut {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
+}
+
+.process-sticker-fill {
+  display: block;
+  object-fit: contain;
+  object-position: center;
+  opacity: var(--sticker-fill, 0);
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, calc(0.45 * var(--sticker-fill, 0))));
+}
+
+.process-frame--sticker.is-punched .process-sticker-fill {
+  filter:
+    drop-shadow(0 0 10px rgba(201, 162, 39, 0.35))
+    drop-shadow(0 6px 12px rgba(0, 0, 0, 0.45));
+}
+
+.process-frame--sticker.is-weeded .process-sticker-fill {
+  filter:
+    drop-shadow(0 0 18px rgba(201, 162, 39, 0.55))
+    drop-shadow(0 10px 20px rgba(0, 0, 0, 0.5));
+}
+
+.process-sticker-cut {
   overflow: visible;
   pointer-events: none;
 }
 
 .process-sticker-cut-path {
   fill: none;
-  stroke: #f0d48a;
-  stroke-width: 7;
+  stroke: #fff6d2;
+  stroke-width: 4.5;
   stroke-linecap: round;
   stroke-linejoin: round;
-  filter: drop-shadow(0 0 6px rgba(201, 162, 39, 0.7));
+  filter: drop-shadow(0 0 5px rgba(201, 162, 39, 0.75));
 }
 
 .process-sticker-blade {
@@ -802,11 +1113,121 @@ a:hover {
   opacity: 1;
 }
 
+.process-frame--print3d::before {
+  top: 68%;
+  width: 58%;
+  height: 38%;
+}
+
+.process-print3d-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  opacity: 0;
+}
+
+.process-frame--print3d.is-3d .process-print3d-canvas {
+  opacity: 1;
+}
+
+.process-frame--print3d.is-3d .process-print3d-fallback,
+.process-frame--print3d.is-3d .process-print3d-fallback-layers,
+.process-frame--print3d.is-3d .process-nozzle,
+.process-frame--print3d.is-3d.is-printing .process-nozzle {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.process-print3d {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  clip-path: inset(calc(32% + (1 - var(--print3d-reveal, 0)) * 54%) 0 14% 0);
+}
+
+.process-print3d-object {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.process-print3d::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 3px,
+    rgba(201, 162, 39, 0.1) 3px,
+    rgba(201, 162, 39, 0.1) 4px
+  );
+  pointer-events: none;
+}
+
+.process-nozzle {
+  position: absolute;
+  left: var(--print3d-x, 50%);
+  top: calc(32% + (1 - var(--print3d-reveal, 0)) * 54%);
+  width: 0;
+  height: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.process-frame--print3d.is-printing .process-nozzle {
+  opacity: 1;
+}
+
+.process-nozzle-line {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 42%;
+  border-top: 1.5px solid #f0d48a;
+  box-shadow: 0 0 8px rgba(201, 162, 39, 0.85);
+  transform: translate(-50%, -50%);
+}
+
+.process-nozzle-head {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 11px;
+  height: 14px;
+  background: #fff6d2;
+  border: 1px solid var(--gold);
+  border-radius: 2px 2px 4px 4px;
+  box-shadow: 0 0 12px rgba(255, 220, 120, 0.95);
+  transform: translate(-50%, calc(-100% - 2px));
+}
+
+.process-nozzle-head::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -5px;
+  width: 5px;
+  height: 6px;
+  background: var(--gold);
+  clip-path: polygon(20% 0, 80% 0, 100% 100%, 0 100%);
+  transform: translateX(-50%);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .process-beam,
   .process-heat,
-  .process-sticker-cut {
+  .process-sticker-cut,
+  .process-nozzle {
     display: none;
+  }
+
+  .process-sparks {
+    animation: none;
   }
 
   .process-burn,
@@ -818,8 +1239,21 @@ a:hover {
     opacity: 1;
   }
 
-  .process-sticker {
+  .process-sticker-mark {
     transform: translate(-50%, -50%);
+  }
+
+  .process-vinyl-sheet {
+    clip-path: none;
+  }
+
+  .process-vinyl-foil,
+  .process-vinyl-spool {
+    opacity: 0;
+  }
+
+  .process-print3d {
+    clip-path: inset(32% 0 14% 0);
   }
 
   .process-layout .process-copy,
@@ -844,11 +1278,15 @@ a:hover {
   }
 
   #process-sublimation .process-track {
-    height: 150vh;
+    height: 240vh;
   }
 
   #process-stickers .process-track {
-    height: 150vh;
+    height: 190vh;
+  }
+
+  #process-3d .process-track {
+    height: 180vh;
   }
 
   .process-layout,
@@ -1154,6 +1592,7 @@ button.btn-primary:hover {
 .card--service-auto       { --card-bg: url("assets/services/service-automotive-accessories.png"); }
 .card--service-vehicle    { --card-bg: url("assets/services/service-vehicle-branding.png"); }
 
+.card h2,
 .card h3 {
   margin: 0 0 0.55rem;
   font-family: var(--font-heading);
@@ -1168,6 +1607,19 @@ button.btn-primary:hover {
   font-size: 0.98rem;
   line-height: 1.55;
   color: rgba(244, 244, 245, 0.88);
+}
+
+.services-page {
+  padding-top: calc(var(--header-h) + clamp(1.5rem, 4vw, 2.5rem));
+  min-height: calc(100svh - var(--header-h));
+}
+
+.services-page-cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-top: clamp(1.75rem, 4vw, 2.5rem);
 }
 
 .card-cover-link {

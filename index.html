@@ -153,7 +153,7 @@
       </button>
       <nav id="site-nav" class="site-nav" aria-label="Основна навигация">
         <ul>
-          <li><a href="#services">Услуги</a></li>
+          <li><a href="services.html">Услуги</a></li>
           <li><a href="gallery.html">Галерия</a></li>
           <li><a href="#about">За нас</a></li>
           <li><a href="#contact">Контакт</a></li>
@@ -177,12 +177,13 @@
       </div>
       <div class="hero-content">
         <p id="brand-tagline" class="hero-kicker" lang="en">Made specially for you</p>
-        <h1 id="hero-title" lang="en">SAVOV PRO</h1>
+        <h1 id="hero-title">Персонализирани подаръци<br />по ваша идея</h1>
         <p class="hero-lead">
-          Персонализирани подаръци и изделия по ваша идея — лазерно гравиране, стикери, сублимация и 3D принт.
+          Лазерно гравиране, сублимация, стикери и 3D принт — изделия, които носят вашето име, лого или послание.
         </p>
         <div class="hero-actions">
           <a class="btn btn-primary" href="gallery.html">Виж галерията</a>
+          <a class="btn btn-outline hero-btn-secondary" href="#contact">Запитване</a>
         </div>
       </div>
     </section>
@@ -192,7 +193,7 @@
         <div class="process-sticky">
           <div class="container process-layout is-from-left">
             <div class="process-copy">
-              <p class="process-kicker">Как се прави</p>
+              <p class="process-kicker">Наша услуга</p>
               <h2 id="process-title">Лазерно гравиране</h2>
               <div class="process-swap" data-process-swap>
                 <p class="process-item" data-process-item>Ключодържател</p>
@@ -220,7 +221,14 @@
                       </div>
                       <div class="process-beam">
                         <span class="process-beam-line"></span>
-                        <span class="process-beam-dot"></span>
+                        <span class="process-laser">
+                          <span class="process-laser-head" aria-hidden="true"></span>
+                          <span class="process-laser-ray" aria-hidden="true"></span>
+                          <span class="process-beam-dot"></span>
+                          <span class="process-sparks" aria-hidden="true">
+                            <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+                          </span>
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -241,7 +249,14 @@
                       </div>
                       <div class="process-beam">
                         <span class="process-beam-line"></span>
-                        <span class="process-beam-dot"></span>
+                        <span class="process-laser">
+                          <span class="process-laser-head" aria-hidden="true"></span>
+                          <span class="process-laser-ray" aria-hidden="true"></span>
+                          <span class="process-beam-dot"></span>
+                          <span class="process-sparks" aria-hidden="true">
+                            <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+                          </span>
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -262,7 +277,14 @@
                       </div>
                       <div class="process-beam">
                         <span class="process-beam-line"></span>
-                        <span class="process-beam-dot"></span>
+                        <span class="process-laser">
+                          <span class="process-laser-head" aria-hidden="true"></span>
+                          <span class="process-laser-ray" aria-hidden="true"></span>
+                          <span class="process-beam-dot"></span>
+                          <span class="process-sparks" aria-hidden="true">
+                            <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+                          </span>
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -279,37 +301,38 @@
         <div class="process-sticky">
           <div class="container process-layout is-flip is-from-right">
             <div class="process-copy">
-              <p class="process-kicker">Как се прави</p>
+              <p class="process-kicker">Наша услуга</p>
               <h2 id="process-sub-title">Сублимационен печат</h2>
-              <p class="process-item">Чаша</p>
-              <p class="process-lead">
-                Пълноцветно изображение, което влиза в покритието — наситено, трайно, без залепване и без лющене.
-              </p>
+              <div class="process-swap" data-sub-swap>
+                <p class="process-item" data-sub-item>Чаша</p>
+                <p class="process-lead" data-sub-lead>
+                  Пълноцветно изображение, което влиза в покритието — наситено, трайно, без залепване и без лющене.
+                </p>
+              </div>
               <a class="btn btn-outline" href="gallery.html?tag=sublimation">Виж сублимирани изделия</a>
             </div>
             <div class="process-visual">
-              <div class="process-frame process-frame--mug" data-sub-frame>
+              <div class="process-frame process-frame--mug" data-sub-frame data-active="mug">
+                <canvas class="process-mug-canvas" data-sub-canvas aria-hidden="true"></canvas>
                 <img
-                  class="process-blank"
+                  class="process-blank process-mug-fallback"
+                  data-sub-fallback="mug"
                   src="assets/process/mug-blank.svg"
                   width="320"
                   height="360"
                   alt="Празна керамична чаша преди сублимационен печат"
                   decoding="async"
                 />
-                <div class="process-print" aria-hidden="true">
-                  <img
-                    class="process-print-mark"
-                    src="assets/logo/logo-full.svg"
-                    width="976"
-                    height="429"
-                    alt=""
-                  />
-                  <div class="process-heat">
-                    <span class="process-heat-line"></span>
-                    <span class="process-heat-dot"></span>
-                  </div>
-                </div>
+                <img
+                  class="process-blank process-mug-fallback"
+                  data-sub-fallback="bottle"
+                  src="assets/process/bottle-blank.svg"
+                  width="320"
+                  height="360"
+                  alt="Празна алуминиева бутилка преди сублимационен печат"
+                  decoding="async"
+                  hidden
+                />
               </div>
             </div>
           </div>
@@ -322,7 +345,7 @@
         <div class="process-sticky">
           <div class="container process-layout is-from-left">
             <div class="process-copy">
-              <p class="process-kicker">Как се прави</p>
+              <p class="process-kicker">Наша услуга</p>
               <h2 id="process-sticker-title">Стикери и плотер</h2>
               <p class="process-item">Винил</p>
               <p class="process-lead">
@@ -331,21 +354,58 @@
               <a class="btn btn-outline" href="gallery.html?tag=stickers">Виж стикери</a>
             </div>
             <div class="process-visual">
-              <div class="process-frame process-frame--sticker" data-sticker-frame role="img" aria-label="Златен винилов стикер SAVOV PRO, изрязан с плотер">
-                <div class="process-sticker">
-                  <img
-                    class="process-sticker-fill"
-                    src="assets/logo/logo-vinyl.svg"
-                    width="976"
-                    height="429"
-                    alt=""
-                  />
-                  <svg
-                    class="process-sticker-cut"
-                    viewBox="0 0 975.99323 429.25574"
-                    aria-hidden="true"
-                    focusable="false"
-                  ></svg>
+              <div class="process-frame process-frame--sticker" data-sticker-frame role="img" aria-label="Златно винилово фолио се развива от ролка, плотерът реже логото и остава само стикерът">
+                <div class="process-vinyl">
+                  <div class="process-vinyl-spool" aria-hidden="true">
+                    <svg class="process-vinyl-spool-end" viewBox="0 0 160 72" aria-hidden="true" focusable="false">
+                      <defs>
+                        <linearGradient id="vinyl-cyl" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stop-color="#f6e7b0"/>
+                          <stop offset="22%" stop-color="#e8c85a"/>
+                          <stop offset="50%" stop-color="#d4af37"/>
+                          <stop offset="80%" stop-color="#8d6914"/>
+                          <stop offset="100%" stop-color="#3d2c08"/>
+                        </linearGradient>
+                        <radialGradient id="vinyl-core" cx="38%" cy="34%" r="70%">
+                          <stop offset="0%" stop-color="#c4a06a"/>
+                          <stop offset="55%" stop-color="#8a6230"/>
+                          <stop offset="100%" stop-color="#3a2410"/>
+                        </radialGradient>
+                        <radialGradient id="vinyl-face" cx="36%" cy="30%" r="75%">
+                          <stop offset="0%" stop-color="#f3df9a"/>
+                          <stop offset="42%" stop-color="#d4af37"/>
+                          <stop offset="100%" stop-color="#7a5c18"/>
+                        </radialGradient>
+                      </defs>
+                      <ellipse cx="146" cy="36" rx="11" ry="33" fill="#6e5312"/>
+                      <ellipse cx="143" cy="36" rx="9" ry="31" fill="url(#vinyl-cyl)"/>
+                      <rect x="26" y="5" width="117" height="62" fill="url(#vinyl-cyl)"/>
+                      <ellipse cx="26" cy="36" rx="16" ry="33" fill="url(#vinyl-face)"/>
+                      <ellipse cx="26" cy="36" rx="13.2" ry="27.2" fill="none" stroke="#a07a20" stroke-width="1.5" opacity="0.85"/>
+                      <ellipse cx="26" cy="36" rx="10.2" ry="21" fill="none" stroke="#e0c04a" stroke-width="1.2" opacity="0.7"/>
+                      <ellipse cx="26" cy="36" rx="7.4" ry="15.2" fill="none" stroke="#8d6914" stroke-width="1.4" opacity="0.8"/>
+                      <ellipse cx="26" cy="36" rx="5.4" ry="11.2" fill="url(#vinyl-core)"/>
+                      <ellipse cx="26" cy="36" rx="2.3" ry="4.8" fill="#1a1008"/>
+                    </svg>
+                  </div>
+                  <div class="process-vinyl-sheet">
+                    <div class="process-vinyl-foil"></div>
+                    <div class="process-sticker-mark">
+                      <img
+                        class="process-sticker-fill"
+                        src="assets/logo/logo-vinyl.svg"
+                        width="976"
+                        height="429"
+                        alt=""
+                      />
+                      <svg
+                        class="process-sticker-cut"
+                        viewBox="0 0 975.99323 429.25574"
+                        aria-hidden="true"
+                        focusable="false"
+                      ></svg>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -354,44 +414,47 @@
       </div>
     </section>
 
-    <section id="services" class="section section-tight" aria-labelledby="services-title">
-      <div class="container">
-        <h2 id="services-title" class="section-heading">Нашите услуги</h2>
-        <p class="section-intro">
-          Съчетавайки модерни технологии, прецизна изработка и внимание към всеки детайл, създаваме персонализирани продукти и рекламни решения, които отличават Вашия бранд.
-        </p>
-        <ul class="cards">
-          <li class="card card--service-vinyl">
-            <h3>Стикери и плотерно рязане</h3>
-            <p>Изработка на автомобилни стикери, фирмени надписи, етикети и рекламни графики с прецизно плотерно рязане.</p>
-            <a class="card-cover-link" href="gallery.html?tag=stickers" aria-label="Виж галерия: Стикери и плотерно рязане"></a>
-          </li>
-          <li class="card card--service-sublimation">
-            <h3>Сублимационен печат</h3>
-            <p>Персонализиране на чаши, алуминиеви бутилки, тениски, магнити и други сувенири с ярки, наситени и устойчиви цветове.</p>
-            <a class="card-cover-link" href="gallery.html?tag=sublimation" aria-label="Виж галерия: Сублимационен печат"></a>
-          </li>
-          <li class="card card--service-3d">
-            <h3>3D принтиране</h3>
-            <p>Прототипи, функционални детайли, резервни части и персонализирани модели с висока точност.</p>
-            <a class="card-cover-link" href="gallery.html?tag=3d" aria-label="Виж галерия: 3D принтиране"></a>
-          </li>
-          <li class="card card--service-laser">
-            <h3>Лазерно гравиране</h3>
-            <p>Прецизно гравиране върху дърво, кожа, метал и други материали за уникални подаръци и рекламни изделия.</p>
-            <a class="card-cover-link" href="gallery.html?tag=engraving" aria-label="Виж галерия: Лазерно гравиране"></a>
-          </li>
-          <li class="card card--service-promo">
-            <h3>Сувенири и рекламни изделия</h3>
-            <p>Бамбукови химикалки, дървени ключодържатели, дървени визитки, ароматизатори и персонализирани подаръци, изработени специално за всеки клиент.</p>
-            <a class="card-cover-link" href="gallery.html?tag=souvenirs" aria-label="Виж галерия: Сувенири и рекламни изделия"></a>
-          </li>
-          <li class="card card--service-auto">
-            <h3>Автомобилни аксесоари</h3>
-            <p>Подбор и персонализиране на автомобилни аксесоари, ароматизатори, декоративни елементи и рекламни продукти за автомобили.</p>
-            <a class="card-cover-link" href="gallery.html?tag=auto" aria-label="Виж галерия: Автомобилни аксесоари"></a>
-          </li>
-        </ul>
+    <section id="process-3d" class="process" aria-labelledby="process-3d-title">
+      <div class="process-track">
+        <div class="process-sticky">
+          <div class="container process-layout is-flip is-from-right">
+            <div class="process-copy">
+              <p class="process-kicker">Наша услуга</p>
+              <h2 id="process-3d-title">3D принтиране</h2>
+              <p class="process-item">Зъбно колело</p>
+              <p class="process-lead">
+                Слой по слой нишката става работещ детайл — точна форма за сглобка и резервни части.
+              </p>
+              <a class="btn btn-outline" href="gallery.html?tag=3d">Виж 3D изделия</a>
+            </div>
+            <div class="process-visual">
+              <div class="process-frame process-frame--print3d" data-print3d-frame role="img" aria-label="3D принтирано зъбно колело, което расте слой по слой и се върти">
+                <canvas class="process-print3d-canvas" data-print3d-canvas aria-hidden="true"></canvas>
+                <img
+                  class="process-blank process-print3d-fallback"
+                  src="assets/process/print3d-bed.svg"
+                  width="320"
+                  height="360"
+                  alt="3D принтирано зъбно колело, което расте слой по слой"
+                  decoding="async"
+                />
+                <div class="process-print3d process-print3d-fallback-layers" aria-hidden="true">
+                  <img
+                    class="process-print3d-object"
+                    src="assets/process/print3d-gear.svg"
+                    width="320"
+                    height="360"
+                    alt=""
+                  />
+                </div>
+                <div class="process-nozzle process-print3d-fallback-layers" aria-hidden="true">
+                  <span class="process-nozzle-line"></span>
+                  <span class="process-nozzle-head"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -646,12 +709,21 @@
     </div>
   </footer>
 
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.1/examples/jsm/"
+    }
+  }
+  </script>
   <script src="script.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js" defer></script>
   <script src="assets/js/process-engraving.js" defer></script>
-  <script src="assets/js/process-sublimation.js" defer></script>
+  <script type="module" src="assets/js/process-sublimation.js"></script>
   <script src="assets/js/process-stickers.js" defer></script>
+  <script type="module" src="assets/js/process-3d.js"></script>
   <script src="assets/js/analytics.js" defer></script>
   <script src="assets/js/cookie-consent.js" defer></script>
 </body>
