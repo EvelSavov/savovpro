@@ -8,73 +8,35 @@
   var track = root.querySelector(".process-track");
   var pin = root.querySelector(".process-sticky");
   var layout = root.querySelector(".process-layout");
-  var swapWrap = root.querySelector("[data-process-swap]");
-  var itemLabel = root.querySelector("[data-process-item]");
-  var leadEl = root.querySelector("[data-process-lead]");
   var products = Array.prototype.slice.call(
     frame.querySelectorAll("[data-process-product]")
   );
   if (!track || !pin || products.length === 0) return;
 
-  var COPY = {
-    keychain: {
-      item: "Ключодържател",
-      lead: "Прецизно персонализиране върху дърво и други материали — надписът остава в материала, без мастило и без залепване."
-    },
-    freshener: {
-      item: "Ароматизатор",
-      lead: "Надписът седи в дървото на овала — траен, тънък и без лепило върху лицето."
-    },
-    pen: {
-      item: "Химикалка",
-      lead: "По бамбука остава чиста линия — името или логото влиза в материала."
-    }
-  };
-
-  var lastId = null;
-  var swapTimer = 0;
-
-  function setCopy(id, instant) {
-    var data = COPY[id];
-    if (!data) return;
-    if (instant || !swapWrap || lastId === null) {
-      if (itemLabel) itemLabel.textContent = data.item;
-      if (leadEl) leadEl.textContent = data.lead;
-      lastId = id;
-      return;
-    }
-    if (id === lastId) return;
-    lastId = id;
-    swapWrap.classList.remove("is-in");
-    swapWrap.classList.add("is-out");
-    window.clearTimeout(swapTimer);
-    swapTimer = window.setTimeout(function () {
-      if (itemLabel) itemLabel.textContent = data.item;
-      if (leadEl) leadEl.textContent = data.lead;
-      swapWrap.classList.remove("is-out");
-      swapWrap.classList.add("is-in");
-    }, 240);
-  }
-
-  function setActiveName(id, instant) {
-    setCopy(id, instant);
+  function setActiveName(id) {
     frame.setAttribute("data-active", id);
   }
 
+  var chosen = products[Math.floor(Math.random() * products.length)];
+  var chosenId = chosen.getAttribute("data-process-product");
+  products.forEach(function (el) {
+    var on = el === chosen;
+    el.classList.toggle("is-active", on);
+    el.style.opacity = on ? "1" : "0";
+    el.style.visibility = on ? "visible" : "hidden";
+    if (!on) el.setAttribute("hidden", "");
+  });
+  setActiveName(chosenId);
+  products = [chosen];
+
   var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   if (reduced) {
-    products.forEach(function (el, i) {
-      el.style.setProperty("--process-reveal", i === 0 ? "1" : "0");
-      el.classList.toggle("is-active", i === 0);
-    });
-    setActiveName(products[0].getAttribute("data-process-product"), true);
+    chosen.style.setProperty("--process-reveal", "1");
     if (layout) layout.classList.add("is-shown");
     return;
   }
 
-  products.forEach(function (el) {
-    el.style.setProperty("--process-reveal", "0");
-  });
+  chosen.style.setProperty("--process-reveal", "0");
 
   function segmentState(p, index, count) {
     var start = index / count;
@@ -122,7 +84,7 @@
       }
     });
 
-    setActiveName(bestId, lastId === null);
+    setActiveName(bestId);
 
     var sweeps = 10;
     var phase = (progress * count * sweeps) % 1;
@@ -142,15 +104,27 @@
 
     apply(0);
 
+    function scrubRange() {
+      var viewH = Math.max(1, window.innerHeight - headerH);
+      var pinH = Math.min(pin.offsetHeight || 0, viewH);
+      var travel = (track.offsetHeight || 0) - pinH;
+      if (travel < 96) {
+        return { start: "top 70%", end: "bottom 22%" };
+      }
+      return { start: "top top+=" + headerH, end: "+=" + Math.max(1, travel) };
+    }
+
     var tweenState = { p: 0 };
     gsap.to(tweenState, {
       p: 1,
       ease: "none",
       scrollTrigger: {
         trigger: track,
-        start: "top top+=" + headerH,
+        start: function () {
+          return scrubRange().start;
+        },
         end: function () {
-          return "+=" + Math.max(1, track.offsetHeight - pin.offsetHeight);
+          return scrubRange().end;
         },
         scrub: 0.55,
         invalidateOnRefresh: true,
@@ -194,5 +168,12 @@
 
   layouts.forEach(function (el) {
     io.observe(el);
+  });
+
+  window.addEventListener("orientationchange", function () {
+    if (typeof ScrollTrigger === "undefined") return;
+    window.setTimeout(function () {
+      ScrollTrigger.refresh();
+    }, 280);
   });
 })();

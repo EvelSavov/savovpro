@@ -53,12 +53,47 @@
     path.setAttribute("d", pathD);
     path.setAttribute("class", "process-sticker-cut-path");
 
-    var blade = document.createElementNS(NS, "circle");
+    var blade = document.createElementNS(NS, "g");
     blade.setAttribute("class", "process-sticker-blade");
-    blade.setAttribute("r", "12");
-    blade.setAttribute("cx", "0");
-    blade.setAttribute("cy", "0");
 
+    var rail = document.createElementNS(NS, "rect");
+    rail.setAttribute("x", "-70");
+    rail.setAttribute("y", "-148");
+    rail.setAttribute("width", "140");
+    rail.setAttribute("height", "16");
+    rail.setAttribute("rx", "3");
+    rail.setAttribute("class", "process-sticker-blade-rail");
+
+    var head = document.createElementNS(NS, "rect");
+    head.setAttribute("x", "-32");
+    head.setAttribute("y", "-136");
+    head.setAttribute("width", "64");
+    head.setAttribute("height", "52");
+    head.setAttribute("rx", "6");
+    head.setAttribute("class", "process-sticker-blade-head");
+
+    var holder = document.createElementNS(NS, "rect");
+    holder.setAttribute("x", "-16");
+    holder.setAttribute("y", "-88");
+    holder.setAttribute("width", "32");
+    holder.setAttribute("height", "30");
+    holder.setAttribute("class", "process-sticker-blade-holder");
+
+    var knife = document.createElementNS(NS, "path");
+    knife.setAttribute("d", "M -13 -60 L 13 -60 L 0 6 Z");
+    knife.setAttribute("class", "process-sticker-blade-knife");
+
+    var tip = document.createElementNS(NS, "circle");
+    tip.setAttribute("cx", "0");
+    tip.setAttribute("cy", "0");
+    tip.setAttribute("r", "6");
+    tip.setAttribute("class", "process-sticker-blade-tip");
+
+    blade.appendChild(rail);
+    blade.appendChild(head);
+    blade.appendChild(holder);
+    blade.appendChild(knife);
+    blade.appendChild(tip);
     group.appendChild(path);
     group.appendChild(blade);
     cutSvg.appendChild(group);
@@ -75,10 +110,15 @@
     path.style.strokeDashoffset = String(length);
 
     function moveBlade(amount) {
-      var drawn = Math.max(0, Math.min(1, amount));
-      var point = path.getPointAtLength(drawn * length);
-      blade.setAttribute("cx", String(point.x));
-      blade.setAttribute("cy", String(point.y));
+      var drawn = Math.max(0, Math.min(1, amount)) * length;
+      var point = path.getPointAtLength(drawn);
+      var ahead = path.getPointAtLength(Math.min(length, drawn + 6));
+      var angle = (Math.atan2(ahead.y - point.y, ahead.x - point.x) * 180) / Math.PI;
+      var lean = Math.max(-26, Math.min(26, angle));
+      blade.setAttribute(
+        "transform",
+        "translate(" + point.x + "," + point.y + ") rotate(" + lean.toFixed(1) + ")"
+      );
     }
 
     moveBlade(0);
@@ -88,14 +128,26 @@
         getComputedStyle(document.documentElement).getPropertyValue("--header-inner-h")
       ) || 72;
 
+    function scrubRange() {
+      var viewH = Math.max(1, window.innerHeight - headerH);
+      var pinH = Math.min(pin.offsetHeight || 0, viewH);
+      var travel = (track.offsetHeight || 0) - pinH;
+      if (travel < 96) {
+        return { start: "top 70%", end: "bottom 22%" };
+      }
+      return { start: "top top+=" + headerH, end: "+=" + Math.max(1, travel) };
+    }
+
     gsap.to({ p: 0 }, {
       p: 1,
       ease: "none",
       scrollTrigger: {
         trigger: track,
-        start: "top top+=" + headerH,
+        start: function () {
+          return scrubRange().start;
+        },
         end: function () {
-          return "+=" + Math.max(1, track.offsetHeight - pin.offsetHeight);
+          return scrubRange().end;
         },
         scrub: 0.5,
         invalidateOnRefresh: true,

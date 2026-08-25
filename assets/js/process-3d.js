@@ -45,14 +45,26 @@ import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
         getComputedStyle(document.documentElement).getPropertyValue("--header-inner-h")
       ) || 72;
 
+    function scrubRange() {
+      var viewH = Math.max(1, window.innerHeight - headerH);
+      var pinH = Math.min(pin.offsetHeight || 0, viewH);
+      var travel = (track.offsetHeight || 0) - pinH;
+      if (travel < 96) {
+        return { start: "top 70%", end: "bottom 22%" };
+      }
+      return { start: "top top+=" + headerH, end: "+=" + Math.max(1, travel) };
+    }
+
     gsap.to({ p: 0 }, {
       p: 1,
       ease: "none",
       scrollTrigger: {
         trigger: track,
-        start: "top top+=" + headerH,
+        start: function () {
+          return scrubRange().start;
+        },
         end: function () {
-          return "+=" + Math.max(1, track.offsetHeight - pin.offsetHeight);
+          return scrubRange().end;
         },
         scrub: 0.5,
         invalidateOnRefresh: true,
@@ -423,14 +435,26 @@ import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
         getComputedStyle(document.documentElement).getPropertyValue("--header-inner-h")
       ) || 72;
 
+    function scrubRange() {
+      var viewH = Math.max(1, window.innerHeight - headerH);
+      var pinH = Math.min(pin.offsetHeight || 0, viewH);
+      var travel = (track.offsetHeight || 0) - pinH;
+      if (travel < 96) {
+        return { start: "top 70%", end: "bottom 22%" };
+      }
+      return { start: "top top+=" + headerH, end: "+=" + Math.max(1, travel) };
+    }
+
     gsap.to({ p: 0 }, {
       p: 1,
       ease: "none",
       scrollTrigger: {
         trigger: track,
-        start: "top top+=" + headerH,
+        start: function () {
+          return scrubRange().start;
+        },
         end: function () {
-          return "+=" + Math.max(1, track.offsetHeight - pin.offsetHeight);
+          return scrubRange().end;
         },
         scrub: 0.5,
         invalidateOnRefresh: true,

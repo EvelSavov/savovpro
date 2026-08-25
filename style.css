@@ -190,7 +190,8 @@ a:hover {
   text-decoration: none;
 }
 
-.site-nav a:hover {
+.site-nav a:hover,
+.site-nav a[aria-current="page"] {
   color: var(--text);
 }
 
@@ -419,7 +420,6 @@ a:hover {
 
 .process {
   position: relative;
-  border-top: 1px solid var(--border);
 }
 
 #services {
@@ -481,7 +481,7 @@ a:hover {
   overflow: visible;
 }
 
-@media (min-width: 880px) {
+@media (min-width: 1100px) {
   #process-engraving .process-track {
     height: 280vh;
   }
@@ -504,7 +504,7 @@ a:hover {
     min-height: calc(100vh - var(--header-h));
     min-height: calc(100svh - var(--header-h));
     display: grid;
-    align-items: start;
+    align-items: center;
     padding-block: clamp(1.25rem, 3vw, 2rem) 2rem;
   }
 
@@ -996,8 +996,12 @@ a:hover {
   clip-path: inset(0 0 calc((1 - var(--vinyl-unroll, 0)) * 100%) 0);
 }
 
+.process-frame--sticker.is-cutting .process-vinyl-sheet,
 .process-frame--sticker.is-weeding .process-vinyl-sheet {
   overflow: visible;
+}
+
+.process-frame--sticker.is-weeding .process-vinyl-sheet {
   clip-path: none;
 }
 
@@ -1102,15 +1106,40 @@ a:hover {
 }
 
 .process-sticker-blade {
-  fill: #fff6d2;
-  stroke: var(--gold);
-  stroke-width: 3;
-  filter: drop-shadow(0 0 10px rgba(255, 220, 120, 0.95));
   opacity: 0;
+  pointer-events: none;
 }
 
 .process-frame--sticker.is-cutting .process-sticker-blade {
   opacity: 1;
+}
+
+.process-sticker-blade-rail {
+  fill: #cfcfcf;
+}
+
+.process-sticker-blade-head {
+  fill: #141414;
+  stroke: #f0d48a;
+  stroke-width: 2.4;
+}
+
+.process-sticker-blade-holder {
+  fill: #2a2a2a;
+  stroke: #d4af37;
+  stroke-width: 1.6;
+}
+
+.process-sticker-blade-knife {
+  fill: #f0d48a;
+  stroke: #fff6d2;
+  stroke-width: 2;
+  filter: drop-shadow(0 0 10px rgba(255, 220, 120, 0.9));
+}
+
+.process-sticker-blade-tip {
+  fill: #fffef6;
+  filter: drop-shadow(0 0 12px rgba(255, 230, 140, 1));
 }
 
 .process-frame--print3d::before {
@@ -1273,25 +1302,39 @@ a:hover {
 }
 
 @media (max-width: 879px) {
-  #process-engraving .process-track {
-    height: 200vh;
+  .container {
+    width: min(100% - max(2.5rem, env(safe-area-inset-left, 0px) + env(safe-area-inset-right, 0px)), var(--max));
   }
 
-  #process-sublimation .process-track {
-    height: 240vh;
-  }
-
-  #process-stickers .process-track {
-    height: 190vh;
-  }
-
+  #process-engraving .process-track,
+  #process-sublimation .process-track,
+  #process-stickers .process-track,
   #process-3d .process-track {
-    height: 180vh;
+    height: auto;
+  }
+
+  .process {
+    padding-block: clamp(1.35rem, 4.5vw, 2.25rem);
+  }
+
+  .process-sticky {
+    position: relative;
+    top: auto;
+    display: block;
+    min-height: 0;
+    max-height: none;
+    padding-block: 0;
   }
 
   .process-layout,
   .process-layout.is-flip {
+    flex: none;
+    min-height: 0;
+    overflow-x: clip;
     grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    align-items: start;
+    gap: 0.85rem;
   }
 
   .process-layout.is-flip .process-visual {
@@ -1299,26 +1342,175 @@ a:hover {
   }
 
   .process-layout.is-from-left {
-    --enter-x: -12vw;
+    --enter-x: -0.75rem;
   }
 
   .process-layout.is-from-right {
-    --enter-x: 12vw;
+    --enter-x: 0.75rem;
+  }
+
+  .process-kicker {
+    margin-bottom: 0.4rem;
   }
 
   .process-copy h2 {
-    font-size: clamp(1.55rem, 7vw, 2rem);
+    margin-bottom: 0.3rem;
+    font-size: clamp(1.4rem, 6.4vw, 1.75rem);
+  }
+
+  .process-item {
+    margin-bottom: 0.4rem;
+  }
+
+  .process-lead {
+    margin-bottom: 0.8rem;
+  }
+
+  .process-visual {
+    min-height: 0;
   }
 
   .process-frame {
-    width: min(100%, 20rem);
+    width: min(100%, 16.5rem, 42dvh);
+  }
+
+  .process-frame--mug .process-mug-canvas,
+  .process-frame--mug .process-mug-fallback {
+    transform: translateY(-9%) scale(1.28);
+    transform-origin: 50% 38%;
+  }
+
+  #process-sublimation .process-layout,
+  #process-sublimation .process-visual,
+  #process-sublimation .process-frame--mug,
+  #process-3d .process-layout,
+  #process-3d .process-visual,
+  #process-3d .process-frame--print3d {
+    overflow: hidden;
+  }
+}
+
+@media (max-width: 879px) and (max-height: 740px) {
+  .process {
+    padding-block: 1.1rem;
+  }
+
+  .process-layout,
+  .process-layout.is-flip {
+    gap: 0.65rem;
+  }
+
+  .process-copy h2 {
+    font-size: clamp(1.28rem, 6vw, 1.5rem);
+  }
+
+  .process-lead {
+    margin-bottom: 0.5rem;
+    font-size: 0.92rem;
+    line-height: 1.45;
+  }
+
+  .process-frame {
+    width: min(100%, 14.5rem, 34dvh);
+  }
+}
+
+@media (max-width: 879px) and (orientation: landscape) and (max-height: 500px) {
+  .process-layout,
+  .process-layout.is-flip {
+    grid-template-columns: minmax(0, 1.05fr) minmax(11rem, 0.95fr);
+    grid-template-rows: auto;
+    align-items: center;
+    gap: 0.85rem;
+  }
+
+  .process-copy h2 {
+    font-size: clamp(1.2rem, 4.2vw, 1.45rem);
+  }
+
+  .process-lead {
+    margin-bottom: 0.45rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .process-visual {
+    min-height: 11rem;
+    container-type: normal;
+  }
+
+  .process-frame {
+    width: min(100%, 12.5rem, 72svh);
+  }
+}
+
+@media (min-width: 880px) and (max-width: 1099px),
+  (max-width: 1099px) and (min-height: 1000px) {
+  #process-engraving .process-track,
+  #process-sublimation .process-track,
+  #process-stickers .process-track,
+  #process-3d .process-track {
+    height: auto;
+  }
+
+  .process {
+    padding-block: clamp(1.5rem, 3.5vh, 2.5rem);
   }
 
   .process-sticky {
-    position: sticky;
-    top: var(--header-h);
+    position: relative;
+    top: auto;
     min-height: 0;
-    padding-block: 1.25rem;
+    max-height: none;
+    display: block;
+    padding-block: 0;
+  }
+
+  .process-layout,
+  .process-layout.is-flip {
+    flex: none;
+    min-height: 0;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    grid-template-rows: none;
+    align-items: center;
+    gap: clamp(1.25rem, 3vw, 2.25rem);
+  }
+
+  .process-layout.is-flip {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+  }
+
+  .process-layout.is-flip .process-visual {
+    order: -1;
+  }
+
+  .process-copy h2 {
+    font-size: clamp(1.7rem, 3.2vw, 2.15rem);
+  }
+
+  .process-lead {
+    max-width: 34ch;
+  }
+
+  .process-frame {
+    width: min(100%, 30rem);
+    max-height: none;
+  }
+
+  .process-frame--mug .process-mug-canvas,
+  .process-frame--mug .process-mug-fallback {
+    transform: none;
+  }
+
+  #process-sublimation .process-layout,
+  #process-sublimation .process-visual,
+  #process-sublimation .process-frame--mug,
+  #process-3d .process-layout,
+  #process-3d .process-visual,
+  #process-3d .process-frame--print3d {
+    overflow: visible;
   }
 }
 
@@ -1441,6 +1633,14 @@ button.btn-primary:hover {
 
 #contact.section {
   padding-bottom: clamp(2rem, 5vw, 3rem);
+}
+
+.home-services-section {
+  padding-bottom: 0.25rem;
+}
+
+.home-services-section .section-heading {
+  margin-bottom: 0;
 }
 
 .section-heading {
@@ -2172,6 +2372,8 @@ body.lightbox-open {
 
 .contact-cta {
   display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
   justify-content: flex-start;
 }
 
@@ -2506,6 +2708,23 @@ body.nav-open {
 }
 @media (max-width: 400px) {
   .cookie-banner { bottom: 0.75rem; padding: 1rem 1.1rem; }
+}
+
+@media (max-height: 740px) {
+  .cookie-banner {
+    bottom: 0.5rem;
+    padding: 0.75rem 1rem;
+    width: calc(100% - 1.25rem);
+  }
+
+  .cookie-banner-inner {
+    gap: 0.65rem;
+  }
+
+  .cookie-banner-text {
+    font-size: 0.8rem;
+    line-height: 1.4;
+  }
 }
 
 /* footer legal nav */

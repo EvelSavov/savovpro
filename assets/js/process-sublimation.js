@@ -20,7 +20,8 @@ import { DecalGeometry } from "three/addons/geometries/DecalGeometry.js";
   var fallbackBottle = root.querySelector('[data-sub-fallback="bottle"]');
   if (!frame || !canvas || !track || !pin) return;
 
-  var PRODUCT_ORDER = ["mug", "bottle"];
+  var PRODUCT_ORDER = [Math.random() < 0.5 ? "mug" : "bottle"];
+  var chosenId = PRODUCT_ORDER[0];
   var COPY = {
     mug: {
       item: "Чаша",
@@ -38,7 +39,7 @@ import { DecalGeometry } from "three/addons/geometries/DecalGeometry.js";
   var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   var startY = 0;
   var state = { fade: 0, turn: 0 };
-  var activeId = "mug";
+  var activeId = chosenId;
   var lastCopyId = null;
   var swapTimer = 0;
   var products = {};
@@ -50,7 +51,7 @@ import { DecalGeometry } from "three/addons/geometries/DecalGeometry.js";
   function showFallback() {
     frame.classList.add("is-fallback");
     if (layout) layout.classList.add("is-shown");
-    setActiveProduct("mug", true);
+    setActiveProduct(chosenId, true);
   }
 
   function setCopy(id, instant) {
@@ -488,14 +489,26 @@ import { DecalGeometry } from "three/addons/geometries/DecalGeometry.js";
         getComputedStyle(document.documentElement).getPropertyValue("--header-inner-h")
       ) || 72;
 
+    function scrubRange() {
+      var viewH = Math.max(1, window.innerHeight - headerH);
+      var pinH = Math.min(pin.offsetHeight || 0, viewH);
+      var travel = (track.offsetHeight || 0) - pinH;
+      if (travel < 96) {
+        return { start: "top 70%", end: "bottom 22%" };
+      }
+      return { start: "top top+=" + headerH, end: "+=" + Math.max(1, travel) };
+    }
+
     gsap.to({ p: 0 }, {
       p: 1,
       ease: "none",
       scrollTrigger: {
         trigger: track,
-        start: "top top+=" + headerH,
+        start: function () {
+          return scrubRange().start;
+        },
         end: function () {
-          return "+=" + Math.max(1, track.offsetHeight - pin.offsetHeight);
+          return scrubRange().end;
         },
         scrub: 0.55,
         invalidateOnRefresh: true,
@@ -507,7 +520,7 @@ import { DecalGeometry } from "three/addons/geometries/DecalGeometry.js";
     });
   }
 
-  function initScene(mugGeo, bottleObj, print) {
+  function initScene(model, print) {
     scene = new THREE.Scene();
     camera = new THREE.PerspectiveCamera(26, 1, 0.1, 2000);
 
@@ -526,10 +539,13 @@ import { DecalGeometry } from "three/addons/geometries/DecalGeometry.js";
     scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.03).texture;
     pmrem.dispose();
 
-    products.mug = buildMug(mugGeo, print);
-    products.bottle = buildBottle(bottleObj, print);
-    scene.add(products.mug.group);
-    scene.add(products.bottle.group);
+    if (chosenId === "bottle") {
+      products.bottle = buildBottle(model, print);
+      scene.add(products.bottle.group);
+    } else {
+      products.mug = buildMug(model, print);
+      scene.add(products.mug.group);
+    }
 
     scene.add(new THREE.HemisphereLight(0xffffff, 0x2a2a2a, 0.7));
     var key = new THREE.DirectionalLight(0xfff6e8, 1.8);
@@ -543,7 +559,7 @@ import { DecalGeometry } from "three/addons/geometries/DecalGeometry.js";
     scene.add(rim);
 
     frame.classList.add("is-3d");
-    setActiveProduct("mug", true);
+    setActiveProduct(chosenId, true);
     resize();
     mapProgress(reduced ? 1 : 0);
     render();
@@ -557,15 +573,18 @@ import { DecalGeometry } from "three/addons/geometries/DecalGeometry.js";
 
   function start() {
     if (layout) layout.classList.add("is-shown");
+    setCopy(chosenId, true);
+    setFallbackVisible(chosenId);
 
-    Promise.all([
-      new STLLoader().loadAsync("assets/process/mug.stl"),
-      new OBJLoader().loadAsync("assets/process/borraccia.obj"),
-      makePrintTexture()
-    ])
+    var model =
+      chosenId === "bottle"
+        ? new OBJLoader().loadAsync("assets/process/borraccia.obj")
+        : new STLLoader().loadAsync("assets/process/mug.stl");
+
+    Promise.all([model, makePrintTexture()])
       .then(function (parts) {
-        if (!parts[0] || !parts[1] || !parts[2]) throw new Error("missing assets");
-        initScene(parts[0], parts[1], parts[2]);
+        if (!parts[0] || !parts[1]) throw new Error("missing assets");
+        initScene(parts[0], parts[1]);
       })
       .catch(function () {
         showFallback();
