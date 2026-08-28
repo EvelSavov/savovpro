@@ -53,7 +53,20 @@
       <nav id="site-nav" class="site-nav" aria-label="Основна навигация">
         <ul>
           <li><a href="index.html">Начало</a></li>
-          <li><a href="services.html">Услуги</a></li>
+          <li class="has-sub">
+            <a href="services.html">Услуги</a>
+            <button type="button" class="nav-sub-toggle" aria-expanded="false" aria-controls="nav-services" aria-label="Покажи услугите">
+              <span aria-hidden="true"></span>
+            </button>
+            <ul class="nav-sub" id="nav-services">
+              <li><a href="services/stickers.html">Стикери и плотерно рязане</a></li>
+              <li><a href="services/sublimation.html">Сублимационен печат</a></li>
+              <li><a href="services/3d-printing.html">3D принтиране</a></li>
+              <li><a href="services/laser-engraving.html">Лазерно гравиране</a></li>
+              <li><a href="services/souvenirs.html">Сувенири и рекламни изделия</a></li>
+              <li><a href="services/auto.html">Автомобилни аксесоари</a></li>
+            </ul>
+          </li>
           <li><a href="gallery.html">Галерия</a></li>
           <li><a href="about.html" aria-current="page">За нас</a></li>
           <li><a href="contact.html">Контакт</a></li>
@@ -63,7 +76,7 @@
   </header>
 
   <main id="main">
-    <section id="about" class="section section-alt" aria-labelledby="about-title">
+    <section id="about" class="section" aria-labelledby="about-title">
       <div class="container narrow">
         <h1 id="about-title" class="section-heading">За нас</h1>
         <p class="section-intro">

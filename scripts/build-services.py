@@ -15,7 +15,6 @@ import re
 import sys
 from html import escape
 from pathlib import Path
-from urllib.parse import quote
 
 ROOT = Path(__file__).resolve().parents[1]
 SERVICES = ROOT / "services"
@@ -292,11 +291,11 @@ def render_gallery(items: list, tag: str | None = None) -> str:
         parts.append("            </figure>")
     parts.append("          </div>")
     if tag:
-        parts.append('          <p class="svc-gallery-more">')
+        parts.append('          <div class="svc-gallery-more">')
         parts.append(
-            f'            <a class="btn btn-outline" href="../gallery.html?tag={escape(tag, quote=True)}">Виж всички в галерията</a>'
+            f'            <a class="btn btn-outline" href="../gallery.html?tag={escape(tag, quote=True)}#tag={escape(tag, quote=True)}">Виж всички в галерията</a>'
         )
-        parts.append("          </p>")
+        parts.append("          </div>")
     return "\n".join(parts) + "\n"
 
 
@@ -341,8 +340,6 @@ def render_main(data: dict, catalog: list[dict]) -> str:
     gallery_body = f"          <p>{escape(gallery['intro'])}</p>\n"
     gallery_body += render_gallery(gallery_items, gallery_tag)
 
-    wa = f"https://wa.me/359884121606?text={quote(cta['whatsapp'])}"
-
     parts = []
     parts.append("    <section class=\"svc-hero\" aria-labelledby=\"svc-title\">")
     parts.append(
@@ -350,13 +347,7 @@ def render_main(data: dict, catalog: list[dict]) -> str:
     )
     parts.append('      <div class="container">')
     parts.append('        <div class="svc-hero-inner">')
-    parts.append('          <nav class="svc-breadcrumb" aria-label="Навигация">')
-    parts.append('            <a href="../index.html">Начало</a>')
-    parts.append('            <span aria-hidden="true">›</span>')
-    parts.append('            <a href="../services.html">Услуги</a>')
-    parts.append('            <span aria-hidden="true">›</span>')
-    parts.append(f"            <span>{escape(data['breadcrumb'])}</span>")
-    parts.append("          </nav>")
+    parts.append('          <p class="svc-kicker">Наша услуга</p>')
     parts.append(f'          <h1 id="svc-title">{data["titleHtml"]}</h1>')
     parts.append(f'          <p class="svc-hero-lead">{escape(data["lead"])}</p>')
     parts.append('          <div class="svc-hero-actions">')
@@ -370,10 +361,9 @@ def render_main(data: dict, catalog: list[dict]) -> str:
     parts.append('    <div class="svc-body">')
     parts.append('      <div class="container">')
     parts.append("")
-    parts.append(render_section("Какво получавате", promise_body).rstrip("\n"))
+    parts.append(render_section("Как работи", promise_body).rstrip("\n"))
     parts.append("")
-    materials_title = materials.get("title") or "Изделия и материали"
-    parts.append(render_section(escape(materials_title), materials_body).rstrip("\n"))
+    parts.append(render_section("Изделия и материали", materials_body).rstrip("\n"))
     parts.append("")
     parts.append(render_section("Галерия", gallery_body).rstrip("\n"))
     parts.append("")
@@ -383,9 +373,6 @@ def render_main(data: dict, catalog: list[dict]) -> str:
     parts.append('          <div class="svc-cta-btns">')
     parts.append(
         f'            <a class="btn btn-primary" href="{escape(cta["href"], quote=True)}">{escape(cta["label"])}</a>'
-    )
-    parts.append(
-        f'            <a class="btn btn-outline" href="{escape(wa, quote=True)}" target="_blank" rel="noopener noreferrer">WhatsApp</a>'
     )
     parts.append("          </div>")
     parts.append("        </div>")

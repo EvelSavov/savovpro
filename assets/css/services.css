@@ -32,28 +32,17 @@
 .svc-hero-inner {
   position: relative;
   z-index: 1;
-  max-width: 620px;
+  max-width: 38rem;
 }
 
-.svc-breadcrumb {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.45rem;
-  margin: 0 0 1.6rem;
-  font-size: 0.72rem;
-  letter-spacing: 0.12em;
+.svc-kicker {
+  margin: 0 0 0.75rem;
+  font-family: var(--font-heading);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: rgba(244, 244, 245, 0.38);
-}
-
-.svc-breadcrumb a {
-  color: rgba(201, 162, 39, 0.85);
-  text-decoration: none;
-}
-
-.svc-breadcrumb a:hover {
-  color: var(--gold-hover);
+  color: var(--gold);
 }
 
 .svc-hero h1 {
@@ -316,8 +305,16 @@
 }
 
 .svc-gallery-more {
-  margin: 1.5rem 0 0;
-  text-align: center;
+  display: flex;
+  justify-content: center;
+  margin: 2.25rem 0 0;
+}
+
+.svc-gallery-more .btn {
+  min-width: 15rem;
+  padding: 0.78rem 1.7rem;
+  border-color: var(--gold);
+  color: var(--text);
 }
 
 /* ── Process steps ────────────────────────────────────────── */

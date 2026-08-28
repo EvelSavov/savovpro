@@ -162,7 +162,20 @@
       <nav id="site-nav" class="site-nav" aria-label="Основна навигация">
         <ul>
           <li><a href="index.html">Начало</a></li>
-          <li><a href="services.html">Услуги</a></li>
+          <li class="has-sub">
+            <a href="services.html">Услуги</a>
+            <button type="button" class="nav-sub-toggle" aria-expanded="false" aria-controls="nav-services" aria-label="Покажи услугите">
+              <span aria-hidden="true"></span>
+            </button>
+            <ul class="nav-sub" id="nav-services">
+              <li><a href="services/stickers.html">Стикери и плотерно рязане</a></li>
+              <li><a href="services/sublimation.html">Сублимационен печат</a></li>
+              <li><a href="services/3d-printing.html">3D принтиране</a></li>
+              <li><a href="services/laser-engraving.html">Лазерно гравиране</a></li>
+              <li><a href="services/souvenirs.html">Сувенири и рекламни изделия</a></li>
+              <li><a href="services/auto.html">Автомобилни аксесоари</a></li>
+            </ul>
+          </li>
           <li><a href="gallery.html" aria-current="page">Галерия</a></li>
           <li><a href="about.html">За нас</a></li>
           <li><a href="contact.html">Контакт</a></li>
@@ -177,7 +190,7 @@
         <header class="gallery-page-head">
           <h1 id="gallery-title" class="section-heading">Галерия</h1>
           <p class="section-intro">
-            Реални готови продукти на SAVOV PRO от с. Късак, общ. Доспат, обл. Смолян.
+            Реални готови продукти на SAVOV PRO.
             Лазерно гравиране, сублимация, стикери с плотер, 3D печат, сувенири и персонализирани подаръци —
             ключодържатели, химикалки, ароматизатори за кола, бутилки, канчета и брандиране.
             Изберете една или повече категории или
@@ -1203,9 +1216,9 @@
               <img src="assets/products/IMG-5f7d1293f37a524baf1baafab988234e-V-2.jpg" width="800" height="800" alt="Винилов стикер с арабски надпис върху Mercedes" loading="lazy" decoding="async" />
             </a>
           </figure>
-          <figure class="gallery-item" data-tags="engraving souvenirs">
-            <a class="gallery-open" href="assets/products/20260428_201133-2.jpg" aria-label="Увеличи: Гравирана табела SAVOV PRO с икони на услугите">
-              <img src="assets/products/20260428_201133-2.jpg" width="800" height="800" alt="Гравирана табела SAVOV PRO с икони на услугите" loading="lazy" decoding="async" />
+          <figure class="gallery-item" data-tags="stickers">
+            <a class="gallery-open" href="assets/products/20260428_201133-2.jpg" aria-label="Увеличи: Винилов стикер SAVOV PRO с икони на услугите">
+              <img src="assets/products/20260428_201133-2.jpg" width="800" height="800" alt="Винилов стикер SAVOV PRO с икони на услугите" loading="lazy" decoding="async" />
             </a>
           </figure>
           <figure class="gallery-item" data-tags="stickers">

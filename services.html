@@ -53,7 +53,20 @@
       <nav id="site-nav" class="site-nav" aria-label="Основна навигация">
         <ul>
           <li><a href="index.html">Начало</a></li>
-          <li><a href="services.html" aria-current="page">Услуги</a></li>
+          <li class="has-sub">
+            <a href="services.html" aria-current="page">Услуги</a>
+            <button type="button" class="nav-sub-toggle" aria-expanded="false" aria-controls="nav-services" aria-label="Покажи услугите">
+              <span aria-hidden="true"></span>
+            </button>
+            <ul class="nav-sub" id="nav-services">
+              <li><a href="services/stickers.html">Стикери и плотерно рязане</a></li>
+              <li><a href="services/sublimation.html">Сублимационен печат</a></li>
+              <li><a href="services/3d-printing.html">3D принтиране</a></li>
+              <li><a href="services/laser-engraving.html">Лазерно гравиране</a></li>
+              <li><a href="services/souvenirs.html">Сувенири и рекламни изделия</a></li>
+              <li><a href="services/auto.html">Автомобилни аксесоари</a></li>
+            </ul>
+          </li>
           <li><a href="gallery.html">Галерия</a></li>
           <li><a href="about.html">За нас</a></li>
           <li><a href="contact.html">Контакт</a></li>
@@ -74,37 +87,42 @@
           <li class="card card--service-vinyl">
             <h2>Стикери и плотерно рязане</h2>
             <p>Изработка на автомобилни стикери, фирмени надписи, етикети и рекламни графики с прецизно плотерно рязане.</p>
-            <a class="card-cover-link" href="services/stickers.html" aria-label="Виж услугата: Стикери и плотерно рязане"></a>
+            <span class="card-more">Научи повече</span>
+            <a class="card-cover-link" href="services/stickers.html" aria-label="Научи повече: Стикери и плотерно рязане"></a>
           </li>
           <li class="card card--service-sublimation">
             <h2>Сублимационен печат</h2>
             <p>Персонализиране на чаши, алуминиеви бутилки, тениски, магнити и други сувенири с ярки, наситени и устойчиви цветове.</p>
-            <a class="card-cover-link" href="services/sublimation.html" aria-label="Виж услугата: Сублимационен печат"></a>
+            <span class="card-more">Научи повече</span>
+            <a class="card-cover-link" href="services/sublimation.html" aria-label="Научи повече: Сублимационен печат"></a>
           </li>
           <li class="card card--service-3d">
             <h2>3D принтиране</h2>
             <p>Прототипи, функционални детайли, резервни части и персонализирани модели с висока точност.</p>
-            <a class="card-cover-link" href="services/3d-printing.html" aria-label="Виж услугата: 3D принтиране"></a>
+            <span class="card-more">Научи повече</span>
+            <a class="card-cover-link" href="services/3d-printing.html" aria-label="Научи повече: 3D принтиране"></a>
           </li>
           <li class="card card--service-laser">
             <h2>Лазерно гравиране</h2>
             <p>Прецизно гравиране върху дърво, кожа, метал и други материали за уникални подаръци и рекламни изделия.</p>
-            <a class="card-cover-link" href="services/laser-engraving.html" aria-label="Виж услугата: Лазерно гравиране"></a>
+            <span class="card-more">Научи повече</span>
+            <a class="card-cover-link" href="services/laser-engraving.html" aria-label="Научи повече: Лазерно гравиране"></a>
           </li>
           <li class="card card--service-promo">
             <h2>Сувенири и рекламни изделия</h2>
             <p>Бамбукови химикалки, дървени ключодържатели, дървени визитки, ароматизатори и персонализирани подаръци, изработени специално за всеки клиент.</p>
-            <a class="card-cover-link" href="services/souvenirs.html" aria-label="Виж услугата: Сувенири и рекламни изделия"></a>
+            <span class="card-more">Научи повече</span>
+            <a class="card-cover-link" href="services/souvenirs.html" aria-label="Научи повече: Сувенири и рекламни изделия"></a>
           </li>
           <li class="card card--service-auto">
             <h2>Автомобилни аксесоари</h2>
             <p>Подбор и персонализиране на автомобилни аксесоари, ароматизатори, декоративни елементи и рекламни продукти за автомобили.</p>
-            <a class="card-cover-link" href="services/auto.html" aria-label="Виж услугата: Автомобилни аксесоари"></a>
+            <span class="card-more">Научи повече</span>
+            <a class="card-cover-link" href="services/auto.html" aria-label="Научи повече: Автомобилни аксесоари"></a>
           </li>
         </ul>
         <div class="services-page-cta">
-          <a class="btn btn-outline" href="index.html#process-engraving">Виж как се правят</a>
-          <a class="btn btn-primary" href="contact.html">Запитване</a>
+          <a class="btn btn-primary" href="gallery.html">Разгледай готовите ни проекти</a>
         </div>
       </div>
     </section>

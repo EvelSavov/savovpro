@@ -13,25 +13,12 @@ import { DecalGeometry } from "three/addons/geometries/DecalGeometry.js";
   var track = root.querySelector(".process-track");
   var pin = root.querySelector(".process-sticky");
   var layout = root.querySelector(".process-layout");
-  var swapWrap = root.querySelector("[data-sub-swap]");
-  var itemLabel = root.querySelector("[data-sub-item]");
-  var leadEl = root.querySelector("[data-sub-lead]");
   var fallbackMug = root.querySelector('[data-sub-fallback="mug"]');
   var fallbackBottle = root.querySelector('[data-sub-fallback="bottle"]');
   if (!frame || !canvas || !track || !pin) return;
 
   var PRODUCT_ORDER = [Math.random() < 0.5 ? "mug" : "bottle"];
   var chosenId = PRODUCT_ORDER[0];
-  var COPY = {
-    mug: {
-      item: "Чаша",
-      lead: "Пълноцветно изображение, което влиза в покритието — наситено, трайно, без залепване и без лющене."
-    },
-    bottle: {
-      item: "Бутилка",
-      lead: "Същият сублимационен печат върху алуминиева бутилка — ярък цвят, устойчив на миене и ежедневна употреба."
-    }
-  };
 
   /** Mug print tuned to native STL units (height ≈ 47.5). Bottle print is computed after normalize. */
   var MUG_PRINT = { bodyR: 19.2, yaw: -0.14, printW: 24, depth: 12, yFactor: 0.5 };
@@ -40,8 +27,6 @@ import { DecalGeometry } from "three/addons/geometries/DecalGeometry.js";
   var startY = 0;
   var state = { fade: 0, turn: 0 };
   var activeId = chosenId;
-  var lastCopyId = null;
-  var swapTimer = 0;
   var products = {};
   var renderer = null;
   var camera = null;
@@ -52,28 +37,6 @@ import { DecalGeometry } from "three/addons/geometries/DecalGeometry.js";
     frame.classList.add("is-fallback");
     if (layout) layout.classList.add("is-shown");
     setActiveProduct(chosenId, true);
-  }
-
-  function setCopy(id, instant) {
-    var data = COPY[id];
-    if (!data) return;
-    if (instant || !swapWrap || lastCopyId === null) {
-      if (itemLabel) itemLabel.textContent = data.item;
-      if (leadEl) leadEl.textContent = data.lead;
-      lastCopyId = id;
-      return;
-    }
-    if (id === lastCopyId) return;
-    lastCopyId = id;
-    swapWrap.classList.remove("is-in");
-    swapWrap.classList.add("is-out");
-    window.clearTimeout(swapTimer);
-    swapTimer = window.setTimeout(function () {
-      if (itemLabel) itemLabel.textContent = data.item;
-      if (leadEl) leadEl.textContent = data.lead;
-      swapWrap.classList.remove("is-out");
-      swapWrap.classList.add("is-in");
-    }, 240);
   }
 
   function setFallbackVisible(id) {
@@ -118,7 +81,6 @@ import { DecalGeometry } from "three/addons/geometries/DecalGeometry.js";
   function setActiveProduct(id, instant) {
     activeId = id;
     frame.setAttribute("data-active", id);
-    setCopy(id, instant);
     setFallbackVisible(id);
     Object.keys(products).forEach(function (key) {
       var entry = products[key];
@@ -464,7 +426,7 @@ import { DecalGeometry } from "three/addons/geometries/DecalGeometry.js";
   function mapProgress(p) {
     var idx = productIndexAt(p);
     var id = PRODUCT_ORDER[idx];
-    if (id !== activeId) setActiveProduct(id, lastCopyId === null);
+    if (id !== activeId) setActiveProduct(id);
 
     var local = localProgress(p, idx);
     local = Math.min(1, Math.max(0, local));
@@ -494,7 +456,7 @@ import { DecalGeometry } from "three/addons/geometries/DecalGeometry.js";
       var pinH = Math.min(pin.offsetHeight || 0, viewH);
       var travel = (track.offsetHeight || 0) - pinH;
       if (travel < 96) {
-        return { start: "top 70%", end: "bottom 22%" };
+        return { start: "top 70%", end: "bottom 32%" };
       }
       return { start: "top top+=" + headerH, end: "+=" + Math.max(1, travel) };
     }
@@ -510,7 +472,7 @@ import { DecalGeometry } from "three/addons/geometries/DecalGeometry.js";
         end: function () {
           return scrubRange().end;
         },
-        scrub: 0.55,
+        scrub: 0.45,
         invalidateOnRefresh: true,
         onUpdate: function (self) {
           mapProgress(self.progress);
@@ -573,7 +535,6 @@ import { DecalGeometry } from "three/addons/geometries/DecalGeometry.js";
 
   function start() {
     if (layout) layout.classList.add("is-shown");
-    setCopy(chosenId, true);
     setFallbackVisible(chosenId);
 
     var model =

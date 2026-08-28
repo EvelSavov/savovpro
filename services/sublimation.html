@@ -35,7 +35,20 @@
       <nav id="site-nav" class="site-nav" aria-label="Основна навигация">
         <ul>
           <li><a href="../index.html">Начало</a></li>
-          <li><a href="../services.html" aria-current="page">Услуги</a></li>
+          <li class="has-sub">
+            <a href="../services.html" aria-current="page">Услуги</a>
+            <button type="button" class="nav-sub-toggle" aria-expanded="false" aria-controls="nav-services" aria-label="Покажи услугите">
+              <span aria-hidden="true"></span>
+            </button>
+            <ul class="nav-sub" id="nav-services">
+              <li><a href="stickers.html">Стикери и плотерно рязане</a></li>
+              <li><a href="sublimation.html">Сублимационен печат</a></li>
+              <li><a href="3d-printing.html">3D принтиране</a></li>
+              <li><a href="laser-engraving.html">Лазерно гравиране</a></li>
+              <li><a href="souvenirs.html">Сувенири и рекламни изделия</a></li>
+              <li><a href="auto.html">Автомобилни аксесоари</a></li>
+            </ul>
+          </li>
           <li><a href="../gallery.html">Галерия</a></li>
           <li><a href="../about.html">За нас</a></li>
           <li><a href="../contact.html">Контакт</a></li>
@@ -49,13 +62,7 @@
       <div class="svc-hero-bg" style="background-image: url('../assets/services/heroes/sublimation.jpg')" aria-hidden="true"></div>
       <div class="container">
         <div class="svc-hero-inner">
-          <nav class="svc-breadcrumb" aria-label="Навигация">
-            <a href="../index.html">Начало</a>
-            <span aria-hidden="true">›</span>
-            <a href="../services.html">Услуги</a>
-            <span aria-hidden="true">›</span>
-            <span>Сублимационен печат</span>
-          </nav>
+          <p class="svc-kicker">Наша услуга</p>
           <h1 id="svc-title">Сублимационен <span>печат</span></h1>
           <p class="svc-hero-lead">Пълноцветни дизайни, запечатани в материала — ярки, наситени и устойчиви цветове без покритие, което се лющи.</p>
           <div class="svc-hero-actions">
@@ -68,10 +75,10 @@
       <div class="container">
 
         <section class="svc-section">
-          <h2>Какво получавате</h2>
+          <h2>Как работи</h2>
           <div class="svc-divider"></div>
           <p>
-            Мастилата проникват в полиестерната повърхност под топлина и налягане. Изображението е в материала — не се чувства на допир и не избледнява при нормална употреба.
+            Под топлина и налягане цветовете влизат в повърхността на чашата, бутилката или текстила. Изображението не се чувства на допир и не избледнява при нормална употреба.
           </p>
           <div class="svc-cards">
             <div class="svc-card">
@@ -92,7 +99,7 @@
         <section class="svc-section">
           <h2>Изделия и материали</h2>
           <div class="svc-divider"></div>
-          <p>Работи върху полиестер или изделия с полиестерно покритие — най-добре на светли основи.</p>
+          <p>Работи върху чаши, бутилки, текстил и сувенири със специално покритие — най-добре на светли основи.</p>
           <ul class="svc-list">
             <li><strong>Чаши и бутилки</strong> — керамика и специализирани бланки с покритие</li>
             <li><strong>Текстил</strong> — минимум 80% полиестер за наситени цветове</li>
@@ -118,7 +125,7 @@
               <div class="process-step-num" aria-hidden="true"></div>
               <div>
                 <h4>Готов продукт</h4>
-                <p>Трайно изображение — обикновено за 24–48 часа.</p>
+                <p>Трайно изображение в покритието.</p>
               </div>
             </div>
           </div>
@@ -170,17 +177,16 @@
               </a>
             </figure>
           </div>
-          <p class="svc-gallery-more">
-            <a class="btn btn-outline" href="../gallery.html?tag=sublimation">Виж всички в галерията</a>
-          </p>
+          <div class="svc-gallery-more">
+            <a class="btn btn-outline" href="../gallery.html?tag=sublimation#tag=sublimation">Виж всички в галерията</a>
+          </div>
         </section>
 
         <div class="svc-cta">
           <h2>Искате персонализирана чаша?</h2>
-          <p>Изпратете дизайн или идея — оферта до 24 часа. От 1 бройка.</p>
+          <p>Изпратете дизайн или идея. От 1 бройка.</p>
           <div class="svc-cta-btns">
             <a class="btn btn-primary" href="../contact.html">Запитване</a>
-            <a class="btn btn-outline" href="https://wa.me/359884121606?text=%D0%97%D0%B4%D1%80%D0%B0%D0%B2%D0%B5%D0%B9%D1%82%D0%B5%2C%20%D0%B8%D1%81%D0%BA%D0%B0%D0%BC%20%D1%81%D1%83%D0%B1%D0%BB%D0%B8%D0%BC%D0%B0%D1%86%D0%B8%D0%BE%D0%BD%D0%B5%D0%BD%20%D0%BF%D0%B5%D1%87%D0%B0%D1%82." target="_blank" rel="noopener noreferrer">WhatsApp</a>
           </div>
         </div>
 

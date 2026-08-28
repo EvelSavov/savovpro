@@ -154,7 +154,20 @@
       <nav id="site-nav" class="site-nav" aria-label="Основна навигация">
         <ul>
           <li><a href="#" aria-current="page">Начало</a></li>
-          <li><a href="services.html">Услуги</a></li>
+          <li class="has-sub">
+            <a href="services.html">Услуги</a>
+            <button type="button" class="nav-sub-toggle" aria-expanded="false" aria-controls="nav-services" aria-label="Покажи услугите">
+              <span aria-hidden="true"></span>
+            </button>
+            <ul class="nav-sub" id="nav-services">
+              <li><a href="services/stickers.html">Стикери и плотерно рязане</a></li>
+              <li><a href="services/sublimation.html">Сублимационен печат</a></li>
+              <li><a href="services/3d-printing.html">3D принтиране</a></li>
+              <li><a href="services/laser-engraving.html">Лазерно гравиране</a></li>
+              <li><a href="services/souvenirs.html">Сувенири и рекламни изделия</a></li>
+              <li><a href="services/auto.html">Автомобилни аксесоари</a></li>
+            </ul>
+          </li>
           <li><a href="gallery.html">Галерия</a></li>
           <li><a href="about.html">За нас</a></li>
           <li><a href="contact.html">Контакт</a></li>
@@ -203,7 +216,7 @@
               <p class="process-kicker">Наша услуга</p>
               <h2 id="process-title">Лазерно гравиране</h2>
               <p class="process-lead">
-                Лазерът гравира директно в дърво, кожа или акрил — без мастило и без залепване. Надписът остава в материала и издържа на време.
+                Прецизно гравиране върху дърво, кожа, метал и други материали за уникални подаръци и рекламни изделия.
               </p>
               <a class="btn btn-outline" href="services/laser-engraving.html">Научи повече</a>
             </div>
@@ -307,12 +320,9 @@
             <div class="process-copy">
               <p class="process-kicker">Наша услуга</p>
               <h2 id="process-sub-title">Сублимационен печат</h2>
-              <div class="process-swap" data-sub-swap>
-                <p class="process-item" data-sub-item>Чаша</p>
-                <p class="process-lead" data-sub-lead>
-                  Пълноцветно изображение, което влиза в покритието — наситено, трайно, без залепване и без лющене.
-                </p>
-              </div>
+              <p class="process-lead">
+                Персонализиране на чаши, алуминиеви бутилки, тениски, магнити и други сувенири с ярки, наситени и устойчиви цветове.
+              </p>
               <a class="btn btn-outline" href="services/sublimation.html">Научи повече</a>
             </div>
             <div class="process-visual">
@@ -350,10 +360,9 @@
           <div class="container process-layout is-from-left">
             <div class="process-copy">
               <p class="process-kicker">Наша услуга</p>
-              <h2 id="process-sticker-title">Стикери и плотер</h2>
-              <p class="process-item">Винил</p>
+              <h2 id="process-sticker-title">Стикери и плотерно рязане</h2>
               <p class="process-lead">
-                Плотерът реже по контура на вектора — остава само формата, без мастило и без бял фон.
+                Изработка на автомобилни стикери, фирмени надписи, етикети и рекламни графики с прецизно плотерно рязане.
               </p>
               <a class="btn btn-outline" href="services/stickers.html">Научи повече</a>
             </div>
@@ -425,9 +434,8 @@
             <div class="process-copy">
               <p class="process-kicker">Наша услуга</p>
               <h2 id="process-3d-title">3D принтиране</h2>
-              <p class="process-item">Зъбно колело</p>
               <p class="process-lead">
-                Слой по слой нишката става работещ детайл — точна форма за сглобка и резервни части.
+                Прототипи, функционални детайли, резервни части и персонализирани модели с висока точност.
               </p>
               <a class="btn btn-outline" href="services/3d-printing.html">Научи повече</a>
             </div>
@@ -587,8 +595,8 @@
             <span class="why-us-label">персонализирани решения</span>
           </li>
           <li class="why-us-stat">
-            <span class="why-us-number">7<span class="why-us-plus">+</span></span>
-            <span class="why-us-label">категории услуги</span>
+            <span class="why-us-number why-us-number--phrase">От 1 брой</span>
+            <span class="why-us-label">без минимална поръчка</span>
           </li>
           <li class="why-us-stat">
             <span class="why-us-number why-us-icon">

@@ -50,7 +50,7 @@ import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
       var pinH = Math.min(pin.offsetHeight || 0, viewH);
       var travel = (track.offsetHeight || 0) - pinH;
       if (travel < 96) {
-        return { start: "top 70%", end: "bottom 22%" };
+        return { start: "top 70%", end: "bottom 32%" };
       }
       return { start: "top top+=" + headerH, end: "+=" + Math.max(1, travel) };
     }
@@ -66,7 +66,7 @@ import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
         end: function () {
           return scrubRange().end;
         },
-        scrub: 0.5,
+        scrub: 0.45,
         invalidateOnRefresh: true,
         onUpdate: function (self) {
           var p = self.progress;
@@ -440,7 +440,7 @@ import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
       var pinH = Math.min(pin.offsetHeight || 0, viewH);
       var travel = (track.offsetHeight || 0) - pinH;
       if (travel < 96) {
-        return { start: "top 70%", end: "bottom 22%" };
+        return { start: "top 70%", end: "bottom 32%" };
       }
       return { start: "top top+=" + headerH, end: "+=" + Math.max(1, travel) };
     }
@@ -456,7 +456,7 @@ import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
         end: function () {
           return scrubRange().end;
         },
-        scrub: 0.5,
+        scrub: 0.45,
         invalidateOnRefresh: true,
         onUpdate: function (self) {
           mapProgress(self.progress);

@@ -35,7 +35,20 @@
       <nav id="site-nav" class="site-nav" aria-label="Основна навигация">
         <ul>
           <li><a href="../index.html">Начало</a></li>
-          <li><a href="../services.html" aria-current="page">Услуги</a></li>
+          <li class="has-sub">
+            <a href="../services.html" aria-current="page">Услуги</a>
+            <button type="button" class="nav-sub-toggle" aria-expanded="false" aria-controls="nav-services" aria-label="Покажи услугите">
+              <span aria-hidden="true"></span>
+            </button>
+            <ul class="nav-sub" id="nav-services">
+              <li><a href="stickers.html">Стикери и плотерно рязане</a></li>
+              <li><a href="sublimation.html">Сублимационен печат</a></li>
+              <li><a href="3d-printing.html">3D принтиране</a></li>
+              <li><a href="laser-engraving.html">Лазерно гравиране</a></li>
+              <li><a href="souvenirs.html">Сувенири и рекламни изделия</a></li>
+              <li><a href="auto.html">Автомобилни аксесоари</a></li>
+            </ul>
+          </li>
           <li><a href="../gallery.html">Галерия</a></li>
           <li><a href="../about.html">За нас</a></li>
           <li><a href="../contact.html">Контакт</a></li>
