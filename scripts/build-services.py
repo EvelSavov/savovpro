@@ -79,6 +79,32 @@ def service_src(src: str) -> str:
     return f"../{src}"
 
 
+def absolute_url(src: str) -> str:
+    path = src.strip()
+    if path.startswith(("http://", "https://")):
+        return path
+    while path.startswith("../"):
+        path = path[3:]
+    if path.startswith("/"):
+        path = path[1:]
+    return f"https://savovpro.com/{path}"
+
+
+def render_jsonld(data: dict) -> str:
+    payload = {
+        "@context": "https://schema.org",
+        "@type": "Service",
+        "name": data["title"],
+        "description": data["description"],
+        "url": f"https://savovpro.com/services/{data['slug']}.html",
+        "image": absolute_url(data["heroImage"]),
+        "provider": {"@id": "https://savovpro.com/#business"},
+        "areaServed": "BG",
+    }
+    dumped = json.dumps(payload, ensure_ascii=False, indent=2)
+    return f'  <script type="application/ld+json">\n{dumped}\n  </script>'
+
+
 def load_gallery_catalog() -> list[dict]:
     if not GALLERY_PATH.exists():
         print(f"Missing gallery: {GALLERY_PATH}", file=sys.stderr)
@@ -387,6 +413,8 @@ def build_one(data: dict, template: str, catalog: list[dict]) -> str:
     html = html.replace("{{slug}}", data["slug"])
     html = html.replace("{{title}}", escape(data["title"]))
     html = html.replace("{{description}}", escape(data["description"], quote=True))
+    html = html.replace("{{og_image}}", escape(absolute_url(data["heroImage"]), quote=True))
+    html = html.replace("{{jsonld}}", render_jsonld(data))
     html = html.replace("{{main}}", render_main(data, catalog))
     return html
 

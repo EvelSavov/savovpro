@@ -1921,6 +1921,36 @@ button.btn-primary:hover {
   cursor: pointer;
 }
 
+.faq-list {
+  margin: 0;
+  padding: 0;
+}
+
+.faq-list > div {
+  padding: 1.15rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.faq-list > div:first-child {
+  padding-top: 0;
+}
+
+.faq-list dt {
+  margin: 0 0 0.4rem;
+  font-family: var(--font-heading);
+  font-size: 1.02rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.faq-list dd {
+  margin: 0;
+  max-width: 560px;
+  font-size: 0.98rem;
+  line-height: 1.7;
+  color: rgba(244, 244, 245, 0.62);
+}
+
 /* ── Why us stats ──────────────────────────────────────────────── */
 
 .why-us {
