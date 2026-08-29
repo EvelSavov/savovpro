@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 320 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-hidden="true">
+  <defs>
+    <linearGradient id="bottleBody" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#c8c8c8"/>
+      <stop offset="35%" stop-color="#ececec"/>
+      <stop offset="70%" stop-color="#d4d4d4"/>
+      <stop offset="100%" stop-color="#a8a8a8"/>
+    </linearGradient>
+    <linearGradient id="bottleCap" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#6a6a6a"/>
+      <stop offset="100%" stop-color="#3a3a3a"/>
+    </linearGradient>
+    <linearGradient id="bottleInner" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#9a9a9a"/>
+      <stop offset="100%" stop-color="#6e6e6e"/>
+    </linearGradient>
+  </defs>
+  <!-- Cap -->
+  <rect x="132" y="42" width="56" height="28" rx="8" fill="url(#bottleCap)"/>
+  <ellipse cx="160" cy="42" rx="28" ry="8" fill="#7a7a7a"/>
+  <!-- Neck -->
+  <path d="M138 70 C138 70 142 98 146 110 L174 110 C178 98 182 70 182 70 Z" fill="url(#bottleBody)"/>
+  <!-- Shoulder + body -->
+  <path
+    d="M146 110
+       C118 122 108 148 108 178
+       L108 300
+       C108 322 126 336 160 336
+       C194 336 212 322 212 300
+       L212 178
+       C212 148 202 122 174 110 Z"
+    fill="url(#bottleBody)"
+  />
+  <!-- Rim highlight -->
+  <ellipse cx="160" cy="178" rx="48" ry="10" fill="url(#bottleInner)" opacity="0.35"/>
+</svg>

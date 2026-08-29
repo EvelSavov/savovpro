@@ -171,6 +171,8 @@
     if (!window.IntersectionObserver) return;
 
     var sections = [
+      { selector: '#process-engraving', label: 'Услуга: лазер' },
+      { selector: '#process-sublimation', label: 'Услуга: сублимация' },
       { selector: '#services',  label: 'Услуги' },
       { selector: '#gallery',   label: 'Галерия' },
       { selector: '#about',     label: 'За нас' },

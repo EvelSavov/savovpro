@@ -1,0 +1,6 @@
+assets/products/originals/
+node_modules/
+letter-configurator/node_modules/
+playwright-report/
+test-results/
+.DS_Store
