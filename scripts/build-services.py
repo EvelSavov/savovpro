@@ -230,14 +230,31 @@ def caption_similar(a: str, b: str) -> bool:
     return len(shared) / len(left | right) >= 0.45
 
 
+def stem_key(name: str) -> str:
+    stem = Path(name).stem
+    if stem.endswith("-800"):
+        stem = stem[:-4]
+    return stem.lower()
+
+
+def display_pair(src: str) -> tuple[str, str]:
+    path = Path(src)
+    if path.suffix.lower() == ".webp" and not path.stem.endswith("-800"):
+        return src, str(path.with_name(f"{path.stem}-800.webp"))
+    return src, src
+
+
 def items_from_picks(picks: list, catalog: list[dict]) -> list[dict]:
     by_name = {Path(item["src"]).name: item for item in catalog}
+    by_stem = {stem_key(Path(item["src"]).name): item for item in catalog}
     picked = []
     for src in picks:
         name = Path(src).name
-        item = by_name.get(name)
-        caption = item["caption"] if item else name
-        picked.append({"src": service_src(src), "caption": caption})
+        item = by_name.get(name) or by_stem.get(stem_key(name))
+        if item:
+            picked.append({"src": service_src(item["src"]), "caption": item["caption"]})
+        else:
+            picked.append({"src": service_src(src), "caption": name})
     return picked
 
 
@@ -304,14 +321,14 @@ def gallery_items_for(
 def render_gallery(items: list, tag: str | None = None) -> str:
     parts = ['          <div class="svc-product-grid">']
     for item in items:
-        src = item["src"]
+        src, thumb = display_pair(item["src"])
         caption = escape(item["caption"])
         parts.append('            <figure class="gallery-item svc-product-item">')
         parts.append(
             f'              <a class="gallery-open" href="{escape(src, quote=True)}" aria-label="Увеличи: {caption}">'
         )
         parts.append(
-            f'                <img src="{escape(src, quote=True)}" alt="{caption}" loading="lazy" decoding="async" />'
+            f'                <img src="{escape(thumb, quote=True)}" alt="{caption}" width="800" height="800" loading="lazy" decoding="async" />'
         )
         parts.append("              </a>")
         parts.append("            </figure>")

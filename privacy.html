@@ -9,9 +9,16 @@
   <title>SAVOV PRO — Политика за поверителност</title>
   <link rel="icon" href="assets/logo/logo-mark.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="assets/logo/logo-mark.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700&family=Montserrat:ital,wght@0,600;0,700;1,600&display=swap"
+    rel="stylesheet"
+  />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <a class="skip-link" href="#main">Към съдържанието</a>
   <header class="site-header">
     <div class="site-header-backdrop" aria-hidden="true"></div>
     <div class="container header-inner">
@@ -21,7 +28,12 @@
       <div class="header-contact">
         <a class="btn btn-ghost btn-compact" href="tel:+359884121606" aria-label="Обадете се">Обади се</a>
       </div>
-      <nav class="site-nav" aria-label="Основна навигация">
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Меню">
+        <span class="nav-toggle-bar" aria-hidden="true"></span>
+        <span class="nav-toggle-bar" aria-hidden="true"></span>
+        <span class="nav-toggle-bar" aria-hidden="true"></span>
+      </button>
+      <nav id="site-nav" class="site-nav" aria-label="Основна навигация">
         <ul>
           <li><a href="index.html">Начало</a></li>
           <li class="has-sub">
@@ -34,8 +46,8 @@
               <li><a href="services/sublimation.html">Сублимационен печат</a></li>
               <li><a href="services/3d-printing.html">3D принтиране</a></li>
               <li><a href="services/laser-engraving.html">Лазерно гравиране</a></li>
-              <li><a href="services/souvenirs.html">Сувенири и рекламни изделия</a></li>
-              <li><a href="services/auto.html">Автомобилни аксесоари</a></li>
+              <li><a href="services/souvenirs.html">Сувенири и лични подаръци</a></li>
+              <li><a href="services/auto.html">Авто аксесоари</a></li>
             </ul>
           </li>
           <li><a href="gallery.html">Галерия</a></li>
@@ -79,10 +91,6 @@
 
         <h2>Бисквитки, localStorage и аналитика</h2>
         <p>
-          Конфигураторът записва чернова на дизайна локално в браузъра ви (localStorage) — не го получаваме автоматично.
-          Можете да я изтриете с „Започни отначало" или като изчистите данните на сайта в браузъра.
-        </p>
-        <p>
           При ваше <strong>изрично съгласие</strong> (чрез банера при първо посещение), ползваме следните аналитични инструменти:
         </p>
         <ul class="legal-list">
@@ -105,9 +113,8 @@
 
         <h2>Външни услуги</h2>
         <p>
-          Конфигураторът може да зарежда икони от <a href="https://iconify.design/" target="_blank" rel="noopener noreferrer">Iconify</a>
-          и шрифтове от <a href="https://fonts.google.com/" target="_blank" rel="noopener noreferrer">Google Fonts</a>.
-          Тези доставчици могат да получат IP адреса ви при заявка — вижте техните политики.
+          Сайтът зарежда шрифтове от <a href="https://fonts.google.com/" target="_blank" rel="noopener noreferrer">Google Fonts</a>.
+          Този доставчик може да получи IP адреса ви при заявка — вижте тяхната политика.
         </p>
 
         <h2>Споделяне с трети лица</h2>

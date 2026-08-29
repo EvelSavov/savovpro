@@ -9,9 +9,16 @@
   <title>SAVOV PRO — Общи условия</title>
   <link rel="icon" href="assets/logo/logo-mark.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="assets/logo/logo-mark.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700&family=Montserrat:ital,wght@0,600;0,700;1,600&display=swap"
+    rel="stylesheet"
+  />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <a class="skip-link" href="#main">Към съдържанието</a>
   <header class="site-header">
     <div class="site-header-backdrop" aria-hidden="true"></div>
     <div class="container header-inner">
@@ -21,7 +28,12 @@
       <div class="header-contact">
         <a class="btn btn-ghost btn-compact" href="tel:+359884121606" aria-label="Обадете се">Обади се</a>
       </div>
-      <nav class="site-nav" aria-label="Основна навигация">
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Меню">
+        <span class="nav-toggle-bar" aria-hidden="true"></span>
+        <span class="nav-toggle-bar" aria-hidden="true"></span>
+        <span class="nav-toggle-bar" aria-hidden="true"></span>
+      </button>
+      <nav id="site-nav" class="site-nav" aria-label="Основна навигация">
         <ul>
           <li><a href="index.html">Начало</a></li>
           <li class="has-sub">
@@ -34,8 +46,8 @@
               <li><a href="services/sublimation.html">Сублимационен печат</a></li>
               <li><a href="services/3d-printing.html">3D принтиране</a></li>
               <li><a href="services/laser-engraving.html">Лазерно гравиране</a></li>
-              <li><a href="services/souvenirs.html">Сувенири и рекламни изделия</a></li>
-              <li><a href="services/auto.html">Автомобилни аксесоари</a></li>
+              <li><a href="services/souvenirs.html">Сувенири и лични подаръци</a></li>
+              <li><a href="services/auto.html">Авто аксесоари</a></li>
             </ul>
           </li>
           <li><a href="gallery.html">Галерия</a></li>
@@ -46,7 +58,7 @@
     </div>
   </header>
 
-  <main class="legal-page">
+  <main id="main" class="legal-page">
     <div class="legal-wrap">
       <h1>Общи условия</h1>
       <p class="legal-updated">Последна актуализация: юли 2026 г.</p>
@@ -64,7 +76,7 @@
       <section>
         <h2>Как работим</h2>
         <ul>
-          <li>Изпращате запитване през сайта, имейл или телефон.</li>
+          <li>Изпращате запитване по телефон, имейл или през страницата Контакти.</li>
           <li>Ние потвърждаваме детайлите, срока и цената индивидуално.</li>
           <li>Поръчката се стартира след вашето одобрение и плащане.</li>
           <li>Изработеното изделие се доставя или взима лично.</li>

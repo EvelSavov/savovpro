@@ -48,14 +48,14 @@
     "intro": "Няколко изделия от галерията — 3D принтиране.",
     "tag": "3d",
     "picks": [
-      "assets/products/20221217_095237-2.jpg",
-      "assets/products/20251202_162545-2.jpg",
-      "assets/products/20260810_175849-2.jpg",
-      "assets/products/20260724_153004-2.jpg",
-      "assets/products/20260401_163847-2.jpg",
-      "assets/products/20260801_115154-2.jpg",
-      "assets/products/20251113_201449-2.jpg",
-      "assets/products/20260302_122525-2.jpg"
+      "assets/products/20221217_095237-2.webp",
+      "assets/products/20251202_162545-2.webp",
+      "assets/products/20260810_175849-2.webp",
+      "assets/products/20260724_153004-2.webp",
+      "assets/products/20260401_163847-2.webp",
+      "assets/products/20260801_115154-2.webp",
+      "assets/products/20251113_201449-2.webp",
+      "assets/products/20260302_122525-2.webp"
     ]
   },
   "cta": {
