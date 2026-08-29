@@ -39,7 +39,7 @@
 
   var navFile = (location.pathname.split("/").pop() || "").toLowerCase();
   if (navFile) {
-    document.querySelectorAll(".nav-sub a").forEach(function (link) {
+    document.querySelectorAll(".nav-sub a, .footer-legal a").forEach(function (link) {
       var href = (link.getAttribute("href") || "").split("/").pop();
       if (href && href.toLowerCase() === navFile) {
         link.setAttribute("aria-current", "page");

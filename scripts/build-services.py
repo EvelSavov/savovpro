@@ -7,6 +7,7 @@ Usage:
 
 Edit content in services/data/*.json
 Edit shared chrome in scripts/templates/service.html
+Edit the footer in scripts/templates/footer.html
 """
 from __future__ import annotations
 
@@ -15,6 +16,11 @@ import re
 import sys
 from html import escape
 from pathlib import Path
+
+SCRIPTS = Path(__file__).resolve().parent
+if str(SCRIPTS) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS))
+from site_chrome import render_footer
 
 ROOT = Path(__file__).resolve().parents[1]
 SERVICES = ROOT / "services"
@@ -433,6 +439,7 @@ def build_one(data: dict, template: str, catalog: list[dict]) -> str:
     html = html.replace("{{og_image}}", escape(absolute_url(data["heroImage"]), quote=True))
     html = html.replace("{{jsonld}}", render_jsonld(data))
     html = html.replace("{{main}}", render_main(data, catalog))
+    html = html.replace("{{footer}}", render_footer("../"))
     return html
 
 

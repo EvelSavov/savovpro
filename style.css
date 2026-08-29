@@ -2536,6 +2536,26 @@ body.lightbox-open {
   color: var(--gold);
 }
 
+.footer-social {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.85rem;
+  margin-top: 0.15rem;
+}
+
+.footer-social a {
+  display: inline-flex;
+  color: var(--gold);
+  opacity: 0.85;
+  transition: opacity 0.15s, color 0.15s;
+}
+
+.footer-social a:hover {
+  opacity: 1;
+  color: #fff;
+}
+
 .footer-copy {
   line-height: 1.45;
   font-size: 0.8rem;
@@ -2937,8 +2957,10 @@ body.nav-open {
 /* footer legal nav */
 .footer-legal {
   display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.35rem 0.85rem;
   font-size: 0.78rem;
   color: var(--muted, #666);
   margin-top: 0.5rem;
