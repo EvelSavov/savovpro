@@ -4,14 +4,21 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#0a0a0a" />
-  <meta name="description" content="Политика за поверителност на SAVOV PRO Ltd. — как обработваме данни при ползване на сайта и конфигураторите." />
+  <meta name="description" content="Политика за поверителност на SAVOV PRO Ltd. — как обработваме данни при ползване на сайта." />
   <link rel="canonical" href="https://savovpro.com/privacy.html" />
   <title>SAVOV PRO — Политика за поверителност</title>
   <link rel="icon" href="assets/logo/logo-mark.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="assets/logo/logo-mark.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700&family=Montserrat:ital,wght@0,600;0,700;1,600&display=swap"
+    rel="stylesheet"
+  />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <a class="skip-link" href="#main">Към съдържанието</a>
   <header class="site-header">
     <div class="site-header-backdrop" aria-hidden="true"></div>
     <div class="container header-inner">
@@ -21,12 +28,31 @@
       <div class="header-contact">
         <a class="btn btn-ghost btn-compact" href="tel:+359884121606" aria-label="Обадете се">Обади се</a>
       </div>
-      <nav class="site-nav" aria-label="Основна навигация">
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Меню">
+        <span class="nav-toggle-bar" aria-hidden="true"></span>
+        <span class="nav-toggle-bar" aria-hidden="true"></span>
+        <span class="nav-toggle-bar" aria-hidden="true"></span>
+      </button>
+      <nav id="site-nav" class="site-nav" aria-label="Основна навигация">
         <ul>
-          <li><a href="index.html#services">Услуги</a></li>
-          <li><a href="index.html#gallery">Галерия</a></li>
-          <li><a href="index.html#about">За нас</a></li>
-          <li><a href="index.html#contact">Контакт</a></li>
+          <li><a href="index.html">Начало</a></li>
+          <li class="has-sub">
+            <a href="services.html">Услуги</a>
+            <button type="button" class="nav-sub-toggle" aria-expanded="false" aria-controls="nav-services" aria-label="Покажи услугите">
+              <span aria-hidden="true"></span>
+            </button>
+            <ul class="nav-sub" id="nav-services">
+              <li><a href="services/stickers.html">Стикери и плотерно рязане</a></li>
+              <li><a href="services/sublimation.html">Сублимационен печат</a></li>
+              <li><a href="services/3d-printing.html">3D принтиране</a></li>
+              <li><a href="services/laser-engraving.html">Лазерно гравиране</a></li>
+              <li><a href="services/souvenirs.html">Сувенири и лични подаръци</a></li>
+              <li><a href="services/auto.html">Авто аксесоари</a></li>
+            </ul>
+          </li>
+          <li><a href="gallery.html">Галерия</a></li>
+          <li><a href="about.html">За нас</a></li>
+          <li><a href="contact.html">Контакт</a></li>
         </ul>
       </nav>
     </div>
@@ -36,7 +62,7 @@
     <section class="section">
       <div class="container narrow legal-content">
         <h1 class="section-heading">Политика за поверителност</h1>
-        <p class="section-intro">Последна актуализация: юни 2026</p>
+        <p class="section-intro">Последна актуализация: август 2026</p>
 
         <h2>Администратор на данни</h2>
         <p>
@@ -48,8 +74,7 @@
         <h2>Какви данни обработваме</h2>
         <ul class="legal-list">
           <li><strong>При разглеждане на сайта:</strong> технически данни (IP адрес, браузър) — само чрез хостинг/CDN логове, без профилиране.</li>
-          <li><strong>В конфигуратора:</strong> дизайнът може да се пази в <strong>localStorage</strong> на вашето устройство — не го получаваме автоматично.</li>
-          <li><strong>При поръчка:</strong> име, телефон, съдържание на съобщение, прикачени файлове (PNG/SVG), които <strong>вие изпратите</strong> по WhatsApp, телефон или имейл.</li>
+          <li><strong>При поръчка:</strong> име, телефон, съдържание на съобщение, прикачени файлове (PNG/SVG), които <strong>вие изпратите</strong> по телефон или имейл.</li>
         </ul>
 
         <h2>Цели и правно основание</h2>
@@ -65,10 +90,6 @@
         </p>
 
         <h2>Бисквитки, localStorage и аналитика</h2>
-        <p>
-          Конфигураторът записва чернова на дизайна локално в браузъра ви (localStorage) — не го получаваме автоматично.
-          Можете да я изтриете с „Започни отначало" или като изчистите данните на сайта в браузъра.
-        </p>
         <p>
           При ваше <strong>изрично съгласие</strong> (чрез банера при първо посещение), ползваме следните аналитични инструменти:
         </p>
@@ -92,9 +113,8 @@
 
         <h2>Външни услуги</h2>
         <p>
-          Конфигураторът може да зарежда икони от <a href="https://iconify.design/" target="_blank" rel="noopener noreferrer">Iconify</a>
-          и шрифтове от <a href="https://fonts.google.com/" target="_blank" rel="noopener noreferrer">Google Fonts</a>.
-          Тези доставчици могат да получат IP адреса ви при заявка — вижте техните политики.
+          Сайтът зарежда шрифтове от <a href="https://fonts.google.com/" target="_blank" rel="noopener noreferrer">Google Fonts</a>.
+          Този доставчик може да получи IP адреса ви при заявка — вижте тяхната политика.
         </p>
 
         <h2>Споделяне с трети лица</h2>
@@ -111,7 +131,7 @@
 
         <h2>Общи условия</h2>
         <p>
-          Ползването на сайта и конфигураторите е предмет и на
+          Ползването на сайта е предмет и на
           <a href="terms.html">Общите условия</a>.
         </p>
       </div>
@@ -120,15 +140,37 @@
 
   <footer class="site-footer">
     <div class="container footer-inner">
-      <nav class="footer-legal" aria-label="Правна информация">
-        <a href="privacy.html" aria-current="page">Политика за поверителност</a>
-        <span class="footer-legal-sep" aria-hidden="true">·</span>
-        <a href="terms.html">Общи условия</a>
+      <img
+        class="footer-logo"
+        src="assets/logo/logo-signature.svg"
+        width="339"
+        height="98"
+        alt="SAVOV PRO"
+        loading="lazy"
+        decoding="async"
+      />
+      <p class="footer-tagline" lang="en">Made specially for you.</p>
+      <nav class="footer-social" aria-label="Социални мрежи">
+        <a href="https://www.facebook.com/savovpro" target="_blank" rel="noopener noreferrer" aria-label="Facebook — savovpro">
+          <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+        </a>
+        <a href="https://www.instagram.com/savovpro" target="_blank" rel="noopener noreferrer" aria-label="Instagram — savovpro">
+          <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+        </a>
+        <a href="https://www.tiktok.com/@savovpro" target="_blank" rel="noopener noreferrer" aria-label="TikTok — @savovpro">
+          <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.34 6.34 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.78 1.52V6.76a4.85 4.85 0 0 1-1.01-.07z"/></svg>
+        </a>
       </nav>
-      <p class="footer-copy">© <span id="year"></span> SAVOV PRO Ltd. · <a href="index.html">Начало</a></p>
+      <nav class="footer-legal" aria-label="Правна информация">
+        <a href="faq.html">Въпроси</a>
+        <a href="privacy.html">Политика за поверителност</a>
+        <a href="terms.html">Общи условия</a>
+        <a href="contact.html">Контакти</a>
+      </nav>
+      <p class="footer-copy">© <span id="year"></span> SAVOV PRO Ltd. Всички права запазени.</p>
     </div>
   </footer>
-  <script>document.getElementById('year').textContent = String(new Date().getFullYear());</script>
+  <script src="script.js" defer></script>
   <script src="assets/js/analytics.js" defer></script>
   <script src="assets/js/cookie-consent.js" defer></script>
 </body>

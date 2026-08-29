@@ -9,9 +9,16 @@
   <title>SAVOV PRO — Общи условия</title>
   <link rel="icon" href="assets/logo/logo-mark.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="assets/logo/logo-mark.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700&family=Montserrat:ital,wght@0,600;0,700;1,600&display=swap"
+    rel="stylesheet"
+  />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <a class="skip-link" href="#main">Към съдържанието</a>
   <header class="site-header">
     <div class="site-header-backdrop" aria-hidden="true"></div>
     <div class="container header-inner">
@@ -21,18 +28,37 @@
       <div class="header-contact">
         <a class="btn btn-ghost btn-compact" href="tel:+359884121606" aria-label="Обадете се">Обади се</a>
       </div>
-      <nav class="site-nav" aria-label="Основна навигация">
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Меню">
+        <span class="nav-toggle-bar" aria-hidden="true"></span>
+        <span class="nav-toggle-bar" aria-hidden="true"></span>
+        <span class="nav-toggle-bar" aria-hidden="true"></span>
+      </button>
+      <nav id="site-nav" class="site-nav" aria-label="Основна навигация">
         <ul>
-          <li><a href="index.html#services">Услуги</a></li>
-          <li><a href="index.html#gallery">Галерия</a></li>
-          <li><a href="index.html#about">За нас</a></li>
-          <li><a href="index.html#contact">Контакт</a></li>
+          <li><a href="index.html">Начало</a></li>
+          <li class="has-sub">
+            <a href="services.html">Услуги</a>
+            <button type="button" class="nav-sub-toggle" aria-expanded="false" aria-controls="nav-services" aria-label="Покажи услугите">
+              <span aria-hidden="true"></span>
+            </button>
+            <ul class="nav-sub" id="nav-services">
+              <li><a href="services/stickers.html">Стикери и плотерно рязане</a></li>
+              <li><a href="services/sublimation.html">Сублимационен печат</a></li>
+              <li><a href="services/3d-printing.html">3D принтиране</a></li>
+              <li><a href="services/laser-engraving.html">Лазерно гравиране</a></li>
+              <li><a href="services/souvenirs.html">Сувенири и лични подаръци</a></li>
+              <li><a href="services/auto.html">Авто аксесоари</a></li>
+            </ul>
+          </li>
+          <li><a href="gallery.html">Галерия</a></li>
+          <li><a href="about.html">За нас</a></li>
+          <li><a href="contact.html">Контакт</a></li>
         </ul>
       </nav>
     </div>
   </header>
 
-  <main class="legal-page">
+  <main id="main" class="legal-page">
     <div class="legal-wrap">
       <h1>Общи условия</h1>
       <p class="legal-updated">Последна актуализация: юли 2026 г.</p>
@@ -50,7 +76,7 @@
       <section>
         <h2>Как работим</h2>
         <ul>
-          <li>Изпращате запитване през сайта, имейл или WhatsApp.</li>
+          <li>Изпращате запитване по телефон, имейл или през страницата Контакти.</li>
           <li>Ние потвърждаваме детайлите, срока и цената индивидуално.</li>
           <li>Поръчката се стартира след вашето одобрение и плащане.</li>
           <li>Изработеното изделие се доставя или взима лично.</li>
@@ -69,8 +95,8 @@
       <section>
         <h2>Срокове за изработка</h2>
         <p>
-          Стандартният срок е <strong>3–7 работни дни</strong> след потвърждение на поръчката.
-          За по-сложни или по-големи количества — срокът се уточнява индивидуално.
+          Срокът за изработка е индивидуален за всяка поръчка и се уточнява при потвърждение —
+          според изделието, материала и количеството.
         </p>
       </section>
 
@@ -107,25 +133,46 @@
         <h2>Въпроси?</h2>
         <p>
           Пишете ни на <a href="mailto:info@savovpro.com">info@savovpro.com</a>
-          или се свържете с нас чрез <a href="index.html#contact">контактната форма</a>.
+          или през страницата <a href="contact.html">Контакти</a>.
         </p>
       </section>
     </div>
   </main>
 
   <footer class="site-footer">
-    <div class="footer-inner">
+    <div class="container footer-inner">
+      <img
+        class="footer-logo"
+        src="assets/logo/logo-signature.svg"
+        width="339"
+        height="98"
+        alt="SAVOV PRO"
+        loading="lazy"
+        decoding="async"
+      />
       <p class="footer-tagline" lang="en">Made specially for you.</p>
+      <nav class="footer-social" aria-label="Социални мрежи">
+        <a href="https://www.facebook.com/savovpro" target="_blank" rel="noopener noreferrer" aria-label="Facebook — savovpro">
+          <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+        </a>
+        <a href="https://www.instagram.com/savovpro" target="_blank" rel="noopener noreferrer" aria-label="Instagram — savovpro">
+          <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+        </a>
+        <a href="https://www.tiktok.com/@savovpro" target="_blank" rel="noopener noreferrer" aria-label="TikTok — @savovpro">
+          <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.34 6.34 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.78 1.52V6.76a4.85 4.85 0 0 1-1.01-.07z"/></svg>
+        </a>
+      </nav>
       <nav class="footer-legal" aria-label="Правна информация">
+        <a href="faq.html">Въпроси</a>
         <a href="privacy.html">Политика за поверителност</a>
-        <span class="footer-legal-sep" aria-hidden="true">·</span>
         <a href="terms.html">Общи условия</a>
+        <a href="contact.html">Контакти</a>
       </nav>
       <p class="footer-copy">© <span id="year"></span> SAVOV PRO Ltd. Всички права запазени.</p>
     </div>
   </footer>
 
-  <script>document.getElementById('year').textContent = String(new Date().getFullYear());</script>
+  <script src="script.js" defer></script>
   <script src="assets/js/analytics.js" defer></script>
   <script src="assets/js/cookie-consent.js" defer></script>
 </body>
